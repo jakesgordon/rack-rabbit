@@ -4,14 +4,13 @@ require 'rack-rabbit'
 
 Gem::Specification.new do |s|
 
-  s.name        = "rack-rabbit"
-  s.version     = RackRabbit::VERSION
-  s.platform    = Gem::Platform::RUBY
-  s.authors     = ["Jake Gordon"]
-  s.email       = ["jake@codeincomplete.com"]
-  s.homepage    = "https://github.com/jakesgordon/rack-rabbit"
-  s.summary     = RackRabbit::SUMMARY
-  s.description = RackRabbit::DESCRIPTION
+  s.name     = "rack-rabbit"
+  s.version  = RackRabbit::VERSION
+  s.platform = Gem::Platform::RUBY
+  s.authors  = ["Jake Gordon"]
+  s.email    = ["jake@codeincomplete.com"]
+  s.homepage = "https://github.com/jakesgordon/rack-rabbit"
+  s.summary  = RackRabbit::SUMMARY
 
   s.has_rdoc         = false
   s.extra_rdoc_files = ["README.md"]
