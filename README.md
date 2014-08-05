@@ -31,11 +31,11 @@ server that subscribes to a RabbitMQ queue
 TODO
 ====
 
- * EVERYTHING!
- * spawning workers
- * signal handling
+ * allow master to block until signal needs processing (instead of sleep(1) + poll)
  * running rack apps
- * TTIN/TTOU
+ * better signal handling - TTIN/TTOU to add/remove workers
+ * better signal handling - differentiate between QUIT, TERM, and INT
+ * better signal handling in workers (use similar signal Q and remove threading log hack)
  * after fork hook intergration points
  * daemonizing
  * documentation
