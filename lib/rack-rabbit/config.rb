@@ -4,32 +4,56 @@ module RackRabbit
 
   class Config
 
+    #--------------------------------------------------------------------------
+
+    attr_reader :rackup
+
     def initialize(rackup, options)
-      @options = options
-      raise ArgumentError, "missing rackup file #{rackup}" unless File.readable?(rackup)
-      options[:rackup] = rackup
-      options[:logger] ||= build_default_logger
+
+      @rackup  = rackup  || 'config.ru'
+      @options = options || {}
+
+      @options[:logger] ||= build_default_logger
+
+      raise ArgumentError, "missing rackup file #{@rackup}" unless File.readable?(@rackup)
+
     end
 
-    def self.declare_option(name)
-      define_method(name) do
-        @options[name] || defaults[name]
-      end
+    #--------------------------------------------------------------------------
+
+    def logger
+      @options[:logger] || defaults[:logger]
     end
 
-    declare_option :logger
-    declare_option :log_level
-    declare_option :rackup
-    declare_option :workers
-    declare_option :min_workers
-    declare_option :max_workers
-    declare_option :queue
-    declare_option :app_id
+    def log_level
+      @options[:log_level] || defaults[:log_level]
+    end
+
+    def workers
+      @options[:workers] || defaults[:workers]
+    end
+
+    def min_workers
+      @options[:min_workers] || defaults[:min_workers]
+    end
+
+    def max_workers
+      @options[:max_workers] || defaults[:max_workers]
+    end
+
+    def queue
+      @options[:queue] || defaults[:queue]
+    end
+
+    def app_id
+      @options[:app_id] || defaults[:app_id]
+    end
+
+    #--------------------------------------------------------------------------
 
     def defaults
       @defaults ||= {
         :log_level   => :info,
-        :rackup      => 'config.ru',
         :workers     => 2,
         :min_workers => 1,
         :max_workers => 100,
@@ -37,6 +61,8 @@ module RackRabbit
         :app_id      => 'rack-rabbit'
       }
     end
+
+    #--------------------------------------------------------------------------
 
     def build_default_logger
       master_pid = $$
