@@ -32,7 +32,7 @@ module RackRabbit
     def run
       trap_signals
       load_app
-      logger.info "RUNNING #{app} (#{config.rackup})"
+      logger.info "RUNNING #{app} (#{config.rackup}) for queue #{config.queue}"
       maintain_worker_count
       manage_workers
     end
