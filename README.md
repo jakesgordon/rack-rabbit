@@ -1,9 +1,28 @@
 Rack Rabbit (v0.0.1)
 ====================
 
-A Unicorn-style preforking rack-based server for hosting RabbitMQ consumer processes
+A Unicorn-style preforking server for hosting RabbitMQ consumer processes as load balanced rack applications.
 
-This library is in early-early development (e.g. there is nothing to see here yet)
+    $ rack-rabbit --queue myqueue --workers 4 app/config.ru
+
+Building an SOA ? Using RabbitMQ ? Want an easy way to host and load balance your consumers ?
+
+RackRabbit will...
+
+  * create, and manage, a cluster of worker processes that will each
+  * subscribe to a RabbitMQ queue
+  * convert the rabbitMQ message into a suitable Rack environment
+  * call your Rack app to fulfil the request
+  * (optionally) publish the response back to the original caller (if a `reply_to` queue was provided)
+
+The goal is to support a RabbitMQ-based SOA architecture that has multiple message passing patterns:
+
+  * Synchronous Request/Response a-la-HTTP (e.g. GET/POST/PUT/HEAD/DELETE)
+  * Asynchronous Worker queue (e.g. ENQUEUE)
+  * Asynchronous PubSub (e.g. PUBLISH)
+  * Asynchronous Broadcast (e.g. BROADCAST)
+
+*WARNING*: This library is in very, very early development
 
 Installation
 ============
@@ -26,7 +45,33 @@ Usage
 Use the `rack-rabbit` command line script to host your Rack app in a preforking
 server that subscribes to a RabbitMQ queue
 
-    rack-rabbit --queue myqueue --workers 5 config.ru
+    $ rack-rabbit --queue myqueue --workers 4 app/config.ru
+
+Client Library
+==============
+
+TODO: build a little rabbitMQ/Bunny client to support different message patterns that the workers can consume
+
+  * Synchronous Request/Response a-la-HTTP (e.g. GET/POST/PUT/HEAD/DELETE)
+  * Asynchronous Worker queue (e.g. ENQUEUE)
+  * Asynchronous PubSub (e.g. PUBLISH)
+  * Asynchronous Broadcast (e.g. BROADCAST)
+
+Configuration
+=============
+
+TODO: support (and document) a detailed configuration file
+
+Signals
+=======
+
+TODO: document signals
+
+  * QUIT - quit
+  * TERM - terminate
+  * INT  - interrupt
+  * TTIN - increase worker count
+  * TTOU - decrease worker count
 
 Supported Platforms
 ===================

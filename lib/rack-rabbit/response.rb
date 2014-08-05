@@ -1,6 +1,8 @@
 module RackRabbit
   class Response
 
+    #--------------------------------------------------------------------------
+
     attr_reader :status,
                 :headers,
                 :body,
@@ -15,6 +17,8 @@ module RackRabbit
       @content_encoding = headers.delete('Content-Encoding')
       headers[:status] = status # 
     end
+
+    #--------------------------------------------------------------------------
 
   end
 end
