@@ -12,20 +12,15 @@ options = {
 }
 
 op = OptionParser.new
-op.banner = "#{RackRabbit::SUMMARY}\n\nUsage: rack-rabbit [options]"
+op.banner = "#{RackRabbit::SUMMARY}\n\nUsage: rack-rabbit [options] [rackup config file]"
 
 op.on("-h", "--help")    { action = :help    }
 op.on("-v", "--version") { action = :version }
+op.parse!(ARGV)
 
-begin
-  op.parse!(ARGV)
-  case action
-  when :help    then puts op.to_s
-  when :version then puts RackRabbit::VERSION
-  else
-    RackRabbit.run!(options)
-  end
-rescue Exception => ex
-  puts ex.message
-  abort
+case action
+when :help    then puts op.to_s
+when :version then puts RackRabbit::VERSION
+else
+  RackRabbit.run!(ARGV[0] || 'config.ru', options)
 end
