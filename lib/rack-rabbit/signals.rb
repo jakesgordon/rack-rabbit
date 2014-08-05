@@ -1,5 +1,5 @@
 module RackRabbit
-  class Queue
+  class Signals
 
     # The RackRabbit server process has a single primary thread, but it doesn't
     # actually need to do any work once it has spun up the worker processes. I
@@ -14,7 +14,7 @@ module RackRabbit
     # it can also write to the pipe in order to "awaken" the primary thread.
     #
     # FYI: this is the same underlying idea that is used by the Unicorn master
-    #      process, I've just encapsulated it in a Queue class
+    #      process, I've just encapsulated it in a Signals class
     #
 
     def initialize
@@ -32,14 +32,14 @@ module RackRabbit
       @reader.nil?
     end
 
-    def enqueue(item)
-      raise RuntimeError, "Queue is closed" if closed?
+    def push(item)
+      raise RuntimeError, "closed" if closed?
       @queue << item
       awaken
     end
 
-    def dequeue
-      raise RuntimeError, "Queue is closed" if closed?
+    def pop
+      raise RuntimeError, "closed" if closed?
       hibernate if @queue.empty?
       @queue.shift
     end

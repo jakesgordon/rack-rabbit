@@ -2,7 +2,7 @@ require 'rack/builder'
 require 'rack/server'
 
 require 'rack-rabbit/config'
-require 'rack-rabbit/queue'
+require 'rack-rabbit/signals'
 require 'rack-rabbit/worker'
 
 module RackRabbit
@@ -26,7 +26,7 @@ module RackRabbit
       @worker_pids  = []
       @fired_pids   = []
       @worker_count = config.workers
-      @signals      = Queue.new
+      @signals      = Signals.new
     end
 
     #--------------------------------------------------------------------------
@@ -44,7 +44,7 @@ module RackRabbit
     def manage_workers
       while true
 
-        sig = signals.dequeue   # BLOCKS until there is a signal
+        sig = signals.pop   # BLOCKS until there is a signal
         case sig
 
         when :INT  then shutdown(:INT)
@@ -130,7 +130,7 @@ module RackRabbit
     def trap_signals
       [:INT, :QUIT, :TERM, :CHLD, :TTIN, :TTOU].each do |sig|
         trap(sig) do
-          signals.enqueue(sig)
+          signals.push(sig)
         end
       end
     end
