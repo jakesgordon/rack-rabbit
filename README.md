@@ -36,12 +36,11 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ====
 
- * running rack apps
- * better signal handling - TTIN/TTOU to add/remove workers
  * better signal handling - differentiate between QUIT, TERM, and INT
  * better signal handling in workers (use similar signal Q and remove threading log hack)
  * after fork hook intergration points
  * daemonizing
+ * config file
  * documentation
  * testing
  * client side wrapper

@@ -15,6 +15,7 @@ module RackRabbit
                 :logger,
                 :server_pid,
                 :worker_pids,
+                :fired_pids,
                 :worker_count,
                 :signals
 
@@ -23,6 +24,7 @@ module RackRabbit
       @logger       = config.logger
       @server_pid   = $$
       @worker_pids  = []
+      @fired_pids   = []
       @worker_count = config.workers
       @signals      = Queue.new
     end
@@ -72,10 +74,11 @@ module RackRabbit
 
     def maintain_worker_count
       unless shutting_down?
-        if worker_pids.length > worker_count
-          # TODO: TTOU support
-        else
-          spawn_worker while worker_pids.length < worker_count
+        diff = worker_pids.length - worker_count
+        if diff > 0
+          diff.times { fire_random_worker }
+        elsif diff < 0
+          (-diff).times { spawn_worker }
         end
       end
     end
@@ -87,6 +90,13 @@ module RackRabbit
       end
     end
 
+    def fire_random_worker
+      wpid = worker_pids.sample   # choose a random wpid
+      worker_pids.delete(wpid)
+      fired_pids.push(wpid)
+      Process.kill(:QUIT, wpid)
+    end
+
     def kill_workers(sig)
       worker_pids.each {|wpid| Process.kill(sig, wpid)}
     end
@@ -96,6 +106,7 @@ module RackRabbit
         wpid = Process.waitpid(-1, Process::WNOHANG)
         return if wpid.nil?
         worker_pids.delete(wpid)
+        fired_pids.delete(wpid)
       end
       rescue Errno::ECHILD
     end
