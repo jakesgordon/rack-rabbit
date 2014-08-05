@@ -1,4 +1,4 @@
-rack-rabbit (v0.0.1)
+Rack Rabbit (v0.0.1)
 ====================
 
 A Unicorn-style preforking rack-based server for hosting RabbitMQ consumer processes
@@ -27,6 +27,20 @@ Use the `rack-rabbit` command line script to host your Rack app in a preforking
 server that subscribes to a RabbitMQ queue
 
     rack-rabbit --queue myqueue --workers 5 config.ru
+
+TODO
+====
+
+ * EVERYTHING!
+ * spawning workers
+ * signal handling
+ * running rack apps
+ * TTIN/TTOU
+ * after fork hook intergration points
+ * daemonizing
+ * documentation
+ * testing
+ * client side wrapper
 
 License
 =======

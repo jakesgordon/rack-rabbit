@@ -7,16 +7,18 @@ module RackRabbit
   class Server
 
     attr_reader :app,
-                :config
+                :config,
+                :logger
 
     def initialize(rackup, options)
       @config = Config.new(rackup, options)
+      @logger = config.logger
     end
 
     def run
       load_app
-      puts "Run #{app} (#{config.rackup})"
-      puts " coming soon..."
+      logger.info "RUNNING #{app} (#{config.rackup})"
+      logger.info " ... coming soon!"
     end
 
     def load_app
