@@ -2,10 +2,13 @@ require 'rack/builder'
 require 'rack/server'
 
 require 'rack-rabbit/config'
+require 'rack-rabbit/queue'
 require 'rack-rabbit/worker'
 
 module RackRabbit
   class Server
+
+    #--------------------------------------------------------------------------
 
     attr_reader :app,
                 :config,
@@ -21,19 +24,25 @@ module RackRabbit
       @server_pid   = $$
       @worker_pids  = []
       @worker_count = config.workers
-      @signals      = []
+      @signals      = Queue.new
     end
+
+    #--------------------------------------------------------------------------
 
     def run
       trap_signals
       load_app
       logger.info "RUNNING #{app} (#{config.rackup})"
+      maintain_worker_count
       manage_workers
     end
 
+    #--------------------------------------------------------------------------
+
     def manage_workers
       while true
-        sig = signals.pop
+
+        sig = signals.dequeue   # BLOCKS until there is a signal
         case sig
 
         when :INT  then shutdown(:INT)
@@ -50,12 +59,16 @@ module RackRabbit
           @worker_count = [config.min_workers, worker_count - 1].max
 
         else
-          maintain_worker_count
-          sleep 1 # TODO: how to sleep until signals is non-empty - use Thread::Queue ?
+          raise RuntimeError, "unknown signal #{sig}"
 
         end
+
+        maintain_worker_count
+
       end
     end
+
+    #--------------------------------------------------------------------------
 
     def maintain_worker_count
       unless shutting_down?
@@ -69,6 +82,7 @@ module RackRabbit
 
     def spawn_worker
       worker_pids << fork do
+        signals.close
         Worker.new(self, app).run
       end
     end
@@ -86,6 +100,8 @@ module RackRabbit
       rescue Errno::ECHILD
     end
 
+    #--------------------------------------------------------------------------
+
     def shutdown(sig)
       logger.info "SHUTDOWN (#{sig})"
       @shutting_down = true
@@ -98,21 +114,23 @@ module RackRabbit
       @shutting_down
     end
 
+    #--------------------------------------------------------------------------
+
     def trap_signals
       [:INT, :QUIT, :TERM, :CHLD, :TTIN, :TTOU].each do |sig|
         trap(sig) do
-          signals << sig
+          signals.enqueue(sig)
         end
       end
     end
 
-    #==========================================================================
+    #--------------------------------------------------------------------------
 
     def load_app
       @app, options = Rack::Builder.parse_file(config.rackup)
     end
 
-    #==========================================================================
+    #--------------------------------------------------------------------------
 
   end
 end

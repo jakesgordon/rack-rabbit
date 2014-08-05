@@ -28,10 +28,14 @@ server that subscribes to a RabbitMQ queue
 
     rack-rabbit --queue myqueue --workers 5 config.ru
 
+Supported Platforms
+===================
+
+Nothing formal yet, development is happening on MRI 2.1.2p95
+
 TODO
 ====
 
- * allow master to block until signal needs processing (instead of sleep(1) + poll)
  * running rack apps
  * better signal handling - TTIN/TTOU to add/remove workers
  * better signal handling - differentiate between QUIT, TERM, and INT

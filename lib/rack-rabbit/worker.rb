@@ -18,7 +18,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def run
-      logger.info "RUNNING"
+      logger.info "STARTED a new worker with PID #{Process.pid}"
       trap_signals
       while true
         sleep 10 # TODO: implement rabbit subscribe queue
@@ -35,7 +35,7 @@ module RackRabbit
           #            - do it in a thread instead (and wait for thread to finish before exiting)
           #            - THIS IS ALL SORTS OF BAD (deadlockable)
           #            - so TODO - refactor worker to use a signal Q (like server) to allow us to log and exit at a more leisurely pace
-          tr = Thread.new{ logger.info sig }
+          tr = Thread.new{ logger.info "#{sig} worker #{Process.pid}" }
           tr.join
           exit
         end
