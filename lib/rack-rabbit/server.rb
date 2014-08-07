@@ -34,7 +34,7 @@ module RackRabbit
     def run
       trap_server_signals
       load_app
-      logger.info "RUNNING #{app} (#{config.rackup}) for queue #{config.queue}"
+      logger.info "RUNNING #{app} (#{config.rack_file}) for queue #{config.queue}"
       maintain_worker_count
       manage_workers
     end
@@ -165,7 +165,7 @@ module RackRabbit
     #==========================================================================
 
     def load_app
-      @app, options = Rack::Builder.parse_file(config.rackup)
+      @app, options = Rack::Builder.parse_file(config.rack_file)
     end
 
     #--------------------------------------------------------------------------

@@ -11,21 +11,23 @@ require 'optparse'
 action  = :run
 options = { }
 
+config_help    = "specify the rack-rabbit configuration file"
 queue_help     = "specify the queue to subscribe for incoming requests"
 workers_help   = "specify the number of worker processes"
 log_level_help = "specify the log level for rack rabbit output"
 
 op = OptionParser.new
-op.banner = "#{RackRabbit::SUMMARY}\n\nUsage: rack-rabbit [options] [rackup config file]"
+op.banner = "#{RackRabbit::SUMMARY}\n\nUsage: rack-rabbit [options] rack-file"
 
 op.on("-h", "--help")                            { action = :help    }
 op.on("-v", "--version")                         { action = :version }
-op.on("-q", "--queue QUEUE",   queue_help)       { |value| options[:queue]     = value      }
-op.on("-w", "--workers COUNT", workers_help)     { |value| options[:workers]   = value.to_i }
-op.on("-l", "--log-level LEVEL", log_level_help) { |value| options[:log_level] = value      }
+op.on("-c", "--config CONFIG", config_help)      { |value| options[:config_file] = value      }
+op.on("-q", "--queue QUEUE",   queue_help)       { |value| options[:queue]       = value      }
+op.on("-w", "--workers COUNT", workers_help)     { |value| options[:workers]     = value.to_i }
+op.on("-l", "--log-level LEVEL", log_level_help) { |value| options[:log_level]   = value      }
 op.parse!(ARGV)
 
-options[:rackup] = ARGV[0] unless ARGV.empty?
+options[:rack_file] = ARGV[0] unless ARGV.empty?
 
 case action
 when :help    then puts op.to_s

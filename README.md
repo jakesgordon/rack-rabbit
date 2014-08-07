@@ -85,7 +85,6 @@ TODO
  * better signal handling in workers (use similar signal Q and remove threading log hack)
  * after fork hook intergration points
  * daemonizing
- * config file
  * documentation
  * testing
  * client side wrapper

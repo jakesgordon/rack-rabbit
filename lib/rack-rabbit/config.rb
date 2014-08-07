@@ -7,64 +7,60 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def initialize(options)
-
       @options = options || {}
+      reload
+    end
 
-      @options[:logger] ||= build_default_logger
-
-      raise ArgumentError, "missing rackup file #{rackup}" unless File.readable?(rackup)
-
+    def reload
+      instance_eval(File.read(config_file), config_file) if config_file && File.exists?(config_file)
+      validate
     end
 
     #--------------------------------------------------------------------------
 
-    def rackup
-      @options[:rackup] || defaults[:rackup]
-    end
-
-    def logger
-      @options[:logger] || defaults[:logger]
-    end
-
-    def log_level
-      @options[:log_level] || defaults[:log_level]
-    end
-
-    def workers
-      @options[:workers] || defaults[:workers]
-    end
-
-    def min_workers
-      @options[:min_workers] || defaults[:min_workers]
-    end
-
-    def max_workers
-      @options[:max_workers] || defaults[:max_workers]
-    end
-
-    def queue
-      @options[:queue] || defaults[:queue]
-    end
-
-    def app_id
-      @options[:app_id] || defaults[:app_id]
+    def self.has_option(name, options = {})
+      name    = name.to_sym 
+      default = options[:default]
+      define_method name do |value = :not_provided|
+        if value != :not_provided
+          @options[name] = value
+        elsif @options[name].nil?
+          if default.respond_to?(:call)
+            @options[name] = instance_exec(&default)
+          else
+            @options[name] = default
+          end
+        end
+        @options[name]
+      end
     end
 
     #--------------------------------------------------------------------------
 
-    def defaults
-      @defaults ||= {
-        :rackup      => 'config.ru',
-        :log_level   => :info,
-        :workers     => 2,
-        :min_workers => 1,
-        :max_workers => 100,
-        :queue       => 'rack-rabbit',
-        :app_id      => 'rack-rabbit'
-      }
-    end
+    has_option :config_file
+    has_option :rack_file,   :default => 'config.ru'
+    has_option :queue,       :default => 'rack-rabbit'
+    has_option :app_id,      :default => 'rack-rabbit'
+    has_option :workers,     :default => 2
+    has_option :min_workers, :default => 1
+    has_option :max_workers, :default => 100
+    has_option :log_level,   :default => :info
+    has_option :logger,      :default => lambda{ build_default_logger }
 
     #--------------------------------------------------------------------------
+
+    private
+
+    def validate
+      raise ArgumentError, "missing rack config file #{rack_file}" unless File.readable?(rack_file)
+      raise ArgumentError, "invalid workers" unless workers.is_a?(Fixnum)
+      raise ArgumentError, "invalid min_workers" unless min_workers.is_a?(Fixnum)
+      raise ArgumentError, "invalid max_workers" unless max_workers.is_a?(Fixnum)
+      raise ArgumentError, "invalid workers < min_workers" if workers < min_workers
+      raise ArgumentError, "invalid workers > max_workers" if workers > max_workers
+      raise ArgumentError, "invalid min_workers > max_workers" if min_workers > max_workers
+      raise ArgumentError, "invalid logger" unless logger.respond_to?(:fatal) && logger.respond_to?(:error) && logger.respond_to?(:warn) && logger.respond_to?(:info) && logger.respond_to?(:debug)
+    end
 
     def build_default_logger
       master_pid = $$
