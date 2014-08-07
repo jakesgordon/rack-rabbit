@@ -44,6 +44,7 @@ module RackRabbit
     has_option :workers,     :default => 2
     has_option :min_workers, :default => 1
     has_option :max_workers, :default => 100
+    has_option :preload_app, :default => false
     has_option :log_level,   :default => :info
     has_option :logger,      :default => lambda{ build_default_logger }
 

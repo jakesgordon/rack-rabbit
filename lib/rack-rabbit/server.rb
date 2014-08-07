@@ -34,7 +34,7 @@ module RackRabbit
 
     def run
       trap_server_signals
-      load_app
+      load_app if config.preload_app
       logger.info "RUNNING #{app} (#{config.rack_file}) for queue #{config.queue}"
       maintain_worker_count
       manage_workers
@@ -79,8 +79,8 @@ module RackRabbit
     def reload
       logger.info "RELOADING"
       config.reload
-      load_app
-      kill_workers(:QUIT)  # they will respawn automatically
+      load_app if config.preload_app
+      kill_all_workers(:QUIT)  # they will respawn automatically
     end
 
     def maintain_worker_count
@@ -97,6 +97,7 @@ module RackRabbit
     def spawn_worker
       worker_pids << fork do
         signals.close
+        load_app unless config.preload_app
         worker = Worker.new(self, app)
         config.after_fork(self, worker)
         worker.run
@@ -107,8 +108,8 @@ module RackRabbit
       kill_worker(sig, worker_pids.sample) # choose a random wpid
     end
 
-    def kill_workers(sig)
-      worker_pids.each {|wpid| kill_worker(sig, wpid)}
+    def kill_all_workers(sig)
+      kill_worker(sig, worker_pids.last) until worker_pids.empty?
     end
 
     def kill_worker(sig, wpid)
@@ -131,7 +132,7 @@ module RackRabbit
 
     def shutdown(sig)
       @shutting_down = true
-      kill_workers(sig)
+      kill_all_workers(sig)
       Process.waitall
       logger.info "#{friendly_signal(sig)} server"
       exit
