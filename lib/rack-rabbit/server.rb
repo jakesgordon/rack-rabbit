@@ -87,7 +87,9 @@ module RackRabbit
       worker_pids << fork do
         trap_worker_signals
         signals.close
-        Worker.new(self, app).run
+        worker = Worker.new(self, app)
+        config.after_fork(self, worker)
+        worker.run
       end
     end
 

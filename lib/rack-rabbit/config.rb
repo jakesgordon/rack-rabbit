@@ -49,6 +49,16 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
+    def after_fork(server = nil, worker = nil, &block)
+      if block_given?
+        @options[:after_fork] = block
+      elsif @options[:after_fork].respond_to?(:call)
+        @options[:after_fork].call(server, worker)
+      end
+    end
+
+    #--------------------------------------------------------------------------
+
     private
 
     def validate
