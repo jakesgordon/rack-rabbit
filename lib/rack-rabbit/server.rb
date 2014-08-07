@@ -19,8 +19,8 @@ module RackRabbit
                 :worker_count,
                 :signals
 
-    def initialize(rackup, options)
-      @config       = Config.new(rackup, options)
+    def initialize(options)
+      @config       = Config.new(options)
       @logger       = config.logger
       @server_pid   = $$
       @worker_pids  = []

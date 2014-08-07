@@ -6,20 +6,21 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    attr_reader :rackup
+    def initialize(options)
 
-    def initialize(rackup, options)
-
-      @rackup  = rackup  || 'config.ru'
       @options = options || {}
 
       @options[:logger] ||= build_default_logger
 
-      raise ArgumentError, "missing rackup file #{@rackup}" unless File.readable?(@rackup)
+      raise ArgumentError, "missing rackup file #{rackup}" unless File.readable?(rackup)
 
     end
 
     #--------------------------------------------------------------------------
+
+    def rackup
+      @options[:rackup] || defaults[:rackup]
+    end
 
     def logger
       @options[:logger] || defaults[:logger]
@@ -53,6 +54,7 @@ module RackRabbit
 
     def defaults
       @defaults ||= {
+        :rackup      => 'config.ru',
         :log_level   => :info,
         :workers     => 2,
         :min_workers => 1,

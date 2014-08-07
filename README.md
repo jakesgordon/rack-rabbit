@@ -1,6 +1,8 @@
 Rack Rabbit (v0.0.1)
 ====================
 
+**WARNING**: This library is in very, very early development
+
 A Unicorn-style preforking server for hosting RabbitMQ consumer processes as load balanced rack applications.
 
     $ rack-rabbit --queue myqueue --workers 4 app/config.ru
@@ -21,8 +23,6 @@ The goal is to support a RabbitMQ-based SOA architecture that has multiple messa
   * Asynchronous Worker queue (e.g. ENQUEUE)
   * Asynchronous PubSub (e.g. PUBLISH)
   * Asynchronous Broadcast (e.g. BROADCAST)
-
-*WARNING*: This library is in very, very early development
 
 Installation
 ============

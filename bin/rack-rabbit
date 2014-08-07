@@ -9,11 +9,7 @@ require 'optparse'
 
 
 action  = :run
-options = {
-  :queue     => 'rack-rabbit',
-  :workers   => 2,
-  :log_level => :info
-}
+options = { }
 
 queue_help     = "specify the queue to subscribe for incoming requests"
 workers_help   = "specify the number of worker processes"
@@ -29,9 +25,11 @@ op.on("-w", "--workers COUNT", workers_help)     { |value| options[:workers]   =
 op.on("-l", "--log-level LEVEL", log_level_help) { |value| options[:log_level] = value      }
 op.parse!(ARGV)
 
+options[:rackup] = ARGV[0] unless ARGV.empty?
+
 case action
 when :help    then puts op.to_s
 when :version then puts RackRabbit::VERSION
 else
-  RackRabbit.run!(ARGV[0] || 'config.ru', options)
+  RackRabbit.run!(options)
 end
