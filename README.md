@@ -65,13 +65,13 @@ TODO: support (and document) a detailed configuration file
 Signals
 =======
 
-TODO: document signals
+Signals should be sent to the master process
 
-  * QUIT - quit
-  * TERM - terminate
-  * INT  - interrupt
-  * TTIN - increase worker count
-  * TTOU - decrease worker count
+  * HUP - reload config file and gracefully restart all workers (NOT IMPLEMENTED YET)
+  * TERM/INT - quick shutdown kills all workers immediately
+  * QUIT - graceful shutdown, waits for workers to finish their current request before finishing
+  * TTIN - increase the number of worker processes by one
+  * TTOU - decrease the number of worker processes by one
 
 Supported Platforms
 ===================
@@ -81,7 +81,7 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ====
 
- * better signal handling - differentiate between QUIT, TERM, and INT
+ * better signal handling - HUP
  * daemonizing
  * documentation
  * testing

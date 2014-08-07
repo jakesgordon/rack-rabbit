@@ -18,6 +18,7 @@ module RackRabbit
                 :config,
                 :logger,
                 :signals,
+                :lock,
                 :app
 
     def initialize(server, app)
@@ -25,6 +26,7 @@ module RackRabbit
       @config  = server.config
       @logger  = server.logger
       @signals = Signals.new
+      @lock    = Mutex.new
       @app     = app
     end
 
@@ -39,11 +41,13 @@ module RackRabbit
       conn, channel, exchange, queue = connect_to_rabbit
 
       queue.subscribe do |delivery_info, properties, payload|
-        request  = Request.new(delivery_info, properties, payload)
-        response = handle(request)
-        if request.should_reply?
-          exchange.publish(response.body, response_properties(request, response))
-        end
+        lock.synchronize {
+          request  = Request.new(delivery_info, properties, payload)
+          response = handle(request)
+          if request.should_reply?
+            exchange.publish(response.body, response_properties(request, response))
+          end
+        }
       end
 
       while true
@@ -65,6 +69,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def shutdown(sig)
+      lock.lock if sig == :QUIT # graceful shutdown should wait for any pending request handler to finish
       logger.info "#{friendly_signal(sig)} worker #{Process.pid}"
       exit
     end
