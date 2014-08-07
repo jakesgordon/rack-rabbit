@@ -45,7 +45,54 @@ Usage
 Use the `rack-rabbit` command line script to host your Rack app in a preforking
 server that subscribes to a RabbitMQ queue
 
-    $ rack-rabbit --queue myqueue --workers 4 app/config.ru
+    $ rack-rabbit --help
+
+    Usage: rack-rabbit [options] rack-file
+        -h, --help
+        -v, --version
+        -c, --config CONFIG         specify the rack-rabbit configuration file
+        -q, --queue  QUEUE          specify the queue to subscribe for incoming requests
+        -w, --workers COUNT         specify the number of worker processes
+        -l, --log-level LEVEL       specify the log level for rack rabbit output
+
+Examples:
+
+    $ rack-rabbit app/config.ru
+    $ rack-rabbit app/config.ru --queue app.queue --workers 4
+    $ rack-rabbit app/config.ru --config app/config/rack-rabbit.conf.rb
+
+Configuration
+=============
+
+Detailed RackRabbit configuration can be provided by an external config file using the `--config` option
+
+    # set the Rack application to be used to handle messages (default 'config.ru'):
+    rack_file 'app/config.ru'
+
+    # set the queue to subscribe to (default 'rack-rabbit'):
+    queue 'app.queue'
+
+    # set the initial number of worker processes (default 2):
+    workers
+
+    # set the minimum number of worker processes (default: 1):
+    min_workers
+
+    # set the maximum number of worker processes (default: 100):
+    max_workers
+
+    # preload the Rack app in the server for faster worker forking (default: false):
+    preload_app true
+
+    # set the log level for the Rack Rabbit logger (default: info)
+    log_level
+
+    # set the Logger to used by the Rack Rabbit server and the worker Rack applications (default: Logger)
+    logger
+
+    # set the app_id used to identify your application in response messages
+    #
+    app_id
 
 Client Library
 ==============
@@ -57,21 +104,29 @@ TODO: build a little rabbitMQ/Bunny client to support different message patterns
   * Asynchronous PubSub (e.g. PUBLISH)
   * Asynchronous Broadcast (e.g. BROADCAST)
 
-Configuration
-=============
-
-TODO: support (and document) a detailed configuration file
-
 Signals
 =======
 
 Signals should be sent to the master process
 
-  * HUP - reload config file
-  * TERM/INT - quick shutdown kills all workers immediately
+  * HUP - reload the RackRabbit config file and gracefully restart all workers
   * QUIT - graceful shutdown, waits for workers to finish their current request before finishing
+  * TERM - quick shutdown kills all workers immediately
+  * INT  - quick shutdown kills all workers immediately
   * TTIN - increase the number of worker processes by one
   * TTOU - decrease the number of worker processes by one
+
+Forking Worker Processes
+========================
+
+TODO: talk about the need for `:after_fork` configuration (same as Unicorn)
+
+    # provide a block to execute after each worker process is forked:
+    #
+    after_fork do |server, worker|
+      ... worker app specific initialization here
+    end
+
 
 Supported Platforms
 ===================
