@@ -32,7 +32,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def run
-      trap_signals
+      trap_server_signals
       load_app
       logger.info "RUNNING #{app} (#{config.rackup}) for queue #{config.queue}"
       maintain_worker_count
@@ -85,6 +85,7 @@ module RackRabbit
 
     def spawn_worker
       worker_pids << fork do
+        trap_worker_signals
         signals.close
         Worker.new(self, app).run
       end
@@ -125,17 +126,43 @@ module RackRabbit
       @shutting_down
     end
 
-    #--------------------------------------------------------------------------
+    #==========================================================================
+    # SIGNAL HANDLING
+    #==========================================================================
 
-    def trap_signals
+    def trap_server_signals
+
       [:INT, :QUIT, :TERM, :CHLD, :TTIN, :TTOU].each do |sig|
         trap(sig) do
           signals.push(sig)
         end
       end
+
     end
 
     #--------------------------------------------------------------------------
+
+    def trap_worker_signals
+
+      [:QUIT, :TERM, :INT].each do |sig|
+        trap(sig) do
+          exit
+        end
+      end
+
+      [:CHLD].each do |sig|
+        trap(sig, :DEFAULT)
+      end
+
+      [:TTIN, :TTOU].each do |sig|
+        trap(sig, nil)
+      end
+
+    end
+
+    #==========================================================================
+    # RACK APP HANDLING
+    #==========================================================================
 
     def load_app
       @app, options = Rack::Builder.parse_file(config.rackup)

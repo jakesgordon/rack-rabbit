@@ -26,7 +26,6 @@ module RackRabbit
 
     def run
       logger.info "STARTED a new worker with PID #{Process.pid}"
-      trap_signals
       conn, channel, exchange, queue = connect_to_rabbit
       queue.subscribe(:block => true) do |delivery_info, properties, payload|
         request  = Request.new(delivery_info, properties, payload)
@@ -113,22 +112,6 @@ module RackRabbit
     end
 
     #--------------------------------------------------------------------------
-
-    def trap_signals
-
-      [:QUIT, :TERM, :INT].each do |sig|
-        trap(sig) do
-          exit
-        end
-      end
-
-      [:CHLD, :TTIN, :TTOU].each do |sig|
-        trap(sig, :DEFAULT)
-      end
-
-    end
-
-    #==========================================================================
 
   end
 end
