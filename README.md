@@ -82,7 +82,6 @@ TODO
 ====
 
  * better signal handling - differentiate between QUIT, TERM, and INT
- * better signal handling in workers (use similar signal Q and remove threading log hack)
  * daemonizing
  * documentation
  * testing

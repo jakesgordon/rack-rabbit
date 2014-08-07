@@ -2,6 +2,8 @@ require 'bunny'
 require 'json'
 require 'rack'
 
+require 'rack-rabbit/signals'
+require 'rack-rabbit/helpers'
 require 'rack-rabbit/request'
 require 'rack-rabbit/response'
 
@@ -10,33 +12,61 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
+    include Helpers
+
     attr_reader :server,
                 :config,
                 :logger,
+                :signals,
                 :app
 
     def initialize(server, app)
-      @server = server
-      @config = server.config
-      @logger = server.logger
-      @app    = app
+      @server  = server
+      @config  = server.config
+      @logger  = server.logger
+      @signals = Signals.new
+      @app     = app
     end
 
     #--------------------------------------------------------------------------
 
     def run
+
       logger.info "STARTED a new worker with PID #{Process.pid}"
+
+      trap_signals
+
       conn, channel, exchange, queue = connect_to_rabbit
-      queue.subscribe(:block => true) do |delivery_info, properties, payload|
+
+      queue.subscribe do |delivery_info, properties, payload|
         request  = Request.new(delivery_info, properties, payload)
         response = handle(request)
         if request.should_reply?
           exchange.publish(response.body, response_properties(request, response))
         end
       end
+
+      while true
+        sig = signals.pop   # BLOCKS until there is a signal
+        case sig
+        when :INT  then shutdown(:INT)
+        when :QUIT then shutdown(:QUIT)
+        when :TERM then shutdown(:TERM)
+        else
+          raise RuntimeError, "unknown signal #{sig}"
+        end
+      end
+
     ensure
       channel.close unless channel.nil?
       conn.close unless conn.nil?
+    end
+
+    #--------------------------------------------------------------------------
+
+    def shutdown(sig)
+      logger.info "#{friendly_signal(sig)} worker #{Process.pid}"
+      exit
     end
 
     #--------------------------------------------------------------------------
@@ -109,6 +139,22 @@ module RackRabbit
         'rack.url_scheme'   => 'http',
         'SERVER_NAME'       => config.app_id
       }
+    end
+
+    #--------------------------------------------------------------------------
+
+    def trap_signals  # overwrite the handlers inherited from the server process
+
+      [:QUIT, :TERM, :INT].each do |sig|
+        trap(sig) do
+          signals.push(sig)
+        end
+      end
+
+      trap(:CHLD, :DEFAULT)
+      trap(:TTIN, nil)
+      trap(:TTOU, nil)
+
     end
 
     #--------------------------------------------------------------------------

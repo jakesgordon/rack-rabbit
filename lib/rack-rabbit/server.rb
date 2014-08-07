@@ -2,6 +2,7 @@ require 'rack/builder'
 require 'rack/server'
 
 require 'rack-rabbit/config'
+require 'rack-rabbit/helpers'
 require 'rack-rabbit/signals'
 require 'rack-rabbit/worker'
 
@@ -9,6 +10,8 @@ module RackRabbit
   class Server
 
     #--------------------------------------------------------------------------
+
+    include Helpers
 
     attr_reader :app,
                 :config,
@@ -85,7 +88,6 @@ module RackRabbit
 
     def spawn_worker
       worker_pids << fork do
-        trap_worker_signals
         signals.close
         worker = Worker.new(self, app)
         config.after_fork(self, worker)
@@ -117,10 +119,10 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def shutdown(sig)
-      logger.info "SHUTDOWN (#{sig})"
       @shutting_down = true
       kill_workers(sig)
       Process.waitall
+      logger.info "#{friendly_signal(sig)} server"
       exit
     end
 
@@ -138,26 +140,6 @@ module RackRabbit
         trap(sig) do
           signals.push(sig)
         end
-      end
-
-    end
-
-    #--------------------------------------------------------------------------
-
-    def trap_worker_signals
-
-      [:QUIT, :TERM, :INT].each do |sig|
-        trap(sig) do
-          exit
-        end
-      end
-
-      [:CHLD].each do |sig|
-        trap(sig, :DEFAULT)
-      end
-
-      [:TTIN, :TTOU].each do |sig|
-        trap(sig, nil)
       end
 
     end
