@@ -38,9 +38,12 @@ module RackRabbit
       awaken
     end
 
-    def pop
+    def pop(options = {})
       raise RuntimeError, "closed" if closed?
-      hibernate if @queue.empty?
+      if @queue.empty?
+        status = hibernate(options[:timeout])
+        return status unless status == :awake
+      end
       @queue.shift
     end
 
@@ -51,8 +54,9 @@ module RackRabbit
     end
 
     def hibernate(seconds = nil)
-      return unless IO.select([@reader], nil, nil, seconds)
+      return :timeout unless IO.select([@reader], nil, nil, seconds)
       @reader.readchar 
+      :awake
     end
 
   end
