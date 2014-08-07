@@ -67,7 +67,7 @@ Signals
 
 Signals should be sent to the master process
 
-  * HUP - reload config file and gracefully restart all workers (NOT IMPLEMENTED YET)
+  * HUP - reload config file
   * TERM/INT - quick shutdown kills all workers immediately
   * QUIT - graceful shutdown, waits for workers to finish their current request before finishing
   * TTIN - increase the number of worker processes by one
@@ -81,7 +81,6 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ====
 
- * better signal handling - HUP
  * daemonizing
  * documentation
  * testing

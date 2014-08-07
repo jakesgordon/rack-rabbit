@@ -18,8 +18,7 @@ module RackRabbit
                 :logger,
                 :server_pid,
                 :worker_pids,
-                :fired_pids,
-                :worker_count,
+                :killed_pids,
                 :signals
 
     def initialize(options)
@@ -27,8 +26,7 @@ module RackRabbit
       @logger       = config.logger
       @server_pid   = $$
       @worker_pids  = []
-      @fired_pids   = []
-      @worker_count = config.workers
+      @killed_pids  = []
       @signals      = Signals.new
     end
 
@@ -54,14 +52,17 @@ module RackRabbit
         when :QUIT then shutdown(:QUIT)
         when :TERM then shutdown(:TERM)
 
+        when :HUP
+          reload
+
         when :CHLD
           reap_workers
 
         when :TTIN
-          @worker_count = [config.max_workers, worker_count + 1].min
+          config.workers [config.max_workers, config.workers + 1].min
 
         when :TTOU
-          @worker_count = [config.min_workers, worker_count - 1].max
+          config.workers [config.min_workers, config.workers - 1].max
 
         else
           raise RuntimeError, "unknown signal #{sig}"
@@ -75,11 +76,18 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
+    def reload
+      logger.info "RELOADING"
+      config.reload
+      load_app
+      kill_workers(:QUIT)  # they will respawn automatically
+    end
+
     def maintain_worker_count
       unless shutting_down?
-        diff = worker_pids.length - worker_count
+        diff = worker_pids.length - config.workers
         if diff > 0
-          diff.times { fire_random_worker }
+          diff.times { kill_random_worker(:QUIT) }
         elsif diff < 0
           (-diff).times { spawn_worker }
         end
@@ -95,15 +103,18 @@ module RackRabbit
       end
     end
 
-    def fire_random_worker
-      wpid = worker_pids.sample   # choose a random wpid
-      worker_pids.delete(wpid)
-      fired_pids.push(wpid)
-      Process.kill(:QUIT, wpid)
+    def kill_random_worker(sig)
+      kill_worker(sig, worker_pids.sample) # choose a random wpid
     end
 
     def kill_workers(sig)
-      worker_pids.each {|wpid| Process.kill(sig, wpid)}
+      worker_pids.each {|wpid| kill_worker(sig, wpid)}
+    end
+
+    def kill_worker(sig, wpid)
+      worker_pids.delete(wpid)
+      killed_pids.push(wpid)
+      Process.kill(sig, wpid)
     end
 
     def reap_workers
@@ -111,7 +122,7 @@ module RackRabbit
         wpid = Process.waitpid(-1, Process::WNOHANG)
         return if wpid.nil?
         worker_pids.delete(wpid)
-        fired_pids.delete(wpid)
+        killed_pids.delete(wpid)
       end
       rescue Errno::ECHILD
     end
@@ -136,7 +147,7 @@ module RackRabbit
 
     def trap_server_signals
 
-      [:INT, :QUIT, :TERM, :CHLD, :TTIN, :TTOU].each do |sig|
+      [:HUP, :INT, :QUIT, :TERM, :CHLD, :TTIN, :TTOU].each do |sig|
         trap(sig) do
           signals.push(sig)
         end
