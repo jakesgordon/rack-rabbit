@@ -58,6 +58,7 @@ module RackRabbit
     has_option :preload_app, :default => false
     has_option :log_level,   :default => :info
     has_option :logger,      :default => lambda{ build_default_logger }
+    has_option :client,      :default => lambda{ require 'rack-rabbit/client/bunny'; RackRabbit::Client::Bunny }
 
     has_hook :before_fork
     has_hook :after_fork
@@ -74,7 +75,8 @@ module RackRabbit
       raise ArgumentError, "invalid workers < min_workers" if workers < min_workers
       raise ArgumentError, "invalid workers > max_workers" if workers > max_workers
       raise ArgumentError, "invalid min_workers > max_workers" if min_workers > max_workers
-      raise ArgumentError, "invalid logger" unless logger.respond_to?(:fatal) && logger.respond_to?(:error) && logger.respond_to?(:warn) && logger.respond_to?(:info) && logger.respond_to?(:debug)
+      raise ArgumentError, "invalid logger" unless [:fatal, :error, :warn, :info, :debug].all?{|method| logger.respond_to?(method)}
+      raise ArgumentError, "invalid rabbitMQ client" unless [:connect, :disconnect, :subscribe, :publish].all?{|method| client.new.respond_to?(method)}
     end
 
     def build_default_logger

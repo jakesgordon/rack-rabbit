@@ -100,10 +100,13 @@ Detailed RackRabbit configuration can be provided by an external config file usi
     #
     app_id
 
+    # use a different rabbitMQ client adapter (default: RackRabbit::Client::Bunny)
+    client RackRabbit::Client::AMQP
+
 Client Library
 --------------
 
-TODO: build a little rabbitMQ/Bunny client to support different message patterns that the workers can consume
+TODO: build a little rabbitMQ client to support different message patterns that the workers can consume
 
   * Synchronous Request/Response a-la-HTTP (e.g. GET/POST/PUT/HEAD/DELETE)
   * Asynchronous Worker queue (e.g. ENQUEUE)
@@ -151,7 +154,7 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ----
 
- * extract bunny code from worker and provide adapter layer to allow switch to AMQP gem (or a mock transport for testing)
+ * provide AMQP gem client adapter
  * client library
  * daemonizing
  * testing

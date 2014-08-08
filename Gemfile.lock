@@ -2,11 +2,16 @@ GEM
   remote: http://rubygems.org/
   specs:
     amq-protocol (1.9.2)
+    amqp (1.4.1)
+      amq-protocol (>= 1.9.2)
+      eventmachine
     bunny (1.4.0)
       amq-protocol (>= 1.9.2)
+    eventmachine (1.0.3)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  bunny (~> 1.4)
+  amqp
+  bunny

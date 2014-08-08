@@ -21,7 +21,4 @@ Gem::Specification.new do |s|
   s.require_paths    = ["lib"]
   s.licenses         = ["MIT"]
 
-  s.add_dependency('bunny', '~> 1.4')
-
-
 end

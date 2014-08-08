@@ -1,4 +1,3 @@
-require 'bunny'
 require 'json'
 require 'rack'
 
@@ -19,6 +18,7 @@ module RackRabbit
                 :logger,
                 :signals,
                 :lock,
+                :rabbit,
                 :app
 
     def initialize(server, app)
@@ -27,6 +27,7 @@ module RackRabbit
       @logger  = server.logger
       @signals = Signals.new
       @lock    = Mutex.new
+      @rabbit  = config.client.new
       @app     = app
     end
 
@@ -38,14 +39,12 @@ module RackRabbit
 
       trap_signals
 
-      conn, channel, exchange, queue = connect_to_rabbit
-
-      queue.subscribe do |delivery_info, properties, payload|
+      rabbit.connect
+      rabbit.subscribe(config.queue) do |request|
         lock.synchronize {
-          request  = Request.new(delivery_info, properties, payload)
           response = handle(request)
           if request.should_reply?
-            exchange.publish(response.body, response_properties(request, response))
+            rabbit.publish(response.body, response_properties(request, response))
           end
         }
       end
@@ -62,8 +61,8 @@ module RackRabbit
       end
 
     ensure
-      channel.close unless channel.nil?
-      conn.close unless conn.nil?
+      rabbit.disconnect
+
     end
 
     #--------------------------------------------------------------------------
@@ -72,18 +71,6 @@ module RackRabbit
       lock.lock if sig == :QUIT # graceful shutdown should wait for any pending request handler to finish
       logger.info "#{friendly_signal(sig)} worker #{Process.pid}"
       exit
-    end
-
-    #--------------------------------------------------------------------------
-
-    def connect_to_rabbit
-      conn = Bunny.new
-      conn.start
-      channel = conn.create_channel
-      exchange = channel.default_exchange
-      queue    = channel.queue(config.queue)
-      channel.prefetch(1)
-      [ conn, channel, exchange, queue ]
     end
 
     #--------------------------------------------------------------------------

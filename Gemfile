@@ -1,4 +1,6 @@
 source "http://rubygems.org"
 
-gem "bunny", "~> 1.4"
-
+group :development do
+  gem "bunny"
+  gem "amqp"
+end
