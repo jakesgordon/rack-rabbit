@@ -1,12 +1,9 @@
 Rack Rabbit (v0.0.1)
 ====================
 
-Summary
--------
-
 **WARNING**: This library is in very, very early development
 
-A Unicorn-style preforking server for hosting RabbitMQ consumer processes as load balanced rack applications.
+A preforking server for hosting RabbitMQ consumer processes as load balanced rack applications.
 
     $ rack-rabbit --queue myqueue --workers 4 app/config.ru
 
@@ -79,26 +76,26 @@ Detailed RackRabbit configuration can be provided by an external config file usi
     queue 'app.queue'
 
     # set the initial number of worker processes (default 2):
-    workers
+    workers 8
 
     # set the minimum number of worker processes (default: 1):
-    min_workers
+    min_workers 1
 
     # set the maximum number of worker processes (default: 100):
-    max_workers
+    max_workers 16
 
     # preload the Rack app in the server for faster worker forking (default: false):
     preload_app true
 
     # set the log level for the Rack Rabbit logger (default: info)
-    log_level
+    log_level 'debug'
 
     # set the Logger to used by the Rack Rabbit server and the worker Rack applications (default: Logger)
-    logger
+    logger MyLogger.new
 
     # set the app_id used to identify your application in response messages
     #
-    app_id
+    app_id 'My Application'
 
 Client Library
 --------------
