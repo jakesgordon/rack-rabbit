@@ -32,6 +32,7 @@ Installation
 
 Eventually, installation will be via rubygems:
 
+    $ gem install bunny                # or an alternative rabbitMQ cient library (e.g. AMQP)
     $ gem install rack-rabbit
 
 ... but since the gem has not been officially published yet, for now you need to build it yourself:
@@ -151,7 +152,6 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ----
 
- * provide AMQP gem client adapter
  * client library
  * daemonizing
  * testing
