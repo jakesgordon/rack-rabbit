@@ -35,6 +35,17 @@ module RackRabbit
       end
     end
 
+    def self.has_hook(name)
+      name = name.to_sym
+      define_method name do |*params, &block|
+        if block
+          @options[name] = block
+        elsif @options[name].respond_to?(:call)
+          @options[name].call(*params)
+        end
+      end
+    end
+
     #--------------------------------------------------------------------------
 
     has_option :config_file
@@ -48,15 +59,8 @@ module RackRabbit
     has_option :log_level,   :default => :info
     has_option :logger,      :default => lambda{ build_default_logger }
 
-    #--------------------------------------------------------------------------
-
-    def after_fork(server = nil, worker = nil, &block)
-      if block_given?
-        @options[:after_fork] = block
-      elsif @options[:after_fork].respond_to?(:call)
-        @options[:after_fork].call(server, worker)
-      end
-    end
+    has_hook :before_fork
+    has_hook :after_fork
 
     #--------------------------------------------------------------------------
 

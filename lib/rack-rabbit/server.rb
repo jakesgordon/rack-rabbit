@@ -95,6 +95,7 @@ module RackRabbit
     end
 
     def spawn_worker
+      config.before_fork(self)
       worker_pids << fork do
         signals.close
         load_app unless config.preload_app

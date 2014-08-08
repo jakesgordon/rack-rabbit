@@ -1,11 +1,17 @@
 Rack Rabbit (v0.0.1)
 ====================
 
+Summary
+-------
+
 **WARNING**: This library is in very, very early development
 
 A Unicorn-style preforking server for hosting RabbitMQ consumer processes as load balanced rack applications.
 
     $ rack-rabbit --queue myqueue --workers 4 app/config.ru
+
+Description
+-----------
 
 Building an SOA ? Using RabbitMQ ? Want an easy way to host and load balance your consumers ?
 
@@ -25,7 +31,7 @@ The goal is to support a RabbitMQ-based SOA architecture that has multiple messa
   * Asynchronous Broadcast (e.g. BROADCAST)
 
 Installation
-============
+------------
 
 Eventually, installation will be via rubygems:
 
@@ -40,7 +46,7 @@ Eventually, installation will be via rubygems:
     $ gem install rack-rabbit.gem
 
 Usage
-=====
+-----
 
 Use the `rack-rabbit` command line script to host your Rack app in a preforking
 server that subscribes to a RabbitMQ queue
@@ -62,7 +68,7 @@ Examples:
     $ rack-rabbit app/config.ru --config app/config/rack-rabbit.conf.rb
 
 Configuration
-=============
+-------------
 
 Detailed RackRabbit configuration can be provided by an external config file using the `--config` option
 
@@ -95,7 +101,7 @@ Detailed RackRabbit configuration can be provided by an external config file usi
     app_id
 
 Client Library
-==============
+--------------
 
 TODO: build a little rabbitMQ/Bunny client to support different message patterns that the workers can consume
 
@@ -105,7 +111,7 @@ TODO: build a little rabbitMQ/Bunny client to support different message patterns
   * Asynchronous Broadcast (e.g. BROADCAST)
 
 Signals
-=======
+-------
 
 Signals should be sent to the master process
 
@@ -117,37 +123,47 @@ Signals should be sent to the master process
   * TTOU - decrease the number of worker processes by one
 
 Forking Worker Processes
-========================
+------------------------
 
-TODO: talk about the need for `:after_fork` configuration (same as Unicorn)
+If you are using the `preload_app` directive, your app will be loaded into the master
+server process before any workers have forked. Therefore, you may need to re-initialize
+resources after each worker process forks, e.g if using ActiveRecord:
 
-    # provide a block to execute after each worker process is forked:
-    #
-    after_fork do |server, worker|
-      ... worker app specific initialization here
+    before_fork do |server|
+      # no need for connection in the server process
+      defined?(ActiveRecord::Base) and ActiveRecord::Base.connection.disconnect!
     end
 
+    after_fork do |server, worker|
+      # reestablish connection in each worker process
+      defined?(ActiveRecord::Base) and ActiveRecord::Base.establish_connection
+    end
+
+This should NOT be needed when the `preload_app` directive is false.
+
+>> _this is an issue with any preforking style server (e.g. Unicorn)_
 
 Supported Platforms
-===================
+-------------------
 
 Nothing formal yet, development is happening on MRI 2.1.2p95
 
 TODO
-====
+----
 
+ * extract bunny code from worker and provide adapter layer to allow switch to AMQP gem (or a mock transport for testing)
+ * client library
  * daemonizing
- * documentation
  * testing
- * client side wrapper
+ * platform support
 
 License
-=======
+-------
 
 See [LICENSE](https://github.com/jakesgordon/rack-rabbit/blob/master/LICENSE) file.
 
 Credits
-=======
+-------
 
 Thanks to [Jesse Storimer](http://www.jstorimer.com/) for his book
 [Working with Unix Processes](http://www.jstorimer.com/products/working-with-unix-processes)
@@ -158,7 +174,7 @@ example of a preforking server.
 Thanks to the [Bunny Team](http://rubybunny.info/) for providing an easy RabbitMQ Ruby client.
 
 Contact
-=======
+-------
 
 If you have any ideas, feedback, requests or bug reports, you can reach me at
 [jake@codeincomplete.com](mailto:jake@codeincomplete.com), or via
