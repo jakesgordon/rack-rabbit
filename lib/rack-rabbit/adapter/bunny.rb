@@ -4,6 +4,8 @@ rescue LoadError
   abort "missing 'bunny' gem"
 end
 
+require 'rack-rabbit/request'
+
 module RackRabbit
   module Adapter
     class Bunny
@@ -28,8 +30,8 @@ module RackRabbit
         connection.close unless connection.nil?
       end
 
-      def subscribe(queue_name, &block)
-        queue = channel.queue(queue_name)
+      def subscribe(queue, &block)
+        queue = channel.queue(queue) if queue.is_a?(Symbol) || queue.is_a?(String)
         queue.subscribe do |delivery_info, properties, payload|
           yield Request.new(delivery_info, properties, payload)
         end
@@ -37,6 +39,10 @@ module RackRabbit
 
       def publish(payload, properties)
         exchange.publish(payload, properties)
+      end
+
+      def create_exclusive_reply_queue
+        channel.queue("", :exclusive => true)
       end
 
     end

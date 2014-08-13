@@ -3,7 +3,7 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    attr_reader :message_id, :reply_to,
+    attr_reader :message_id, :reply_to, :correlation_id,
                 :body, :headers,
                 :method, :uri, :path, :query,
                 :content_type, :content_encoding, :content_length
@@ -11,6 +11,7 @@ module RackRabbit
     def initialize(info, properties, body)
       @message_id         = properties.message_id
       @reply_to           = properties.reply_to
+      @correlation_id     = properties.correlation_id
       @body               = body
       @headers            = properties.headers || {}
       @method             = properties.type || headers['method'] || "GET"

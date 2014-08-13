@@ -29,8 +29,8 @@ module RackRabbit
         stop_eventmachine
       end
 
-      def subscribe(queue_name, &block)
-        queue = channel.queue(queue_name)
+      def subscribe(queue, &block)
+        queue = channel.queue(queue) if queue.is_a?(Symbol) || queue.is_a?(String)
         queue.subscribe do |properties, payload|
           yield Request.new(nil, properties, payload)
         end
@@ -38,6 +38,10 @@ module RackRabbit
 
       def publish(payload, properties)
         exchange.publish(payload, properties)
+      end
+
+      def create_exclusive_reply_queue
+        channel.queue("", :exclusive => true, :auto_delete => true)
       end
 
       def start_eventmachine

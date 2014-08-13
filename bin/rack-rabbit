@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 
-LIB = File.expand_path("../lib", File.dirname(__FILE__))
-$LOAD_PATH.push LIB
+$LOAD_PATH.push File.expand_path("../lib", File.dirname(__FILE__)) # TODO: shouldn't need this
 
 require 'rack-rabbit'
 require 'optparse'

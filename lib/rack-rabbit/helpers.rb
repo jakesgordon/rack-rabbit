@@ -13,7 +13,7 @@ module RackRabbit
 
     def load_adapter(adapter)
       if adapter.is_a?(Symbol) || adapter.is_a?(String)
-        adapter = case adapter
+        adapter = case adapter.to_s.downcase.to_sym
                   when :bunny
                     require 'rack-rabbit/adapter/bunny'
                     RackRabbit::Adapter::Bunny
