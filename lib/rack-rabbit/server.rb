@@ -2,7 +2,6 @@ require 'rack/builder'
 require 'rack/server'
 
 require 'rack-rabbit/config'
-require 'rack-rabbit/helpers'
 require 'rack-rabbit/signals'
 require 'rack-rabbit/worker'
 

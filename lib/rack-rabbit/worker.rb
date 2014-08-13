@@ -2,7 +2,6 @@ require 'json'
 require 'rack'
 
 require 'rack-rabbit/signals'
-require 'rack-rabbit/helpers'
 require 'rack-rabbit/adapter'
 require 'rack-rabbit/request'
 require 'rack-rabbit/response'
