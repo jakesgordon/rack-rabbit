@@ -33,6 +33,14 @@ module RackRabbit
       request(queue, "POST", path, body, options)
     end
 
+    def put(queue, path, body, options = {})
+      request(queue, "PUT", path, body, options)
+    end
+
+    def delete(queue, path, options = {})
+      request(queue, "DELETE", path, "", options)
+    end
+
     #--------------------------------------------------------------------------
 
     def request(queue, method, path, body, options = {})
@@ -93,6 +101,24 @@ module RackRabbit
     def default_timestamp
       Time.now.to_i
     end
+
+    #--------------------------------------------------------------------------
+
+    def self.define_single_shot_method(method_name)
+      define_singleton_method(method_name) do |*params|
+        options  = params.last.is_a?(Hash) ? params.last : {}
+        client   = Client.new(options)
+        response = client.send(method_name, *params, options)
+        client.disconnect
+        response
+      end
+    end
+
+    define_single_shot_method :request
+    define_single_shot_method :get
+    define_single_shot_method :post
+    define_single_shot_method :put
+    define_single_shot_method :delete
 
     #--------------------------------------------------------------------------
 

@@ -43,7 +43,7 @@ module RackRabbit
       end
 
       def publish(payload, properties)
-        exchange.publish(payload, properties)
+        exchange.publish(payload || "", properties)
       end
 
       def with_reply_queue

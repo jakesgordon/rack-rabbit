@@ -10,22 +10,22 @@ A preforking server for hosting RabbitMQ consumer processes as load balanced rac
 Description
 -----------
 
-Building an SOA ? Using RabbitMQ ? Want an easy way to host and load balance your consumers ?
+Building an SOA ? Using RabbitMQ ? Want an easy way to host and load balance your consumer processes ?
 
 RackRabbit will...
 
-  * create, and manage, a cluster of worker processes that will each
-  * subscribe to a RabbitMQ queue
-  * convert the rabbitMQ message into a suitable Rack environment
-  * call your Rack app to fulfil the request
-  * (optionally) publish the response back to the original caller (if a `reply_to` queue was provided)
+  * Create, and manage, a cluster of worker processes that will each...
+  * Subscribe to a queue
+  * Convert the message into a suitable Rack environment
+  * Call your Rack app to fulfil the request
+  * Publish the response back to the original caller (optionally, if a `reply_to` queue was provided)
 
-The goal is to support a RabbitMQ-based SOA architecture that has multiple message passing patterns:
+The goal is to support a RabbitMQ-based SOA architecture with multiple message passing patterns:
 
-  * Synchronous Request/Response a-la-HTTP (e.g. GET/POST/PUT/HEAD/DELETE)
-  * Asynchronous Worker queue (e.g. ENQUEUE)
-  * Asynchronous PubSub (e.g. PUBLISH)
-  * Asynchronous Broadcast (e.g. BROADCAST)
+  * Synchronous Request/Response (e.g. GET/POST/PUT/DELETE)
+  * Asynchronous Worker queue    (e.g. ENQUEUE)
+  * Asynchronous PubSub          (e.g. PUBLISH)
+  * Asynchronous Broadcast       (e.g. BROADCAST)
 
 Installation
 ------------
@@ -43,8 +43,74 @@ Eventually, installation will be via rubygems:
     $ build rack-rabbit.gemspec
     $ gem install rack-rabbit.gem
 
-Usage
------
+Getting Started
+---------------
+
+You can use RackRabbit + Sinatra (or any rack app) to easily host an AMQP-based SOA in the same way
+that you might use Unicorn + Sinatra to host an HTTP-based SOA.
+
+Imagine a simple sinatra application in `app.rb`:
+
+    require 'sinatra/base'
+
+    class MyApp < Sinatra::Base
+
+      get "/hello" do
+        "Hello World"
+      end
+
+      post "/submit" do
+        "Submitted #{request.body.read}"
+      end
+
+    end
+
+... and a rack configuration file `config.ru`:
+
+    require File.expand_path("app.rb", File.dirname(__FILE__))
+    run MyApp
+
+You can now host and load balance this application using `RackRabbit`:
+
+    $ rack-rabbit --queue myqueue --workers 4
+
+Ensure the worker processes are running:
+
+    $ ps xawf | grep rack-rabbit
+    15714 pts/4    Sl+    0:00  |   \_ ruby rack-rabbit --queue myqueue --workers 4 config.ru
+    15716 pts/4    Sl+    0:00  |       \_ ruby rack-rabbit --queue myqueue --workers 4 config.ru
+    15718 pts/4    Sl+    0:00  |       \_ ruby rack-rabbit --queue myqueue --workers 4 config.ru
+    15721 pts/4    Sl+    0:00  |       \_ ruby rack-rabbit --queue myqueue --workers 4 config.ru
+    15723 pts/4    Sl+    0:00  |       \_ ruby rack-rabbit --queue myqueue --workers 4 config.ru
+
+You can connect to the worker from your client applications using the `RackRabbit::Client`:
+
+    require 'rack-rabbit/client'
+
+    client = RackRabbit::Client.new
+
+    foo = client.get(:myqueue, "/hello")                   # -> "Hello World"
+    bar = client.post(:myqueue, "/submit", "some data")    # -> "Submitted some data"
+
+    client.disconnect
+
+You can also connect to the worker from the command line using the `rr` client binary:
+
+    $ rr -q myqueue GET /hello
+    Hello World
+
+    $ rr -q myqueue POST /submit "some data"
+    Submitted some data
+
+
+HTTP vs AMQP based SOA
+----------------------
+
+TODO: describe difference between using Unicorn for HTTP-based SOA and RackRabbit for AMQP-based SOA
+
+
+Server Usage
+------------
 
 Use the `rack-rabbit` command line script to host your Rack app in a preforking
 server that subscribes to a RabbitMQ queue
@@ -65,8 +131,8 @@ Examples:
     $ rack-rabbit app/config.ru --queue app.queue --workers 4
     $ rack-rabbit app/config.ru --config app/config/rack-rabbit.conf.rb
 
-Configuration
--------------
+Server Configuration
+--------------------
 
 Detailed RackRabbit configuration can be provided by an external config file using the `--config` option
 
@@ -101,16 +167,6 @@ Detailed RackRabbit configuration can be provided by an external config file usi
     # use a different rabbitMQ adapter (default: RackRabbit::Adapter::Bunny)
     adapter RackRabbit::Adapter::AMQP
 
-Client Library
---------------
-
-TODO: build a little rabbitMQ client to support different message patterns that the workers can consume
-
-  * Synchronous Request/Response a-la-HTTP (e.g. GET/POST/PUT/HEAD/DELETE)
-  * Asynchronous Worker queue (e.g. ENQUEUE)
-  * Asynchronous PubSub (e.g. PUBLISH)
-  * Asynchronous Broadcast (e.g. BROADCAST)
-
 Signals
 -------
 
@@ -144,6 +200,19 @@ This should NOT be needed when the `preload_app` directive is false.
 
 >> _this is an issue with any preforking style server (e.g. Unicorn)_
 
+Client Library
+--------------
+
+Posting a message to a RackRabbit hosted server can be done using any RabbitMQ client library, but
+is easiest using the built in `RackRabbit::Client`...
+
+TODO: document RackRabbit::Client and extend it to support all patterns
+
+  * Synchronous Request/Response (e.g. GET/POST/PUT/DELETE)
+  * Asynchronous Worker queue (e.g. ENQUEUE)
+  * Asynchronous PubSub (e.g. PUBLISH)
+  * Asynchronous Broadcast (e.g. BROADCAST)
+
 Supported Platforms
 -------------------
 
@@ -152,9 +221,14 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ----
 
- * client library
+ * remove unnecessary LOAD PATH manipulation from scripts
+ * ERROR HANDLING (especially for HTTP-style GET/POST/PUT/DELETE)
+ * more appropriate ID generation in client#request
+ * worker queue support (ENQUEUE)
+ * pub/sub support (PUBLISH)
  * daemonizing
  * testing
+ * better documentation
  * platform support
 
 License

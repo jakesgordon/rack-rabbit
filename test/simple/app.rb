@@ -8,7 +8,7 @@ class SimpleApp
     body   = env["rack.input"].read
     logger = env["rack.logger"]
 
-    duration = path.split("/").last.to_i
+    duration = path.to_s.split("/").last.to_i
 
     response = []
     response << "Method: #{method}"
