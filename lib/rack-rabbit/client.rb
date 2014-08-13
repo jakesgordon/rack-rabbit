@@ -1,17 +1,15 @@
-require 'rack-rabbit/helpers'
+require 'rack-rabbit/adapter'
 
 module RackRabbit
   class Client
 
     #--------------------------------------------------------------------------
 
-    include Helpers
-
     attr_reader :options, :rabbit
 
     def initialize(options = {})
       @options = options
-      @rabbit  = load_adapter(options[:adapter] || :bunny)
+      @rabbit  = Adapter.load(options[:adapter] || :bunny)
       connect
     end
 

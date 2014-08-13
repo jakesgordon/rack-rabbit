@@ -4,11 +4,9 @@ rescue LoadError
   abort "missing 'bunny' gem"
 end
 
-require 'rack-rabbit/request'
-
 module RackRabbit
-  module Adapter
-    class Bunny
+  class Adapter
+    class Bunny < RackRabbit::Adapter
 
       attr_accessor :connection, :channel, :exchange
 

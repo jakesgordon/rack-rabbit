@@ -3,6 +3,7 @@ require 'rack'
 
 require 'rack-rabbit/signals'
 require 'rack-rabbit/helpers'
+require 'rack-rabbit/adapter'
 require 'rack-rabbit/request'
 require 'rack-rabbit/response'
 
@@ -27,7 +28,7 @@ module RackRabbit
       @logger  = server.logger
       @signals = Signals.new
       @lock    = Mutex.new
-      @rabbit  = load_adapter(config.adapter)
+      @rabbit  = Adapter.load(config.adapter)
       @app     = app
     end
 
@@ -39,7 +40,7 @@ module RackRabbit
 
       trap_signals
 
-      rabbit.startup if rabbit.respond_to?(:startup)
+      rabbit.startup
       rabbit.connect
       rabbit.subscribe(config.queue) do |request|
         lock.synchronize {
@@ -63,7 +64,7 @@ module RackRabbit
 
     ensure
       rabbit.disconnect
-      rabbit.shutdown if rabbit.respond_to?(:shutdown)
+      rabbit.shutdown
 
     end
 

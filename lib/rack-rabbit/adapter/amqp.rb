@@ -4,11 +4,9 @@ rescue LoadError
   abort "missing 'amqp' gem"
 end
 
-require 'rack-rabbit/request'
-
 module RackRabbit
-  module Adapter
-    class AMQP
+  class Adapter
+    class AMQP < RackRabbit::Adapter
 
       attr_accessor :connection, :channel, :exchange
 
