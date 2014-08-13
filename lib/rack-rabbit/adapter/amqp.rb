@@ -4,11 +4,21 @@ rescue LoadError
   abort "missing 'amqp' gem"
 end
 
+require 'rack-rabbit/request'
+
 module RackRabbit
   module Adapter
     class AMQP
 
       attr_accessor :connection, :channel, :exchange
+
+      def startup
+        startup_eventmachine
+      end
+
+      def shutdown
+        shutdown_eventmachine
+      end
 
       def connected?
         !@connection.nil?
@@ -16,7 +26,6 @@ module RackRabbit
 
       def connect
         return if connected?
-        start_eventmachine
         @connection = ::AMQP.connect
         @channel = ::AMQP::Channel.new(connection)
         @exchange = channel.default_exchange
@@ -26,7 +35,6 @@ module RackRabbit
       def disconnect
         channel.close unless channel.nil?
         connection.close unless connection.nil?
-        stop_eventmachine
       end
 
       def subscribe(queue, &block)
@@ -40,18 +48,24 @@ module RackRabbit
         exchange.publish(payload, properties)
       end
 
-      def create_exclusive_reply_queue
-        channel.queue("", :exclusive => true, :auto_delete => true)
+      def with_reply_queue
+        channel.queue("", :exclusive => true, :auto_delete => true) do |reply_queue, declare_ok|
+          yield reply_queue
+        end
       end
 
-      def start_eventmachine
+    private
+
+      def startup_eventmachine
         raise RuntimeError, "already started" unless @thread.nil?
         ready = false
         @thread = Thread.new { EventMachine.run { ready = true } }
         sleep(1) until ready
+        sleep(1) # warmup
       end
 
-      def stop_eventmachine
+      def shutdown_eventmachine
+        sleep(1) # warmdown
         EventMachine.stop
       end
 

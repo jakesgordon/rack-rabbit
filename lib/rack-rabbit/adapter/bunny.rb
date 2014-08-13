@@ -41,8 +41,8 @@ module RackRabbit
         exchange.publish(payload, properties)
       end
 
-      def create_exclusive_reply_queue
-        channel.queue("", :exclusive => true)
+      def with_reply_queue(&block)
+        yield channel.queue("", :exclusive => true, :auto_delete => true)
       end
 
     end

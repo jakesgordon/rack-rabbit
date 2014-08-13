@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 #
-# TEMPORARY HACK client script for testing rack-rabbit hosted servers
+# TEMPORARY HACK client script for testing RackRabbit::Client
 #
 # TODO: extend to support all patterns
 #
@@ -14,12 +14,9 @@ $LOAD_PATH.push File.expand_path("../lib", File.dirname(__FILE__)) # TODO: shoul
 
 require "rack-rabbit/client"
 
-client = RackRabbit::Client.new
-
+client = RackRabbit::Client.new(:adapter => :bunny)
 queue    = "rpc"
 path     = ARGV[0]
 response = client.get(queue, path)
-
 puts response
-
 client.disconnect

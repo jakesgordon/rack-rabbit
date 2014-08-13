@@ -7,22 +7,22 @@ module RackRabbit
 
     include Helpers
 
-    attr_reader :options, :adapter
+    attr_reader :options, :rabbit
 
     def initialize(options = {})
       @options = options
-      @adapter = load_adapter(options[:adapter] || :bunny)
-      adapter.connect
+      @rabbit  = load_adapter(options[:adapter] || :bunny)
+      connect
     end
 
     #--------------------------------------------------------------------------
 
     def connect
-      adapter.connect
+      rabbit.connect
     end
 
     def disconnect
-      adapter.disconnect
+      rabbit.disconnect
     end
 
     #--------------------------------------------------------------------------
@@ -39,34 +39,38 @@ module RackRabbit
 
     def request(queue, method, path, body, options = {})
 
-      reply_queue = adapter.create_exclusive_reply_queue
-      id          = "#{rand}#{rand}#{rand}"  # TODO: better message ID's
-      lock        = Mutex.new
-      condition   = ConditionVariable.new
-      headers     = options[:headers] || {}
-      response    = nil
+      id        = "#{rand}#{rand}#{rand}"  # TODO: better message ID's
+      lock      = Mutex.new
+      condition = ConditionVariable.new
+      headers   = options[:headers] || {}
+      response  = nil
 
-      adapter.subscribe(reply_queue) do |message|
-        if message.correlation_id == id
-          response = message.body
-          lock.synchronize { condition.signal }
+      rabbit.with_reply_queue do |reply_queue|
+
+        rabbit.subscribe(reply_queue) do |message|
+          if message.correlation_id == id
+            response = message.body
+            lock.synchronize { condition.signal }
+          end
+          :wtf
         end
-      end
 
-      adapter.publish(body,
-        :message_id       => id,
-        :app_id           => options[:app_id] || default_app_id,
-        :priority         => options[:priority],
-        :routing_key      => queue,
-        :reply_to         => reply_queue.name,
-        :type             => method.to_s.upcase,
-        :content_type     => options[:content_type]     || default_content_type,
-        :content_encoding => options[:content_encoding] || default_content_encoding,
-        :timestamp        => options[:timestamp]        || default_timestamp,
-        :headers          => headers.merge({
-          :path => path
-        })
-      )
+        rabbit.publish(body,
+          :message_id       => id,
+          :app_id           => options[:app_id] || default_app_id,
+          :priority         => options[:priority],
+          :routing_key      => queue,
+          :reply_to         => reply_queue.name,
+          :type             => method.to_s.upcase,
+          :content_type     => options[:content_type]     || default_content_type,
+          :content_encoding => options[:content_encoding] || default_content_encoding,
+          :timestamp        => options[:timestamp]        || default_timestamp,
+          :headers          => headers.merge({
+            :path => path
+          })
+        )
+
+      end
 
       lock.synchronize { condition.wait(lock) }
 

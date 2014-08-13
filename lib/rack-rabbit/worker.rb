@@ -39,6 +39,7 @@ module RackRabbit
 
       trap_signals
 
+      rabbit.startup if rabbit.respond_to?(:startup)
       rabbit.connect
       rabbit.subscribe(config.queue) do |request|
         lock.synchronize {
@@ -62,6 +63,7 @@ module RackRabbit
 
     ensure
       rabbit.disconnect
+      rabbit.shutdown if rabbit.respond_to?(:shutdown)
 
     end
 

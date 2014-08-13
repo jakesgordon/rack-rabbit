@@ -18,7 +18,7 @@ module RackRabbit
       @uri                = headers['path'] || ""
       @path, @query       = uri.split(/\?/)
       @content_type       = properties.content_type
-      @content_encoding   = properties.content_encoding
+      @content_encoding   = properties.content_encoding if properties.respond_to?(:content_encoding)
       @content_length     = body.length
     end
 
