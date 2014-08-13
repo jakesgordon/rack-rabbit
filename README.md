@@ -10,17 +10,17 @@ A preforking server for hosting RabbitMQ consumer processes as load balanced rac
 Description
 -----------
 
-Building an SOA ? Using RabbitMQ ? Want an easy way to host and load balance your consumer processes ?
+Building an SOA with RabbitMQ ? Want an easy way to host and load balance your consumer processes ?
 
 RackRabbit will...
 
   * Create, and manage, a cluster of worker processes that will each...
   * Subscribe to a queue
-  * Convert the message into a suitable Rack environment
+  * Convert incoming messages into a suitable Rack environment
   * Call your Rack app to fulfil the request
-  * Publish the response back to the original caller (optionally, if a `reply_to` queue was provided)
+  * Publish the response back to the original caller (if `reply_to` queue was provided)
 
-The goal is to support a RabbitMQ-based SOA architecture with multiple message passing patterns:
+The goal is to support a RabbitMQ-based SOA with multiple message passing patterns:
 
   * Synchronous Request/Response (e.g. GET/POST/PUT/DELETE)
   * Asynchronous Worker queue    (e.g. ENQUEUE)
@@ -32,7 +32,7 @@ Installation
 
 Eventually, installation will be via rubygems:
 
-    $ gem install bunny                # or an alternative rabbitMQ cient library (e.g. AMQP)
+    $ gem install bunny          # or an alternative rabbitMQ cient library (e.g. AMQP)
     $ gem install rack-rabbit
 
 ... but since the gem has not been officially published yet, for now you need to build it yourself:
@@ -70,7 +70,7 @@ Imagine a simple sinatra application in `app.rb`:
     require File.expand_path("app.rb", File.dirname(__FILE__))
     run MyApp
 
-You can now host and load balance this application using `RackRabbit`:
+You can now host and load balance this application using `rack-rabbit`:
 
     $ rack-rabbit --queue myqueue --workers 4
 
