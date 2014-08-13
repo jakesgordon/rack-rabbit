@@ -12,8 +12,6 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    include Helpers
-
     attr_reader :server,
                 :config,
                 :logger,
@@ -72,7 +70,7 @@ module RackRabbit
 
     def shutdown(sig)
       lock.lock if sig == :QUIT # graceful shutdown should wait for any pending request handler to finish
-      logger.info "#{friendly_signal(sig)} worker #{Process.pid}"
+      logger.info "#{RackRabbit.friendly_signal(sig)} worker #{Process.pid}"
       exit
     end
 

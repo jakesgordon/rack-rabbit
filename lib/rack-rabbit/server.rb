@@ -11,8 +11,6 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    include Helpers
-
     attr_reader :app,
                 :config,
                 :logger,
@@ -137,7 +135,7 @@ module RackRabbit
       @shutting_down = true
       kill_all_workers(sig)
       Process.waitall
-      logger.info "#{friendly_signal(sig)} server"
+      logger.info "#{RackRabbit.friendly_signal(sig)} server"
       exit
     end
 
