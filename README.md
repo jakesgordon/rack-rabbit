@@ -98,8 +98,8 @@ Detailed RackRabbit configuration can be provided by an external config file usi
     #
     app_id 'My Application'
 
-    # use a different rabbitMQ client adapter (default: RackRabbit::Client::Bunny)
-    client RackRabbit::Client::AMQP
+    # use a different rabbitMQ adapter (default: RackRabbit::Adapter::Bunny)
+    adapter RackRabbit::Adapter::AMQP
 
 Client Library
 --------------

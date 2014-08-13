@@ -1,12 +1,12 @@
 begin
-  require 'bunny'
+  require 'amqp'
 rescue LoadError
-  abort "missing 'bunny' gem"
+  abort "missing 'amqp' gem"
 end
 
 module RackRabbit
-  module Client
-    class Bunny
+  module Adapter
+    class AMQP
 
       attr_accessor :connection, :channel, :exchange
 
@@ -16,9 +16,9 @@ module RackRabbit
 
       def connect
         return if connected?
-        @connection = ::Bunny.new
-        connection.start
-        @channel = connection.create_channel
+        start_eventmachine
+        @connection = ::AMQP.connect
+        @channel = ::AMQP::Channel.new(connection)
         @exchange = channel.default_exchange
         channel.prefetch(1)
       end
@@ -26,12 +26,13 @@ module RackRabbit
       def disconnect
         channel.close unless channel.nil?
         connection.close unless connection.nil?
+        stop_eventmachine
       end
 
       def subscribe(queue_name, &block)
         queue = channel.queue(queue_name)
-        queue.subscribe do |delivery_info, properties, payload|
-          yield Request.new(delivery_info, properties, payload)
+        queue.subscribe do |properties, payload|
+          yield Request.new(nil, properties, payload)
         end
       end
 
@@ -39,7 +40,17 @@ module RackRabbit
         exchange.publish(payload, properties)
       end
 
-    end
+      def start_eventmachine
+        raise RuntimeError, "already started" unless @thread.nil?
+        ready = false
+        @thread = Thread.new { EventMachine.run { ready = true } }
+        sleep(1) until ready
+      end
 
+      def stop_eventmachine
+        EventMachine.stop
+      end
+
+    end
   end
 end

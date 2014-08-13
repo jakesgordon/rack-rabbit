@@ -36,8 +36,8 @@ module RackRabbit
       trap_server_signals
       load_app if config.preload_app
       logger.info "RUNNING #{app} (#{config.rack_file})"
-      logger.info "  queue  : #{config.queue}"
-      logger.info "  client : #{config.client.name}"
+      logger.info "  queue   : #{config.queue}"
+      logger.info "  adapter : #{config.adapter.name}"
       maintain_worker_count
       manage_workers
     end
