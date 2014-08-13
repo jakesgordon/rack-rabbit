@@ -27,7 +27,7 @@ module RackRabbit
       @logger  = server.logger
       @signals = Signals.new
       @lock    = Mutex.new
-      @rabbit  = config.adapter.new
+      @rabbit  = load_adapter(config.adapter)
       @app     = app
     end
 

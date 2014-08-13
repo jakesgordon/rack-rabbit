@@ -37,7 +37,7 @@ module RackRabbit
       load_app if config.preload_app
       logger.info "RUNNING #{app} (#{config.rack_file})"
       logger.info "  queue   : #{config.queue}"
-      logger.info "  adapter : #{config.adapter.name}"
+      logger.info "  adapter : #{config.adapter}"
       maintain_worker_count
       manage_workers
     end
