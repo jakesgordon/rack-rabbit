@@ -1,3 +1,4 @@
+require 'securerandom'
 require 'rack-rabbit/adapter'
 
 module RackRabbit
@@ -45,7 +46,7 @@ module RackRabbit
 
     def request(queue, method, path, body, options = {})
 
-      id        = "#{rand}#{rand}#{rand}"  # TODO: better message ID's
+      id        = SecureRandom.uuid
       lock      = Mutex.new
       condition = ConditionVariable.new
       headers   = options[:headers] || {}
@@ -62,7 +63,7 @@ module RackRabbit
         end
 
         rabbit.publish(body,
-          :message_id       => id,
+          :correlation_id   => id,
           :app_id           => options[:app_id] || default_app_id,
           :priority         => options[:priority],
           :routing_key      => queue,

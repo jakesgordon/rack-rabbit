@@ -3,13 +3,12 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    attr_reader :message_id, :reply_to, :correlation_id,
+    attr_reader :reply_to, :correlation_id,
                 :body, :headers,
                 :method, :uri, :path, :query,
                 :content_type, :content_encoding, :content_length
 
     def initialize(info, properties, body)
-      @message_id         = properties.message_id
       @reply_to           = properties.reply_to
       @correlation_id     = properties.correlation_id
       @body               = body

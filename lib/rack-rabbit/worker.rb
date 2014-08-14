@@ -79,7 +79,7 @@ module RackRabbit
       return {
         :app_id           => config.app_id,
         :routing_key      => request.reply_to,
-        :correlation_id   => request.message_id,
+        :correlation_id   => request.correlation_id,
         :timestamp        => Time.now.to_i,
         :headers          => response.headers,
         :content_type     => response.content_type,

@@ -222,7 +222,7 @@ TODO
 ----
 
  * ERROR HANDLING (especially for HTTP-style GET/POST/PUT/DELETE)
- * more appropriate ID generation in client#request
+ * allow a single reply queue to be shared across requests ?
  * worker queue support (ENQUEUE)
  * pub/sub support (PUBLISH)
  * daemonizing
