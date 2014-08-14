@@ -4,8 +4,6 @@
 # TEMPORARY HACK client script for testing RackRabbit::Client in an EventMachine host
 #
 
-$LOAD_PATH.push File.expand_path("../lib", File.dirname(__FILE__)) # TODO: shouldn't need this
-
 require 'eventmachine'
 require "rack-rabbit/client"
 

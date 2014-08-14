@@ -10,8 +10,6 @@
 #  - Pub/Sub (PUBLISH)
 #
 
-$LOAD_PATH.push File.expand_path("../lib", File.dirname(__FILE__)) # TODO: shouldn't need this
-
 require "optparse"
 require "rack-rabbit"
 require "rack-rabbit/client"

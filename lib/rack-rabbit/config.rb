@@ -50,7 +50,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     has_option :config_file
-    has_option :rack_file,   :default => 'config.ru'
+    has_option :rack_file,   :default => lambda{ File.join(File.dirname(config_file || ""), "config.ru") }
     has_option :queue,       :default => 'rack-rabbit'
     has_option :app_id,      :default => 'rack-rabbit'
     has_option :workers,     :default => 2

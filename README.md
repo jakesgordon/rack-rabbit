@@ -67,7 +67,7 @@ Imagine a simple sinatra application in `app.rb`:
 
 ... and a rack configuration file `config.ru`:
 
-    require File.expand_path("app.rb", File.dirname(__FILE__))
+    require_relative 'app'
     run MyApp
 
 You can now host and load balance this application using `rack-rabbit`:
@@ -221,7 +221,6 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ----
 
- * remove unnecessary LOAD PATH manipulation from scripts
  * ERROR HANDLING (especially for HTTP-style GET/POST/PUT/DELETE)
  * more appropriate ID generation in client#request
  * worker queue support (ENQUEUE)

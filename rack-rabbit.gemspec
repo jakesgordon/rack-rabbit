@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-$LOAD_PATH.push File.expand_path("lib", File.dirname(__FILE__))
 require 'rack-rabbit'
 
 Gem::Specification.new do |s|
