@@ -40,12 +40,15 @@ module RackRabbit
       rabbit.startup
       rabbit.connect
       rabbit.subscribe(config.queue) do |request|
-        lock.synchronize {
+        lock.synchronize do
+          start = Time.now
           response = handle(request)
           if request.should_reply?
             rabbit.publish(response.body, response_properties(request, response))
           end
-        }
+          finish = Time.now
+          log(request, response, finish - start)
+        end
       end
 
       while true
@@ -63,6 +66,12 @@ module RackRabbit
       rabbit.disconnect
       rabbit.shutdown
 
+    end
+
+    #--------------------------------------------------------------------------
+
+    def log(request, response, timing)
+      logger.info "\"#{request.method} #{request.path}\" [#{response.status}] - #{"%.4f" % timing}"
     end
 
     #--------------------------------------------------------------------------
@@ -124,7 +133,7 @@ module RackRabbit
       @default_env ||= {
         'rack.version'      => Rack::VERSION,
         'rack.logger'       => logger,
-        'rack.errors'       => logger,
+        'rack.errors'       => $stderr,
         'rack.multithread'  => false,
         'rack.multiprocess' => true,
         'rack.run_once'     => false,

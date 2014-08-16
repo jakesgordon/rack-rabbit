@@ -92,7 +92,7 @@ module RackRabbit
 
     def build_default_logger
       master_pid = $$
-      logger = Logger.new($stdout)
+      logger = Logger.new($stderr)
       logger.formatter = proc do |severity, datetime, progname, msg|
         "[#{Process.pid}:#{$$ == master_pid ? "SERVER" : "worker"}] #{datetime} #{msg}\n"
       end
