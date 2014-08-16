@@ -31,19 +31,32 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def run
+
+      if config.daemonize
+        daemonize
+      elsif config.logfile
+        redirect_output
+      end
+
       trap_server_signals
       load_app if config.preload_app
-      logger.info "RUNNING #{app} (#{config.rack_file})"
+
+      logger.info "RUNNING #{app} (#{config.rack_file}) #{'DAEMONIZED' if config.daemonize}"
       logger.info "  queue   : #{config.queue}"
       logger.info "  adapter : #{config.adapter}"
-      maintain_worker_count
+      logger.info "  logfile : #{config.logfile}" unless config.logfile.nil?
+      logger.info "  pidfile : #{config.pidfile}" unless config.pidfile.nil?
+
       manage_workers
+
     end
 
     #--------------------------------------------------------------------------
 
     def manage_workers
       while true
+
+        maintain_worker_count
 
         sig = signals.pop   # BLOCKS until there is a signal
         case sig
@@ -68,8 +81,6 @@ module RackRabbit
           raise RuntimeError, "unknown signal #{sig}"
 
         end
-
-        maintain_worker_count
 
       end
     end
@@ -141,6 +152,34 @@ module RackRabbit
 
     def shutting_down?
       @shutting_down
+    end
+
+    #==========================================================================
+    # DAEMONIZING and OUTPUT REDIRECTION
+    #==========================================================================
+
+    def daemonize
+      exit if fork
+      Process.setsid
+      exit if fork
+      Dir.chdir "/"
+      redirect_output
+    end
+
+    def redirect_output
+      if logfile = config.logfile
+        logfile = File.expand_path(logfile)
+        FileUtils.mkdir_p File.dirname(logfile), :mode => 0755
+        FileUtils.touch logfile
+        File.chmod(0644, logfile)
+        $stderr.reopen(logfile, 'a')
+        $stdout.reopen($stderr)
+        $stdout.sync = $stderr.sync = true
+      else
+        $stdin.reopen '/dev/null'
+        $stdout.reopen '/dev/null', 'a'
+        $stderr.reopen $stdout
+      end
     end
 
     #==========================================================================

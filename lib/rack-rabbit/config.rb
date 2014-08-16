@@ -60,6 +60,9 @@ module RackRabbit
     has_option :log_level,   :default => :info, :sanitize => lambda{|v| v.to_s.downcase.to_sym}
     has_option :logger,      :default => lambda{ build_default_logger }
     has_option :adapter,     :default => :bunny, :sanitize => lambda{|v| v.is_a?(Class) ? v : v.to_s.downcase.to_sym}
+    has_option :daemonize,   :default => false
+    has_option :logfile,     :default => lambda{ daemonize ? "/var/log/#{app_id}.log" : nil }
+    has_option :pidfile,     :default => lambda{ daemonize ? "/var/run/#{app_id}.pid" : nil }
 
     has_hook :before_fork
     has_hook :after_fork
@@ -77,6 +80,8 @@ module RackRabbit
       raise ArgumentError, "invalid workers > max_workers" if workers > max_workers
       raise ArgumentError, "invalid min_workers > max_workers" if min_workers > max_workers
       raise ArgumentError, "invalid logger" unless [:fatal, :error, :warn, :info, :debug].all?{|method| logger.respond_to?(method)}
+      raise ArgumentError, "missing pidfile - required for daemon" if daemonize && pidfile.to_s.empty?
+      raise ArgumentError, "missing logfile - required for daemon" if daemonize && logfile.to_s.empty?
       validate_adapter
     end
 
