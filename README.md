@@ -78,10 +78,10 @@ Ensure the worker processes are running:
 
     $ ps xawf | grep rack-rabbit
     15714 pts/4    Sl+    0:00  |   \_ ruby rack-rabbit --queue myqueue --workers 4 config.ru
-    15716 pts/4    Sl+    0:00  |       \_ ruby rack-rabbit --queue myqueue --workers 4 config.ru
-    15718 pts/4    Sl+    0:00  |       \_ ruby rack-rabbit --queue myqueue --workers 4 config.ru
-    15721 pts/4    Sl+    0:00  |       \_ ruby rack-rabbit --queue myqueue --workers 4 config.ru
-    15723 pts/4    Sl+    0:00  |       \_ ruby rack-rabbit --queue myqueue --workers 4 config.ru
+    15716 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
+    15718 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
+    15721 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
+    15723 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
 
 You can connect to the worker from your client applications using the `RackRabbit::Client`:
 
@@ -228,7 +228,6 @@ TODO
  * better documentation
  * platform support
  * MISC
-   - pass callstack back to client (in body) in error case
    - sinatra example is not using the RackRabbit Logger
    - allow a single reply queue to be shared across client requests
 
