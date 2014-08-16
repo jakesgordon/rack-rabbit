@@ -13,8 +13,8 @@ module RackRabbit
       @correlation_id     = properties.correlation_id
       @body               = body
       @headers            = properties.headers || {}
-      @method             = properties.type || headers['method'] || "GET"
-      @uri                = headers['path'] || ""
+      @method             = headers['request_method'] || "GET"
+      @uri                = headers['request_path']   || ""
       @path, @query       = uri.split(/\?/)
       @content_type       = properties.content_type
       @content_encoding   = properties.content_encoding if properties.respond_to?(:content_encoding)

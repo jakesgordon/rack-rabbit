@@ -68,12 +68,12 @@ module RackRabbit
           :priority         => options[:priority],
           :routing_key      => queue,
           :reply_to         => reply_queue.name,
-          :type             => method.to_s.upcase,
           :content_type     => options[:content_type]     || default_content_type,
           :content_encoding => options[:content_encoding] || default_content_encoding,
           :timestamp        => options[:timestamp]        || default_timestamp,
           :headers          => headers.merge({
-            :path => path
+            :request_method => method.to_s.upcase,
+            :request_path   => path
           })
         )
 

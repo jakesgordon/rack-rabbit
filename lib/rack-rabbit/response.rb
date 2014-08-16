@@ -15,7 +15,7 @@ module RackRabbit
       @body             = body
       @content_type     = headers.delete('Content-Type')
       @content_encoding = headers.delete('Content-Encoding')
-      headers[:status] = status # 
+      headers[:status]  = status # also include status in headers passed back to the client
     end
 
     #--------------------------------------------------------------------------
