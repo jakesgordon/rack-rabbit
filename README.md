@@ -17,8 +17,8 @@ RackRabbit will...
   * Create, and manage, a cluster of worker processes that will each...
   * Subscribe to a queue
   * Convert incoming messages into a suitable Rack environment
-  * Call your Rack app to fulfil the request
-  * Publish the response back to the original caller (if `reply_to` queue was provided)
+  * Call your Rack app to handle the message
+  * Publish a reply back to the original caller (if `reply_to` queue was provided)
 
 The goal is to support a RabbitMQ-based SOA with multiple message passing patterns:
 
@@ -121,7 +121,7 @@ server that subscribes to a RabbitMQ queue
         -h, --help
         -v, --version
         -c, --config CONFIG         specify the rack-rabbit configuration file
-        -q, --queue  QUEUE          specify the queue to subscribe for incoming requests
+        -q, --queue  QUEUE          specify the queue to subscribe for incoming messages
         -w, --workers COUNT         specify the number of worker processes
         -l, --log-level LEVEL       specify the log level for rack rabbit output
 
@@ -173,7 +173,7 @@ Signals
 Signals should be sent to the master process
 
   * HUP - reload the RackRabbit config file and gracefully restart all workers
-  * QUIT - graceful shutdown, waits for workers to finish their current request before finishing
+  * QUIT - graceful shutdown, waits for workers to complete handling of their current message before finishing
   * TERM - quick shutdown kills all workers immediately
   * INT  - quick shutdown kills all workers immediately
   * TTIN - increase the number of worker processes by one
@@ -221,14 +221,16 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ----
 
- * ERROR HANDLING (especially for HTTP-style GET/POST/PUT/DELETE)
- * allow a single reply queue to be shared across requests ?
  * worker queue support (ENQUEUE)
  * pub/sub support (PUBLISH)
  * daemonizing
  * testing
  * better documentation
  * platform support
+ * MISC
+   - pass callstack back to client (in body) in error case
+   - sinatra example is not using the RackRabbit Logger
+   - allow a single reply queue to be shared across client requests
 
 License
 -------

@@ -3,19 +3,32 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    attr_reader :status,
-                :headers,
-                :body,
-                :content_type,
-                :content_encoding
+    attr_reader :status, :headers, :body
 
     def initialize(status, headers, body)
-      @status           = status
-      @headers          = headers
-      @body             = body
-      @content_type     = headers.delete('Content-Type')
-      @content_encoding = headers.delete('Content-Encoding')
-      headers[:status]  = status # also include status in headers passed back to the client
+      @status  = status
+      @headers = headers
+      @body    = body
+    end
+
+    def content_type
+      headers[RackRabbit::HEADER::CONTENT_TYPE]
+    end
+
+    def content_encoding
+      headers[RackRabbit::HEADER::CONTENT_ENCODING]
+    end
+
+    #--------------------------------------------------------------------------
+
+    def to_s
+      case status
+      when RackRabbit::STATUS::SUCCESS   then body
+      when RackRabbit::STATUS::NOT_FOUND then "#{status} Not Found"
+      when RackRabbit::STATUS::FAILED    then "#{status} Internal Server Error"
+      else
+        status.to_s
+      end
     end
 
     #--------------------------------------------------------------------------

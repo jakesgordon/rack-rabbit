@@ -56,7 +56,7 @@ module RackRabbit
 
         rabbit.subscribe(reply_queue) do |message|
           if message.correlation_id == id
-            response = message.body
+            response = Response.new(message.status, message.headers, message.body)
             lock.synchronize { condition.signal }
           end
         end
@@ -71,8 +71,8 @@ module RackRabbit
           :content_encoding => options[:content_encoding] || default_content_encoding,
           :timestamp        => options[:timestamp]        || default_timestamp,
           :headers          => headers.merge({
-            :request_method => method.to_s.upcase,
-            :request_path   => path
+            RackRabbit::HEADER::METHOD => method.to_s.upcase,
+            RackRabbit::HEADER::PATH   => path
           })
         )
 
@@ -80,7 +80,7 @@ module RackRabbit
 
       lock.synchronize { condition.wait(lock) }
 
-      response     # TODO: error handling
+      response
 
     end
 

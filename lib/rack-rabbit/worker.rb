@@ -3,7 +3,6 @@ require 'rack'
 
 require 'rack-rabbit/signals'
 require 'rack-rabbit/adapter'
-require 'rack-rabbit/request'
 require 'rack-rabbit/response'
 
 module RackRabbit
@@ -39,15 +38,15 @@ module RackRabbit
 
       rabbit.startup
       rabbit.connect
-      rabbit.subscribe(config.queue) do |request|
+      rabbit.subscribe(config.queue) do |message|
         lock.synchronize do
           start = Time.now
-          response = handle(request)
-          if request.should_reply?
-            rabbit.publish(response.body, response_properties(request, response))
+          response = handle(message)
+          if message.should_reply?
+            rabbit.publish(response.body, response_properties(message, response))
           end
           finish = Time.now
-          log(request, response, finish - start)
+          log(message, response, finish - start)
         end
       end
 
@@ -70,27 +69,27 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def log(request, response, timing)
-      logger.info "\"#{request.method} #{request.path}\" [#{response.status}] - #{"%.4f" % timing}"
+    def log(message, response, timing)
+      logger.info "\"#{message.method} #{message.path}\" [#{response.status}] - #{"%.4f" % timing}"
     end
 
     #--------------------------------------------------------------------------
 
     def shutdown(sig)
-      lock.lock if sig == :QUIT # graceful shutdown should wait for any pending request handler to finish
+      lock.lock if sig == :QUIT # graceful shutdown should wait for any pending message handler to finish
       logger.info "#{RackRabbit.friendly_signal(sig)} worker #{Process.pid}"
       exit
     end
 
     #--------------------------------------------------------------------------
 
-    def response_properties(request, response)
+    def response_properties(message, response)
       return {
         :app_id           => config.app_id,
-        :routing_key      => request.reply_to,
-        :correlation_id   => request.correlation_id,
+        :routing_key      => message.reply_to,
+        :correlation_id   => message.correlation_id,
         :timestamp        => Time.now.to_i,
-        :headers          => response.headers,
+        :headers          => response.headers.merge(RackRabbit::HEADER::STATUS => response.status),
         :content_type     => response.content_type,
         :content_encoding => response.content_encoding
       }
@@ -98,9 +97,9 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def handle(request)
+    def handle(message)
 
-      env = build_env(request)
+      env = build_env(message)
 
       status, headers, body_chunks = app.call(env)
 
@@ -113,17 +112,17 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def build_env(request)
+    def build_env(message)
 
       default_env.merge({
-        'rack.input'     => StringIO.new(request.body),
-        'REQUEST_METHOD' => request.method,
-        'REQUEST_PATH'   => request.uri,
-        'PATH_INFO'      => request.path,
-        'QUERY_STRING'   => request.query,
-        'CONTENT_TYPE'   => request.content_type,
-        'CONTENT_LENGTH' => request.content_length
-      }).merge(request.headers)
+        'rack.input'     => StringIO.new(message.body),
+        'REQUEST_METHOD' => message.method,
+        'REQUEST_PATH'   => message.uri,
+        'PATH_INFO'      => message.path,
+        'QUERY_STRING'   => message.query,
+        'CONTENT_TYPE'   => message.content_type,
+        'CONTENT_LENGTH' => message.content_length
+      }).merge(message.headers)
 
     end
 

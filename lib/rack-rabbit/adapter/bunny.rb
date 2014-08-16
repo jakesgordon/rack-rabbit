@@ -31,7 +31,7 @@ module RackRabbit
       def subscribe(queue, &block)
         queue = channel.queue(queue) if queue.is_a?(Symbol) || queue.is_a?(String)
         queue.subscribe do |delivery_info, properties, payload|
-          yield Request.new(delivery_info, properties, payload)
+          yield Message.new(properties, payload)
         end
       end
 

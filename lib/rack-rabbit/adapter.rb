@@ -1,4 +1,4 @@
-require 'rack-rabbit/request'
+require 'rack-rabbit/message'
 
 module RackRabbit
   class Adapter
