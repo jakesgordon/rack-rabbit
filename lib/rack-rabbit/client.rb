@@ -59,7 +59,6 @@ module RackRabbit
             response = message.body
             lock.synchronize { condition.signal }
           end
-          :wtf
         end
 
         rabbit.publish(body,
