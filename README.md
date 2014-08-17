@@ -118,12 +118,26 @@ server that subscribes to a RabbitMQ queue
     $ rack-rabbit --help
 
     Usage: rack-rabbit [options] rack-file
+
+    RackRabbit options:
+        -c, --config CONFIG     specify the rack-rabbit configuration file
+        -a, --app_id ID         specify an app_id for this application server (default: rack-rabbit)
+        -q, --queue QUEUE       specify the queue to subscribe for incoming requests (default: rack-rabbit)
+        -w, --workers COUNT     specify the number of worker processes (default: 2)
+            --log-level LEVEL   specify the log level for rack rabbit output (default: info)
+        -d, --daemonize         run daemonized in the background
+        -p, --pid PIDFILE       specify the pid filename
+        -l, --log LOGFILE       specify the log filename
+
+    Ruby options:
+        -I, --include PATH      specify an additional $LOAD_PATH (may be used more than once)
+            --debug             set $DEBUG to true
+            --warn              enable warnings
+
+    Common options:
         -h, --help
         -v, --version
-        -c, --config CONFIG         specify the rack-rabbit configuration file
-        -q, --queue  QUEUE          specify the queue to subscribe for incoming messages
-        -w, --workers COUNT         specify the number of worker processes
-        -l, --log-level LEVEL       specify the log level for rack rabbit output
+
 
 Examples:
 
@@ -162,7 +176,7 @@ Detailed RackRabbit configuration can be provided by an external config file usi
 
     # set the app_id used to identify your application in response messages
     #
-    app_id 'My Application'
+    app_id 'my-application'
 
     # use a different rabbitMQ adapter (default: RackRabbit::Adapter::Bunny)
     adapter RackRabbit::Adapter::AMQP
