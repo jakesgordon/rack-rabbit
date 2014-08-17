@@ -120,17 +120,20 @@ server that subscribes to a RabbitMQ queue
     Usage: rack-rabbit [options] rack-file
 
     RackRabbit options:
-        -c, --config CONFIG     specify the rack-rabbit configuration file
-        -a, --app_id ID         specify an app_id for this application server (default: rack-rabbit)
-        -q, --queue QUEUE       specify the queue to subscribe for incoming requests (default: rack-rabbit)
-        -w, --workers COUNT     specify the number of worker processes (default: 2)
-            --log-level LEVEL   specify the log level for rack rabbit output (default: info)
+        -c, --config CONFIG     provide options using a rack-rabbit configuration file
+            --host HOST         the RabbitMQ broker IP address (default: 127.0.0.1)
+            --port PORT         the RabbitMQ broker port (default: 5672)
+        -a, --app_id ID         an app_id for this application server (default: rack-rabbit)
+        -q, --queue QUEUE       the queue to subscribe for incoming requests (default: rack-rabbit)
+        -w, --workers COUNT     the number of worker processes (default: 2)
         -d, --daemonize         run daemonized in the background
-        -p, --pid PIDFILE       specify the pid filename
-        -l, --log LOGFILE       specify the log filename
+        -p, --pid PIDFILE       the pid filename
+        -l, --log LOGFILE       the log filename
+            --log-level LEVEL   the log level for rack rabbit output (default: info)
+            --preload           preload the rack app before forking worker processes
 
     Ruby options:
-        -I, --include PATH      specify an additional $LOAD_PATH (may be used more than once)
+        -I, --include PATH      an additional $LOAD_PATH (may be used more than once)
             --debug             set $DEBUG to true
             --warn              enable warnings
 
@@ -142,7 +145,7 @@ server that subscribes to a RabbitMQ queue
 Examples:
 
     $ rack-rabbit app/config.ru
-    $ rack-rabbit app/config.ru --queue app.queue --workers 4
+    $ rack-rabbit app/config.ru --host 10.10.10.10 --queue app.queue --workers 4
     $ rack-rabbit app/config.ru --config app/config/rack-rabbit.conf.rb
 
 Server Configuration
@@ -152,6 +155,11 @@ Detailed RackRabbit configuration can be provided by an external config file usi
 
     # set the Rack application to be used to handle messages (default 'config.ru'):
     rack_file 'app/config.ru'
+
+    # set the RabbitMQ connection:
+    rabbit :host    => '10.0.0.42',  # default '127.0.0.1'
+           :port    => '1234'        # default '5672'
+           :adapter => :amqp         # default :bunny
 
     # set the queue to subscribe to (default 'rack-rabbit'):
     queue 'app.queue'
@@ -175,11 +183,7 @@ Detailed RackRabbit configuration can be provided by an external config file usi
     logger MyLogger.new
 
     # set the app_id used to identify your application in response messages
-    #
     app_id 'my-application'
-
-    # use a different rabbitMQ adapter (default: RackRabbit::Adapter::Bunny)
-    adapter RackRabbit::Adapter::AMQP
 
 Signals
 -------
@@ -241,6 +245,7 @@ TODO
  * better documentation
  * platform support
  * MISC
+   - avoid infinite spawn worker loop if worker fails during startup (e.g. connection to rabbit fails)
    - allow a single reply queue to be shared across client requests
 
 License

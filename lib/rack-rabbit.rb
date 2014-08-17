@@ -9,6 +9,12 @@ module RackRabbit
   VERSION = "0.0.1"
   SUMMARY = "A Unicorn-style preforking, rack-based server for hosting RabbitMQ consumer processes"
 
+  DEFAULT_RABBIT = {
+    :host    => "127.0.0.1",
+    :port    => "5672",
+    :adapter => "bunny"
+  }
+
   #----------------------------------------------------------------------------
 
   module HEADER

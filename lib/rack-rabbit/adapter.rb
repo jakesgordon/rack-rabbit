@@ -5,7 +5,8 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def self.load(adapter)
+    def self.load(options)
+      adapter = options.delete(:adapter) || :bunny
       if adapter.is_a?(Symbol) || adapter.is_a?(String)
         adapter = case adapter.to_s.downcase.to_sym
                   when :bunny
@@ -18,10 +19,16 @@ module RackRabbit
                     raise ArgumentError, "unknown rabbitMQ adapter #{adapter}"
                   end
       end
-      adapter.new
+      adapter.new(options)
     end
 
     #--------------------------------------------------------------------------
+
+    attr_reader :connection_options
+
+    def initialize(options)
+      @connection_options = options
+    end
 
     def startup
       # derived classes optionally override this (e.g. to startup EventMachine)

@@ -16,7 +16,7 @@ module RackRabbit
 
       def connect
         return if connected?
-        @connection = ::Bunny.new
+        @connection = ::Bunny.new(connection_options)
         connection.start
         @channel = connection.create_channel
         @exchange = channel.default_exchange

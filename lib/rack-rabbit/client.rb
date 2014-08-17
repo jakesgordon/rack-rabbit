@@ -1,16 +1,17 @@
 require 'securerandom'
 require 'rack-rabbit/adapter'
+require 'rack-rabbit/config/client'
 
 module RackRabbit
   class Client
 
     #--------------------------------------------------------------------------
 
-    attr_reader :options, :rabbit
+    attr_reader :config, :rabbit
 
     def initialize(options = {})
-      @options = options
-      @rabbit  = Adapter.load(options[:adapter] || :bunny)
+      @config = Config.new(options)
+      @rabbit = Adapter.load(config.rabbit)
       connect
     end
 
@@ -63,7 +64,7 @@ module RackRabbit
 
         rabbit.publish(body,
           :correlation_id   => id,
-          :app_id           => options[:app_id] || default_app_id,
+          :app_id           => options[:app_id] || config.app_id,
           :priority         => options[:priority],
           :routing_key      => queue,
           :reply_to         => reply_queue.name,
@@ -86,16 +87,12 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def default_app_id
-      options[:app_id] ||= 'rack-rabbit-client'
-    end
-
     def default_content_type
-      options[:content_type] ||= 'text/plain; charset = "utf-8"'
+      'text/plain; charset = "utf-8"'
     end
 
     def default_content_encoding
-      options[:content_encoding] ||= 'utf-8'
+      'utf-8'
     end
 
     def default_timestamp
@@ -106,7 +103,7 @@ module RackRabbit
 
     def self.define_class_method_for(method_name)
       define_singleton_method(method_name) do |*params|
-        options  = params.last.is_a?(Hash) ? params.last : {}
+        options  = params.last.is_a?(Hash) ? params.pop : {}
         client   = Client.new(options)
         response = client.send(method_name, *params, options)
         client.disconnect

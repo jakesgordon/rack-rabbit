@@ -24,7 +24,7 @@ module RackRabbit
 
       def connect
         return if connected?
-        @connection = ::AMQP.connect
+        @connection = ::AMQP.connect(connection_options)
         @channel = ::AMQP::Channel.new(connection)
         @exchange = channel.default_exchange
         channel.prefetch(1)
