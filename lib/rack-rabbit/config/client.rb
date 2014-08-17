@@ -24,17 +24,9 @@ module RackRabbit
         end
       end
 
-      def queue(value = :missing)
-        if value == :missing
-          values[:queue] ||= "queue"
-        else
-          values[:queue] = value
-        end
-      end
-
       def app_id(value = :missing)
         if value == :missing
-          values[:app_id] ||= "rack-rabbit-#{queue}"
+          values[:app_id] ||= "rack-rabbit-client"
         else
           values[:app_id] = value
         end
