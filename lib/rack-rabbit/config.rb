@@ -7,7 +7,8 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def initialize(options)
-      @options = options || {}
+      @values = {}
+      options.each{|key, value| send(key, value)}
       reload
     end
 
@@ -18,60 +19,150 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def self.has_option(name, options = {})
-      name     = name.to_sym
-      default  = options[:default]
-      sanitize = options[:sanitize]
-      define_method name do |value = :not_provided|
-        if value != :not_provided
-          @options[name] = sanitize ? sanitize.call(value) : value
-        elsif @options[name].nil?
-          if default.respond_to?(:call)
-            @options[name] = instance_exec(&default)
-          else
-            @options[name] = default
-          end
-        end
-        @options[name]
+    def config_file(value = :missing)
+      if value == :missing
+        values[:config_file]
+      else
+        values[:config_file] = filename(value)
       end
     end
 
-    def self.has_hook(name)
-      name = name.to_sym
-      define_method name do |*params, &block|
-        if block
-          @options[name] = block
-        elsif @options[name].respond_to?(:call)
-          @options[name].call(*params)
-        end
+    def rack_file(value = :missing)
+      if value == :missing
+        values[:rack_file] ||= filename("config.ru", File.dirname(config_file || ""))
+      else
+        values[:rack_file] = filename(value, File.dirname(config_file || ""))
       end
     end
 
-    #--------------------------------------------------------------------------
+    def queue(value = :missing)
+      if value == :missing
+        values[:queue] ||= 'rack-rabbit'
+      else
+        values[:queue] = value
+      end
+    end
 
-    has_option :config_file
-    has_option :rack_file,   :default => lambda{ File.join(File.dirname(config_file || ""), "config.ru") }
-    has_option :queue,       :default => 'rack-rabbit'
-    has_option :app_id,      :default => 'rack-rabbit'
-    has_option :workers,     :default => 2
-    has_option :min_workers, :default => 1
-    has_option :max_workers, :default => 100
-    has_option :preload_app, :default => false
-    has_option :log_level,   :default => :info, :sanitize => lambda{|v| v.to_s.downcase.to_sym}
-    has_option :logger,      :default => lambda{ build_default_logger }
-    has_option :adapter,     :default => :bunny, :sanitize => lambda{|v| v.is_a?(Class) ? v : v.to_s.downcase.to_sym}
-    has_option :daemonize,   :default => false
-    has_option :logfile,     :default => lambda{ daemonize ? "/var/log/#{app_id}.log" : nil }
-    has_option :pidfile,     :default => lambda{ daemonize ? "/var/run/#{app_id}.pid" : nil }
+    def app_id(value = :missing)
+      if value == :missing
+        values[:app_id] ||= 'rack-rabbit'
+      else
+        values[:app_id] = value
+      end
+    end
 
-    has_hook :before_fork
-    has_hook :after_fork
+    def workers(value = :missing)
+      if value == :missing
+        values[:workers] ||= 2
+      else
+        values[:workers] = value.to_i
+      end
+    end
+
+    def min_workers(value = :missing)
+      if value == :missing
+        values[:min_workers] ||= 1
+      else
+        values[:min_workers] = value.to_i
+      end
+    end
+
+    def max_workers(value = :missing)
+      if value == :missing
+        values[:max_workers] ||= 32
+      else
+        values[:max_workers] = value.to_i
+      end
+    end
+
+    def preload_app(value = :missing)
+      if value == :missing
+        values[:preload_app]
+      else
+        values[:preload_app] = !!value
+      end
+    end
+
+    def log_level(value = :missing)
+      if value == :missing
+        values[:log_level] ||= :info
+      else
+        values[:log_level] = symbolize(value)
+      end
+    end
+
+    def logger(value = :missing)
+      if value == :missing
+        values[:logger] ||= build_default_logger
+      else
+        values[:logger] = value
+      end
+    end
+
+    def adapter(value = :missing)
+      if value == :missing
+        values[:adapter] ||= :bunny
+      else
+        values[:adapter] = value.is_a?(Class) ? value : symbolize(value)
+      end
+    end
+
+    def daemonize(value = :missing)
+      if value == :missing
+        values[:daemonize]
+      else
+        values[:daemonize] = !!value
+      end
+    end
+
+    def logfile(value = :missing)
+      if value == :missing
+        values[:logfile] ||= daemonize ? "/var/log/#{app_id}.log" : nil
+      else
+        values[:logfile] = filename(value)
+      end
+    end
+
+    def pidfile(value = :missing)
+      if value == :missing
+        values[:pidfile] ||= daemonize ? "/var/run/#{app_id}.log" : nil
+      else
+        values[:pidfile] = filename(value)
+      end
+    end
+
+    def before_fork(server, &block)
+      if block
+        values[:before_fork] = block
+      elsif values[:before_fork].respond_to?(:call)
+        values[:before_fork].call(server)
+      end
+    end
+
+    def after_fork(server, worker, &block)
+      if block
+        values[:after_fork] = block
+      elsif values[:after_fork].respond_to?(:call)
+        values[:after_fork].call(server, worker)
+      end
+    end
 
     #--------------------------------------------------------------------------
 
     private
 
+    attr_reader :values
+
+    def filename(path, relative_to = nil)
+      File.expand_path(path, relative_to)
+    end
+
+    def symbolize(s)
+      s.to_s.downcase.to_sym
+    end
+
     def validate
+      raise ArgumentError, "missing app_id" if app_id.to_s.empty?
       raise ArgumentError, "missing rack config file #{rack_file}" unless File.readable?(rack_file)
       raise ArgumentError, "invalid workers" unless workers.is_a?(Fixnum)
       raise ArgumentError, "invalid min_workers" unless min_workers.is_a?(Fixnum)

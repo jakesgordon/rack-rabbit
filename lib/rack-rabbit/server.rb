@@ -169,16 +169,15 @@ module RackRabbit
     def redirect_output
       if logfile = config.logfile
         logfile = File.expand_path(logfile)
-        FileUtils.mkdir_p File.dirname(logfile), :mode => 0755
+        FileUtils.mkdir_p(File.dirname(logfile), :mode => 0755)
         FileUtils.touch logfile
         File.chmod(0644, logfile)
         $stderr.reopen(logfile, 'a')
         $stdout.reopen($stderr)
         $stdout.sync = $stderr.sync = true
       else
-        $stdin.reopen '/dev/null'
-        $stdout.reopen '/dev/null', 'a'
-        $stderr.reopen $stdout
+        $stderr.reopen('/dev/null', 'a')
+        $stdout.reopen($stderr)
       end
     end
 

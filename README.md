@@ -227,8 +227,6 @@ TODO
  * pre-emptive check for writability of pidfile and logfile (see unicorn)
  * command line option for stopping daemonized server (via pidfile)
  * test --daemonize --preload combination
- * unroll metaprogramming in Config - write individual getters and setters
- * remove need for bin/rack-rabbit to expand file paths, do that in individual config setters
  * need uid/gid options for running daemonized as different user ?
  * worker queue support (ENQUEUE)
  * pub/sub support (PUBLISH)
