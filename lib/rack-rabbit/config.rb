@@ -173,6 +173,8 @@ module RackRabbit
       raise ArgumentError, "invalid logger" unless [:fatal, :error, :warn, :info, :debug].all?{|method| logger.respond_to?(method)}
       raise ArgumentError, "missing pidfile - required for daemon" if daemonize && pidfile.to_s.empty?
       raise ArgumentError, "missing logfile - required for daemon" if daemonize && logfile.to_s.empty?
+      raise ArgumentError, "pidfile not writable" if pidfile && !File.writable?(File.dirname(pidfile))
+      raise ArgumentError, "logfile not writable" if logfile && !File.writable?(File.dirname(logfile))
       validate_adapter
     end
 
