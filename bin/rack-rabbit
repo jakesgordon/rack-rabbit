@@ -21,6 +21,7 @@ app_id_help    = "specify an app_id for this application server (default: rack-r
 queue_help     = "specify the queue to subscribe for incoming requests (default: rack-rabbit)"
 workers_help   = "specify the number of worker processes (default: 2)"
 log_level_help = "specify the log level for rack rabbit output (default: info)"
+preload_help   = "preload the rack app before forking worker processes"
 daemonize_help = "run daemonized in the background"
 pidfile_help   = "specify the pid filename"
 logfile_help   = "specify the log filename"
@@ -37,10 +38,11 @@ op.on("-c", "--config CONFIG",   config_help)    { |value| options[:config_file]
 op.on("-a", "--app_id ID",       app_id_help)    { |value| options[:app_id]      = value      }
 op.on("-q", "--queue QUEUE",     queue_help)     { |value| options[:queue]       = value      }
 op.on("-w", "--workers COUNT",   workers_help)   { |value| options[:workers]     = value.to_i }
-op.on(      "--log-level LEVEL", log_level_help) { |value| options[:log_level]   = value      }
 op.on("-d", "--daemonize",       daemonize_help) {         options[:daemonize]   = true       }
 op.on("-p", "--pid PIDFILE",     pidfile_help)   { |value| options[:pidfile]     = value      }
 op.on("-l", "--log LOGFILE",     logfile_help)   { |value| options[:logfile]     = value      }
+op.on(      "--log-level LEVEL", log_level_help) { |value| options[:log_level]   = value      }
+op.on(      "--preload",         preload_help)   {         options[:preload_app] = true       }
 
 op.separator ""
 op.separator "Ruby options:"

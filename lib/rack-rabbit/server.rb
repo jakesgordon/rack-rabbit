@@ -42,16 +42,17 @@ module RackRabbit
 
       write_pid
 
-      trap_server_signals
-      load_app if config.preload_app
-
       logger.info "RUNNING #{config.app_id} (#{config.rack_file}) #{'DAEMONIZED' if config.daemonize}"
       logger.info "  queue   : #{config.queue}"
       logger.info "  workers : #{config.workers}"
+      logger.info "  preload : true"              if config.preload_app
       logger.info "  adapter : #{config.adapter}"
       logger.info "  logfile : #{config.logfile}" unless config.logfile.nil?
       logger.info "  pidfile : #{config.pidfile}" unless config.pidfile.nil?
 
+      load_app if config.preload_app
+
+      trap_server_signals
       manage_workers
 
     end
@@ -169,6 +170,7 @@ module RackRabbit
       exit if fork
       Dir.chdir "/"
       redirect_output
+      logger.master_pid = $$ if logger.respond_to?(:master_pid)  # inform logger of new master_pid so it can continue to distinguish between "SERVER" and "worker" in log preamble
     end
 
     def redirect_output
@@ -248,6 +250,7 @@ module RackRabbit
         use RackRabbit::Middleware::ProcessName
         run inner_app
       end.to_app
+      logger.info "LOADED #{inner_app.name} FROM #{config.rack_file}"
     end
 
     #--------------------------------------------------------------------------

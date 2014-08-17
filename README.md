@@ -235,7 +235,6 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ----
 
- * test --daemonize --preload combination
  * need uid/gid options for running daemonized as different user ?
  * worker queue support (ENQUEUE)
  * pub/sub support (PUBLISH)

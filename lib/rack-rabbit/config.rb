@@ -189,10 +189,13 @@ module RackRabbit
     end
 
     def build_default_logger
-      master_pid = $$
       logger = Logger.new($stderr)
+      class << logger
+        attr_accessor :master_pid   # track the master_pid (might change if we daemonize) in order to differentiate between "SERVER" vs "worker" in log entry preamble
+      end
+      logger.master_pid = $$
       logger.formatter = proc do |severity, datetime, progname, msg|
-        "[#{Process.pid}:#{$$ == master_pid ? "SERVER" : "worker"}] #{datetime} #{msg}\n"
+        "[#{Process.pid}:#{$$ == logger.master_pid ? "SERVER" : "worker"}] #{datetime} #{msg}\n"
       end
       logger.level = case log_level.to_s.downcase.to_sym 
                      when :fatal then Logger::FATAL
