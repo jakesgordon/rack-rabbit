@@ -17,12 +17,13 @@ summary        = "A load balanced rack server for hosting RabbitMQ consumer proc
 usage          = "Usage:   rack-rabbit [options] rack-file"
 banner         = "#{summary}\n\n#{usage}"
 config_help    = "specify the rack-rabbit configuration file"
-queue_help     = "specify the queue to subscribe for incoming requests"
-workers_help   = "specify the number of worker processes"
-log_level_help = "specify the log level for rack rabbit output"
+app_id_help    = "specify an app_id for this application server (default: rack-rabbit)" 
+queue_help     = "specify the queue to subscribe for incoming requests (default: rack-rabbit)"
+workers_help   = "specify the number of worker processes (default: 2)"
+log_level_help = "specify the log level for rack rabbit output (default: info)"
 daemonize_help = "run daemonized in the background"
-pidfile_help   = "specify the pid filename (full path)"
-logfile_help   = "specify the log filename (full path)"
+pidfile_help   = "specify the pid filename"
+logfile_help   = "specify the log filename"
 include_help   = "specify an additional $LOAD_PATH (may be used more than once)"
 
 op = OptionParser.new
@@ -31,6 +32,7 @@ op.banner = banner
 op.separator ""
 op.separator "RackRabbit options:"
 op.on("-c", "--config CONFIG",   config_help)    { |value| options[:config_file] = value      }
+op.on("-a", "--app_id ID",       app_id_help)    { |value| options[:app_id]      = value      }
 op.on("-q", "--queue QUEUE",     queue_help)     { |value| options[:queue]       = value      }
 op.on("-w", "--workers COUNT",   workers_help)   { |value| options[:workers]     = value.to_i }
 op.on(      "--log-level LEVEL", log_level_help) { |value| options[:log_level]   = value      }
@@ -40,7 +42,7 @@ op.on("-l", "--log LOGFILE",     logfile_help)   { |value| options[:logfile]    
 
 op.separator ""
 op.separator "Ruby options:"
-op.on("-I", "--include PATH", include_help) { |value| $LOAD_PATH.unshift(*value.split(":")) }
+op.on("-I", "--include PATH", include_help) { |value| $LOAD_PATH.unshift(*value.split(":").map{|v| File.expand_path(v)}) }
 
 op.separator ""
 op.separator "Common options:"

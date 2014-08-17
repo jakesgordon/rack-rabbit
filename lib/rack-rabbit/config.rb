@@ -125,7 +125,7 @@ module RackRabbit
 
     def pidfile(value = :missing)
       if value == :missing
-        values[:pidfile] ||= daemonize ? "/var/run/#{app_id}.log" : nil
+        values[:pidfile] ||= daemonize ? "/var/run/#{app_id}.pid" : nil
       else
         values[:pidfile] = filename(value)
       end

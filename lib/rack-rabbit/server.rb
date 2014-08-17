@@ -32,11 +32,15 @@ module RackRabbit
 
     def run
 
+      check_pid
+
       if config.daemonize
         daemonize
       elsif config.logfile
         redirect_output
       end
+
+      write_pid
 
       trap_server_signals
       load_app if config.preload_app
@@ -155,7 +159,7 @@ module RackRabbit
     end
 
     #==========================================================================
-    # DAEMONIZING and OUTPUT REDIRECTION
+    # DAEMONIZING, PID MANAGEMENT, and OUTPUT REDIRECTION
     #==========================================================================
 
     def daemonize
@@ -179,6 +183,44 @@ module RackRabbit
         $stderr.reopen('/dev/null', 'a')
         $stdout.reopen($stderr)
       end
+    end
+
+    def write_pid
+      pidfile = config.pidfile
+      if pidfile
+        begin
+          File.open(pidfile, ::File::CREAT | ::File::EXCL | ::File::WRONLY){|f| f.write("#{Process.pid}") }
+          at_exit { File.delete(pidfile) if File.exists?(pidfile) }
+        rescue Errno::EEXIST
+          check_pid
+          retry
+        end
+      end
+    end
+
+    def check_pid
+      pidfile = config.pidfile
+      if pidfile
+        case pid_status(pidfile)
+        when :running, :not_owned
+          logger.fatal "A server is already running. Check #{pidfile}"
+          exit(1)
+        when :dead
+          File.delete(pidfile)
+        end
+      end
+    end
+
+    def pid_status(pidfile)
+      return :exited unless File.exists?(pidfile)
+      pid = ::File.read(pidfile).to_i
+      return :dead if pid == 0
+      Process.kill(0, pid)
+      :running
+    rescue Errno::ESRCH
+      :dead
+    rescue Errno::EPERM
+      :not_owned
     end
 
     #==========================================================================

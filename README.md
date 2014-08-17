@@ -221,7 +221,6 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ----
 
- * actually write (and cleanup) the PID file
  * ensure can't be daemonized twice with same PID file
  * pre-emptive check for writability of pidfile and logfile (see unicorn)
  * command line option for stopping daemonized server (via pidfile)
