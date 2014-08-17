@@ -45,8 +45,9 @@ module RackRabbit
       trap_server_signals
       load_app if config.preload_app
 
-      logger.info "RUNNING #{app} (#{config.rack_file}) #{'DAEMONIZED' if config.daemonize}"
+      logger.info "RUNNING #{config.app_id} (#{config.rack_file}) #{'DAEMONIZED' if config.daemonize}"
       logger.info "  queue   : #{config.queue}"
+      logger.info "  workers : #{config.workers}"
       logger.info "  adapter : #{config.adapter}"
       logger.info "  logfile : #{config.logfile}" unless config.logfile.nil?
       logger.info "  pidfile : #{config.pidfile}" unless config.pidfile.nil?
