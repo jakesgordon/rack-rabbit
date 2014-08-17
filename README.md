@@ -235,14 +235,12 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ----
 
- * need uid/gid options for running daemonized as different user ?
  * worker queue support (ENQUEUE)
  * pub/sub support (PUBLISH)
  * testing
  * better documentation
  * platform support
  * MISC
-   - sinatra example is not using the RackRabbit Logger
    - allow a single reply queue to be shared across client requests
 
 License

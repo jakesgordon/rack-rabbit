@@ -2,9 +2,7 @@ require 'sinatra/base'
 
 class MyApp < Sinatra::Base
 
-  configure do
-    enable :logging
-  end
+  set :logging, nil   # skip sinatra logging middleware, use the env['rack.logger'] provided by the rack-rabbit server
 
   get "/hello" do
     "Hello World"
