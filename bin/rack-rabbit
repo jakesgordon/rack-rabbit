@@ -25,6 +25,8 @@ daemonize_help = "run daemonized in the background"
 pidfile_help   = "specify the pid filename"
 logfile_help   = "specify the log filename"
 include_help   = "specify an additional $LOAD_PATH (may be used more than once)"
+debug_help     = "set $DEBUG to true"
+warn_help      = "enable warnings"
 
 op = OptionParser.new
 op.banner = banner
@@ -43,6 +45,8 @@ op.on("-l", "--log LOGFILE",     logfile_help)   { |value| options[:logfile]    
 op.separator ""
 op.separator "Ruby options:"
 op.on("-I", "--include PATH", include_help) { |value| $LOAD_PATH.unshift(*value.split(":").map{|v| File.expand_path(v)}) }
+op.on(      "--debug",        debug_help)   { $DEBUG = true }
+op.on(      "--warn",         warn_help)    { $-w = true    }
 
 op.separator ""
 op.separator "Common options:"

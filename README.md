@@ -221,7 +221,6 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ----
 
- * command line option for stopping daemonized server (via pidfile)
  * test --daemonize --preload combination
  * need uid/gid options for running daemonized as different user ?
  * worker queue support (ENQUEUE)

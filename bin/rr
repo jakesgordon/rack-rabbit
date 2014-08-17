@@ -27,6 +27,8 @@ path_help    = "specify the path of the message (default '')"
 body_help    = "specify the body of the message (default '')"
 adapter_help = "specify an alternate rabbit client gem (default: bunny)"
 include_help = "specify an additional $LOAD_PATH (may be used more than once)"
+debug_help   = "set $DEBUG to true"
+warn_help    = "enable warnings"
 
 op = OptionParser.new
 op.banner = banner
@@ -42,6 +44,8 @@ op.on("-a", "--adapter ADAPTER", adapter_help) { |value| options[:adapter] = val
 op.separator ""
 op.separator "Ruby options:"
 op.on("-I", "--include PATH", include_help) { |value| $LOAD_PATH.unshift(*value.split(":")) }
+op.on(      "--debug",        debug_help)   { $DEBUG = true }
+op.on(      "--warn",         warn_help)    { $-w = true    }
 
 op.separator ""
 op.separator "Common options:"
