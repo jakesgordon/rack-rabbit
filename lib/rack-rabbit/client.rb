@@ -104,7 +104,7 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def self.define_single_shot_method(method_name)
+    def self.define_class_method_for(method_name)
       define_singleton_method(method_name) do |*params|
         options  = params.last.is_a?(Hash) ? params.last : {}
         client   = Client.new(options)
@@ -114,11 +114,11 @@ module RackRabbit
       end
     end
 
-    define_single_shot_method :request
-    define_single_shot_method :get
-    define_single_shot_method :post
-    define_single_shot_method :put
-    define_single_shot_method :delete
+    define_class_method_for :request
+    define_class_method_for :get
+    define_class_method_for :post
+    define_class_method_for :put
+    define_class_method_for :delete
 
     #--------------------------------------------------------------------------
 
