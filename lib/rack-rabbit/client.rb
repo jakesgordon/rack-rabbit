@@ -1,17 +1,15 @@
 require 'securerandom'
 require 'rack-rabbit/adapter'
-require 'rack-rabbit/config/client'
 
 module RackRabbit
   class Client
 
     #--------------------------------------------------------------------------
 
-    attr_reader :config, :rabbit
+    attr_reader :rabbit
 
     def initialize(options = {})
-      @config = Config.new(options)
-      @rabbit = Adapter.load(config.rabbit)
+      @rabbit = Adapter.load(DEFAULT_RABBIT.merge(options))
       connect
     end
 
@@ -64,7 +62,6 @@ module RackRabbit
 
         rabbit.publish(body,
           :correlation_id   => id,
-          :app_id           => options[:app_id] || config.app_id,
           :priority         => options[:priority],
           :routing_key      => queue,
           :reply_to         => reply_queue.name,
@@ -104,7 +101,7 @@ module RackRabbit
     def self.define_class_method_for(method_name)
       define_singleton_method(method_name) do |*params|
         options  = params.last.is_a?(Hash) ? params.pop : {}
-        client   = Client.new(options)
+        client   = Client.new(options.delete(:rabbit))
         response = client.send(method_name, *params, options)
         client.disconnect
         response
