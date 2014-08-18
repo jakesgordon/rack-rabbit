@@ -19,6 +19,14 @@ module RackRabbit
       headers[RackRabbit::HEADER::CONTENT_ENCODING]
     end
 
+    def succeeded?
+      status == 200     # TODO: broaden this definition
+    end
+
+    def failed?
+      !succeeded?
+    end
+
     #--------------------------------------------------------------------------
 
     def to_s

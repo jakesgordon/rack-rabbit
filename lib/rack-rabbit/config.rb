@@ -82,6 +82,14 @@ module RackRabbit
       end
     end
 
+    def acknowledge(value = :missing)
+      if value == :missing
+        values[:acknowledge]
+      else
+        values[:acknowledge] = !!value
+      end
+    end
+
     def preload_app(value = :missing)
       if value == :missing
         values[:preload_app]

@@ -237,16 +237,17 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ----
 
- * :ack support
  * pub/sub support (PUBLISH)
  * testing
  * better documentation
+   - :ack and :reject support
  * platform support
  * MISC
    - avoid infinite spawn worker loop if worker fails during startup (e.g. connection to rabbit fails)
    - allow a single reply queue to be shared across client requests
    - allow multiple synchronous req/response in parallel (block until all have replied)
    - automatically deserialize body into hash if content type is json ?
+   - have exception callstacks sent back to client (in development mode only)
 
 License
 -------

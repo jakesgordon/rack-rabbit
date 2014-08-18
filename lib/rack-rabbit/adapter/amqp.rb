@@ -35,10 +35,10 @@ module RackRabbit
         connection.close unless connection.nil?
       end
 
-      def subscribe(queue, &block)
+      def subscribe(queue, options = {}, &block)
         queue = channel.queue(queue) if queue.is_a?(Symbol) || queue.is_a?(String)
-        queue.subscribe do |properties, payload|
-          yield Message.new(properties, payload)
+        queue.subscribe(options) do |properties, payload|
+          yield Message.new(self, properties.delivery_tag, properties, payload)
         end
       end
 
@@ -50,6 +50,14 @@ module RackRabbit
         channel.queue("", :exclusive => true, :auto_delete => true) do |reply_queue, declare_ok|
           yield reply_queue
         end
+      end
+
+      def ack(delivery_tag)
+        channel.acknowledge(delivery_tag, false)
+      end
+
+      def reject(delivery_tag, requeue = false)
+        channel.reject(delivery_tag, requeue)
       end
 
     private

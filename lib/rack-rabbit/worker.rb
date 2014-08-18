@@ -38,13 +38,10 @@ module RackRabbit
 
       rabbit.startup
       rabbit.connect
-      rabbit.subscribe(config.queue) do |message|
+      rabbit.subscribe(config.queue, :ack => config.acknowledge) do |message|
         lock.synchronize do
           start = Time.now
           response = handle(message)
-          if message.should_reply?
-            rabbit.publish(response.body, response_properties(message, response))
-          end
           finish = Time.now
           log(message, response, finish - start)
         end
@@ -106,7 +103,30 @@ module RackRabbit
       body = body_chunks.join
       body_chunks.close if body.respond_to?(:close)
 
-      Response.new(status, headers, body)
+      response = Response.new(status, headers, body)
+
+    rescue Exception => e    # don't let exceptions bubble out of worker process
+
+      logger.error e
+      logger.error e.backtrace.join("\n")
+
+      response = Response.new(500, {}, "")
+
+    ensure
+
+      if message.should_reply?
+        rabbit.publish(response.body, response_properties(message, response))
+      end
+
+      if !message.confirmed? && config.acknowledge
+        if response.succeeded?
+          message.ack
+        else
+          message.reject   # we can configure rejected messages to show up in a dead-letter queue for debugging
+        end
+      end
+
+      response
 
     end
 
@@ -115,6 +135,7 @@ module RackRabbit
     def build_env(message)
 
       default_env.merge({
+        'rabbit.message' => message,
         'rack.input'     => StringIO.new(message.body),
         'REQUEST_METHOD' => message.method,
         'REQUEST_PATH'   => message.uri,
