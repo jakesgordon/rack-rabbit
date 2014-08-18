@@ -1,4 +1,5 @@
 require 'securerandom'
+require 'rack-rabbit'
 require 'rack-rabbit/adapter'
 
 module RackRabbit

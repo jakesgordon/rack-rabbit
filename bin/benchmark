@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+
+$LOAD_PATH.unshift("lib")
+
+require 'benchmark'
+require 'rack-rabbit/client'
+
+RABBIT = {
+  :host => "127.0.0.1"
+}
+
+ITERATIONS = 1000
+QUEUE      = "foo"
+
+Benchmark.bm do |x|
+  x.report do
+    client = RackRabbit::Client.new(RABBIT)
+    ITERATIONS.times do |i|
+      result = client.get(QUEUE, "/noop/#{i}").body
+      abort "unexpected result #{result}" unless result == "noop"
+    end
+    client.disconnect
+  end
+end
+
+

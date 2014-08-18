@@ -247,6 +247,7 @@ TODO
  * MISC
    - avoid infinite spawn worker loop if worker fails during startup (e.g. connection to rabbit fails)
    - allow a single reply queue to be shared across client requests
+   - allow multiple synchronous req/response in parallel (block until all have replied)
 
 License
 -------
