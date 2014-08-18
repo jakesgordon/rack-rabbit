@@ -7,10 +7,11 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    attr_reader :rabbit
+    attr_reader :rabbit, :default_queue
 
     def initialize(options = {})
-      @rabbit = Adapter.load(DEFAULT_RABBIT.merge(options))
+      @rabbit        = Adapter.load(DEFAULT_RABBIT.merge(options))
+      @default_queue = options[:queue]
       connect
     end
 
@@ -26,30 +27,33 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def get(queue, path, options = {})
-      request(queue, "GET", path, "", options)
+    def get(path, options = {})
+      request(options.merge(:method => :GET, :path => path))
     end
 
-    def post(queue, path, body, options = {})
-      request(queue, "POST", path, body, options)
+    def post(path, body, options = {})
+      request(options.merge(:method => :POST, :path => path, :body => body))
     end
 
-    def put(queue, path, body, options = {})
-      request(queue, "PUT", path, body, options)
+    def put(path, body, options = {})
+      request(options.merge(:method => :PUT, :path => path, :body => body))
     end
 
-    def delete(queue, path, options = {})
-      request(queue, "DELETE", path, "", options)
+    def delete(path, options = {})
+      request(options.merge(:method => :DELETE, :path => path))
     end
 
     #--------------------------------------------------------------------------
 
-    def request(queue, method, path, body, options = {})
+    def request(options = {})
 
       id        = SecureRandom.uuid
       lock      = Mutex.new
       condition = ConditionVariable.new
+      method    = options[:method]  || :GET
+      path      = options[:path]    || ""
       headers   = options[:headers] || {}
+      body      = options[:body]    || ""
       response  = nil
 
       rabbit.with_reply_queue do |reply_queue|
@@ -63,9 +67,9 @@ module RackRabbit
 
         rabbit.publish(body,
           :correlation_id   => id,
-          :priority         => options[:priority],
-          :routing_key      => queue,
           :reply_to         => reply_queue.name,
+          :priority         => options[:priority],
+          :routing_key      => options[:queue]            || default_queue,
           :content_type     => options[:content_type]     || default_content_type,
           :content_encoding => options[:content_encoding] || default_content_encoding,
           :timestamp        => options[:timestamp]        || default_timestamp,
@@ -80,6 +84,31 @@ module RackRabbit
       lock.synchronize { condition.wait(lock) }
 
       response
+
+    end
+
+    #--------------------------------------------------------------------------
+
+    def enqueue(options = {})
+
+      method  = options[:method]  || :GET
+      path    = options[:path]    || ""
+      headers = options[:headers] || {}
+      body    = options[:body]    || ""
+
+      rabbit.publish(body,
+        :priority         => options[:priority],
+        :routing_key      => options[:queue]            || default_queue,
+        :content_type     => options[:content_type]     || default_content_type,
+        :content_encoding => options[:content_encoding] || default_content_encoding,
+        :timestamp        => options[:timestamp]        || default_timestamp,
+        :headers          => headers.merge({
+          RackRabbit::HEADER::METHOD => method.to_s.upcase,
+          RackRabbit::HEADER::PATH   => path
+        })
+      )
+
+      true
 
     end
 
@@ -109,11 +138,12 @@ module RackRabbit
       end
     end
 
-    define_class_method_for :request
     define_class_method_for :get
     define_class_method_for :post
     define_class_method_for :put
     define_class_method_for :delete
+    define_class_method_for :request
+    define_class_method_for :enqueue
 
     #--------------------------------------------------------------------------
 

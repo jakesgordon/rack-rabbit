@@ -25,7 +25,6 @@ The goal is to support a RabbitMQ-based SOA with multiple message passing patter
   * Synchronous Request/Response (e.g. GET/POST/PUT/DELETE)
   * Asynchronous Worker queue    (e.g. ENQUEUE)
   * Asynchronous PubSub          (e.g. PUBLISH)
-  * Asynchronous Broadcast       (e.g. BROADCAST)
 
 Installation
 ------------
@@ -87,10 +86,10 @@ You can connect to the worker from your client applications using the `RackRabbi
 
     require 'rack-rabbit/client'
 
-    client = RackRabbit::Client.new
+    client = RackRabbit::Client.new(:queue => :myqueue)
 
-    foo = client.get(:myqueue, "/hello")                   # -> "Hello World"
-    bar = client.post(:myqueue, "/submit", "some data")    # -> "Submitted some data"
+    foo = client.get  "/hello"                 # -> "Hello World"
+    bar = client.post "/submit", "some data"   # -> "Submitted some data"
 
     client.disconnect
 
@@ -229,7 +228,6 @@ TODO: document RackRabbit::Client and extend it to support all patterns
   * Synchronous Request/Response (e.g. GET/POST/PUT/DELETE)
   * Asynchronous Worker queue (e.g. ENQUEUE)
   * Asynchronous PubSub (e.g. PUBLISH)
-  * Asynchronous Broadcast (e.g. BROADCAST)
 
 Supported Platforms
 -------------------
@@ -239,7 +237,7 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ----
 
- * worker queue support (ENQUEUE)
+ * :ack support
  * pub/sub support (PUBLISH)
  * testing
  * better documentation
@@ -248,6 +246,7 @@ TODO
    - avoid infinite spawn worker loop if worker fails during startup (e.g. connection to rabbit fails)
    - allow a single reply queue to be shared across client requests
    - allow multiple synchronous req/response in parallel (block until all have replied)
+   - automatically deserialize body into hash if content type is json ?
 
 License
 -------

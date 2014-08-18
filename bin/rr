@@ -53,7 +53,7 @@ op.separator ""
 op.parse!(ARGV)
 
 if options[:method].nil?
-  if options[:method] = ["GET", "POST", "PUT", "DELETE"].find{|m| m == ARGV[0].to_s.upcase }
+  if options[:method] = [:GET, :POST, :PUT, :DELETE, :ENQUEUE].find{|m| m == ARGV[0].to_s.upcase.to_sym }
     ARGV.delete_at(0)
   else
     options[:method] = :GET
@@ -74,11 +74,16 @@ case action
 when :help    then puts op.to_s
 when :version then puts RackRabbit::VERSION
 else
-  puts RackRabbit::Client.request(options[:queue],
-                                  options[:method],
-                                  options[:path],
-                                  options[:body],
-                                  :rabbit => options[:rabbit])
+  case options[:method]
+  when :GET     then puts RackRabbit::Client.get(options[:path], options)
+  when :POST    then puts RackRabbit::Client.post(options[:path], options[:body], options)
+  when :PUT     then puts RackRabbit::Client.put(options[:path], options[:body], options)
+  when :DELETE  then puts RackRabbit::Client.delete(options[:path], options)
+  when :ENQUEUE then puts RackRabbit::Client.enqueue(options)
+  when :PUBLISH then puts RackRabbit::Client.publish(options)
+  else
+    raise ArgumentError, "unknown method #{options[:method]}"
+  end
 end
 
 #==============================================================================
