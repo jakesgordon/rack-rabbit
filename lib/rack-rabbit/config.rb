@@ -1,5 +1,7 @@
 require 'logger'
 
+require 'rack-rabbit'
+
 module RackRabbit
   class Config
 
@@ -20,7 +22,7 @@ module RackRabbit
 
     def rabbit(value = :missing)
       if value == :missing
-        values[:rabbit] ||= DEFAULT_RABBIT
+        values[:rabbit] ||= {}.merge(DEFAULT_RABBIT)
       elsif value.is_a?(Hash)
         rabbit.merge!(value)
       end

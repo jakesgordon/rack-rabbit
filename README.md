@@ -239,8 +239,20 @@ TODO
 
  * pub/sub support (PUBLISH)
  * testing
+   - config
+   - signals
+   - message
+   - response
+   - worker
+   - server
+   - client
+   - adapter/bunny
+   - adapter/amqp
+   - middleware/procname
+
  * better documentation
    - :ack and :reject support
+
  * platform support
  * MISC
    - avoid infinite spawn worker loop if worker fails during startup (e.g. connection to rabbit fails)
