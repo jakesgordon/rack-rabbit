@@ -239,7 +239,6 @@ TODO
 
  * pub/sub support (PUBLISH)
  * testing
-   - response
    - worker
    - server
    - client

@@ -20,7 +20,7 @@ module RackRabbit
     end
 
     def succeeded?
-      status == 200     # TODO: broaden this definition
+      (200..299).include?(status)
     end
 
     def failed?
@@ -30,12 +30,16 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def to_s
-      case status
-      when RackRabbit::STATUS::SUCCESS   then body
-      when RackRabbit::STATUS::NOT_FOUND then "#{status} Not Found"
-      when RackRabbit::STATUS::FAILED    then "#{status} Internal Server Error"
+      if succeeded?
+        body
       else
-        status.to_s
+        case status
+        when RackRabbit::STATUS::BAD_REQUEST then "#{status} Bad Request"
+        when RackRabbit::STATUS::NOT_FOUND   then "#{status} Not Found"
+        when RackRabbit::STATUS::FAILED      then "#{status} Internal Server Error"
+        else
+          status.to_s
+        end
       end
     end
 
