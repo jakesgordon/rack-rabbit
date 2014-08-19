@@ -7,12 +7,6 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    CONTENT_TYPE     = "text/plain; charset = \"utf-8\""
-    CONTENT_ENCODING = "utf-8"
-    BODY             = "body"
-
-    #--------------------------------------------------------------------------
-
     def test_default_response
 
       headers  = {}

@@ -7,15 +7,9 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def get_config(options = {})
-      RackRabbit::Config.new(default_options.merge(options))
-    end
-
-    #--------------------------------------------------------------------------
-
     def test_construct_with_defaults
 
-      config = get_config
+      config = build_config
 
       assert_equal("127.0.0.1",         config.rabbit[:host])
       assert_equal("5672",              config.rabbit[:port])
@@ -43,7 +37,7 @@ module RackRabbit
 
       logger = Logger.new($stdout)
 
-      config = get_config(
+      config = build_config(
         :rack_file   => DEFAULT_RACK_APP,
         :rabbit      => { :host => "10.10.10.10", :port => "1234", :adapter => "amqp" },
         :queue       => "myqueue",
@@ -84,7 +78,7 @@ module RackRabbit
 
     def test_construct_from_configuration_file
 
-      config = get_config(:config_file => SIMPLE_CONFIG)
+      config = build_config(:config_file => SIMPLE_CONFIG)
 
       assert_equal("10.10.10.10",                 config.rabbit[:host])
       assert_equal("1234",                        config.rabbit[:port])
@@ -110,7 +104,7 @@ module RackRabbit
 
     def test_rabbit
 
-      config = get_config
+      config = build_config
 
       assert_equal("127.0.0.1", config.rabbit[:host])
       assert_equal("5672",      config.rabbit[:port])
@@ -135,7 +129,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def test_config_file
-      config = get_config
+      config = build_config
       assert_equal(nil, config.config_file)
       config.config_file "examples/simple.conf"
       assert_equal(File.expand_path("examples/simple.conf"), config.config_file)
@@ -144,7 +138,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def test_rack_file
-      config = get_config
+      config = build_config
       assert_equal(DEFAULT_RACK_APP, config.rack_file)
       config.rack_file SIMPLE_RACK_APP
       assert_equal(SIMPLE_RACK_APP, config.rack_file)
@@ -160,14 +154,14 @@ module RackRabbit
     end
 
     def test_rack_file_default_is_relative_to_config_file
-      config = get_config(:config_file => EMPTY_CONFIG)
+      config = build_config(:config_file => EMPTY_CONFIG)
       assert_equal(File.join(File.dirname(EMPTY_CONFIG), "config.ru"), config.rack_file)
     end
 
     #--------------------------------------------------------------------------
 
     def test_queue
-      config = get_config
+      config = build_config
       assert_equal("queue", config.queue)
       config.queue "myqueue"
       assert_equal("myqueue", config.queue)
@@ -176,21 +170,21 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def test_app_id
-      config = get_config
+      config = build_config
       assert_equal("rack-rabbit-queue", config.app_id)
       config.app_id "myapp"
       assert_equal("myapp", config.app_id)
     end
 
     def test_app_id_defaults_to_queue_name
-      config = get_config(:queue => "magic-queue")
+      config = build_config(:queue => "magic-queue")
       assert_equal("rack-rabbit-magic-queue", config.app_id) 
     end
 
     #--------------------------------------------------------------------------
 
     def test_workers
-      config = get_config
+      config = build_config
       assert_equal(2, config.workers)
       config.workers 7
       assert_equal(7, config.workers)
@@ -199,7 +193,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def test_min_workers
-      config = get_config
+      config = build_config
       assert_equal(1, config.min_workers)
       config.min_workers 8
       assert_equal(8, config.min_workers)
@@ -208,7 +202,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def test_max_workers
-      config = get_config
+      config = build_config
       assert_equal(32, config.max_workers)
       config.max_workers 64
       assert_equal(64, config.max_workers)
@@ -217,7 +211,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def test_acknowledge
-      config = get_config
+      config = build_config
       assert_equal(nil, config.acknowledge)
       config.acknowledge true
       assert_equal(true, config.acknowledge)
@@ -228,7 +222,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def test_preload_app
-      config = get_config
+      config = build_config
       assert_equal(nil, config.preload_app)
       config.preload_app true
       assert_equal(true, config.preload_app)
@@ -239,7 +233,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def test_daemonize
-      config = get_config
+      config = build_config
       assert_equal(nil, config.daemonize)
       config.daemonize true
       assert_equal(true, config.daemonize)
@@ -250,7 +244,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def test_log_level
-      config = get_config
+      config = build_config
       assert_equal(:info, config.log_level)
       config.log_level :debug
       assert_equal(:debug, config.log_level)
@@ -258,16 +252,9 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    class CustomLogger < Logger
-      def initialize(file, level)
-        super(file)
-        self.level = level
-      end
-    end
-
     def test_logger
 
-      config = get_config(:log_level => :fatal)
+      config = build_config(:log_level => :fatal)
 
       assert_equal(Logger,        config.logger.class)
       assert_equal(true,          config.logger.respond_to?(:master_pid))
@@ -287,35 +274,35 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def test_logfile
-      config = get_config
+      config = build_config
       assert_equal(nil, config.logfile)
       config.logfile "myapp.log"
       assert_equal(File.expand_path("myapp.log"), config.logfile)
     end
 
     def test_logfile_defaults_when_daemonized
-      config = get_config(:daemonize => true, :app_id => "myapp", :skip_filesystem_checks => true)
+      config = build_config(:daemonize => true, :app_id => "myapp", :skip_filesystem_checks => true)
       assert_equal("/var/log/myapp.log", config.logfile)
     end
 
     #--------------------------------------------------------------------------
 
     def test_pidfile
-      config = get_config
+      config = build_config
       assert_equal(nil, config.pidfile)
       config.pidfile "myapp.pid"
       assert_equal(File.expand_path("myapp.pid"), config.pidfile)
     end
 
     def test_pidfile_defaults_when_daemonized
-      config = get_config(:daemonize => true, :app_id => "myapp", :skip_filesystem_checks => true)
+      config = build_config(:daemonize => true, :app_id => "myapp", :skip_filesystem_checks => true)
       assert_equal("/var/run/myapp.pid", config.pidfile)
     end
 
     #--------------------------------------------------------------------------
 
     def test_before_fork
-      config = get_config
+      config = build_config
       server = nil
       config.before_fork do |s|
         server = s
@@ -325,7 +312,7 @@ module RackRabbit
     end
 
     def test_after_fork
-      config = get_config
+      config = build_config
       server = nil
       worker = nil
       config.after_fork do |s, w|
@@ -335,6 +322,19 @@ module RackRabbit
       config.after_fork(:server, :worker)
       assert_equal(:server, server, "verify block got called")
       assert_equal(:worker, worker, "verify block got called")
+    end
+
+    #==========================================================================
+    # private helper methods
+    #==========================================================================
+
+    private
+
+    class CustomLogger < Logger
+      def initialize(file, level)
+        super(file)
+        self.level = level
+      end
     end
 
     #--------------------------------------------------------------------------
