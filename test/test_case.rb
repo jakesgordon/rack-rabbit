@@ -1,5 +1,7 @@
 require 'minitest/autorun'
 
+require 'rack-rabbit'
+
 module RackRabbit
   class TestCase < Minitest::Unit::TestCase
 
@@ -14,9 +16,26 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
+    def default_options
+      return {
+        :rack_file => DEFAULT_RACK_APP    # required
+      }
+    end
+
+    #--------------------------------------------------------------------------
+
     def assert_raises_argument_error(message = nil, &block)
       e = assert_raises(ArgumentError, &block)
       assert_match(/#{message}/, e.message) unless message.nil?
+    end
+
+    #--------------------------------------------------------------------------
+
+    def measure
+      start  = Time.now
+      yield
+      finish = Time.now
+      finish - start
     end
 
     #--------------------------------------------------------------------------

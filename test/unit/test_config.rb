@@ -11,12 +11,6 @@ module RackRabbit
       RackRabbit::Config.new(default_options.merge(options))
     end
 
-    def default_options
-      return {
-        :rack_file => DEFAULT_RACK_APP
-      }
-    end
-
     #--------------------------------------------------------------------------
 
     def test_construct_with_defaults
