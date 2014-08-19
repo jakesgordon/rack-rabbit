@@ -10,7 +10,7 @@ module RackRabbit
     def test_default_response
 
       headers  = {}
-      response = Response.new(200, headers, BODY)
+      response = build_response(200, headers, BODY)
 
       assert_equal(200,     response.status)
       assert_equal(headers, response.headers)
@@ -32,7 +32,7 @@ module RackRabbit
         RackRabbit::HEADER::CONTENT_ENCODING => CONTENT_ENCODING,
         :foo                                 => "bar"
       }
-      response = Response.new(200, headers, BODY)
+      response = build_response(200, headers, BODY)
 
       assert_equal(200,              response.status)
       assert_equal(headers,          response.headers)
@@ -53,13 +53,13 @@ module RackRabbit
       expected_failure = [ 400, 404, 500 ]
 
       expected_success.each do |status|
-        response = Response.new(status, {}, BODY)
+        response = build_response(status, {}, BODY)
         assert_equal(true,  response.succeeded?, "status #{status} should be considered a success")
         assert_equal(false, response.failed?,    "status #{status} should be considered a success")
       end
 
       expected_failure.each do |status|
-        response = Response.new(status, {}, BODY)
+        response = build_response(status, {}, BODY)
         assert_equal(false, response.succeeded?, "status #{status} should be considered a failure")
         assert_equal(true,  response.failed?,    "status #{status} should be considered a failure")
       end

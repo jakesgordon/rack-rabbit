@@ -116,7 +116,7 @@ module RackRabbit
       worker_pids << fork do
         signals.close
         load_app unless config.preload_app
-        worker = Worker.new(self, app)
+        worker = Worker.new(config, app)
         config.after_fork(self, worker)
         worker.run
       end
@@ -251,6 +251,7 @@ module RackRabbit
         run inner_app
       end.to_app
       logger.info "LOADED #{inner_app.name} FROM #{config.rack_file}"
+      @app
     end
 
     #--------------------------------------------------------------------------

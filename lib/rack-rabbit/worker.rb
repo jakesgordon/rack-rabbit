@@ -10,18 +10,16 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    attr_reader :server,
-                :config,
+    attr_reader :config,
                 :logger,
                 :signals,
                 :lock,
                 :rabbit,
                 :app
 
-    def initialize(server, app)
-      @server  = server
-      @config  = server.config
-      @logger  = server.logger
+    def initialize(config, app)
+      @config  = config
+      @logger  = config.logger
       @signals = Signals.new
       @lock    = Mutex.new
       @rabbit  = Adapter.load(config.rabbit)
@@ -110,7 +108,7 @@ module RackRabbit
       logger.error e
       logger.error e.backtrace.join("\n")
 
-      response = Response.new(500, {}, "")
+      response = Response.new(500, {}, "Internal Server Error")
 
     ensure
 
@@ -136,7 +134,7 @@ module RackRabbit
 
       default_env.merge({
         'rabbit.message' => message,
-        'rack.input'     => StringIO.new(message.body),
+        'rack.input'     => StringIO.new(message.body || ""),
         'REQUEST_METHOD' => message.method,
         'REQUEST_PATH'   => message.uri,
         'PATH_INFO'      => message.path,

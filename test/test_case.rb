@@ -1,9 +1,13 @@
 require 'minitest/autorun'
+require 'rack/builder'
 require 'ostruct'
+require 'timecop'
+require 'pp'
 
 require 'rack-rabbit'
 require 'rack-rabbit/config'
 require 'rack-rabbit/message'
+require 'rack-rabbit/response'
 require 'rack-rabbit/server'
 
 module RackRabbit
@@ -17,6 +21,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     DEFAULT_RACK_APP = File.expand_path("examples/config.ru",   File.dirname(__FILE__))
+    ERROR_RACK_APP   = File.expand_path("examples/error.ru",    File.dirname(__FILE__))
     SIMPLE_RACK_APP  = File.expand_path("examples/simple.ru",   File.dirname(__FILE__))
     EXAMINE_RACK_APP = File.expand_path("examples/examine.ru",  File.dirname(__FILE__))
 
@@ -32,6 +37,10 @@ module RackRabbit
     PATH             = "/foo/bar"
     QUERY            = "a=b&c=d"
     URI              = "#{PATH}?#{QUERY}"
+
+    #--------------------------------------------------------------------------
+
+    NullLogger = Rack::NullLogger.new($stdout)
 
     #--------------------------------------------------------------------------
 
@@ -59,16 +68,20 @@ module RackRabbit
       Config.new({ :rack_file => DEFAULT_RACK_APP }.merge(options))
     end
 
-    def build_server(options = {})
-      Server.new({ :rack_file => DEFAULT_RACK_APP }.merge(options))
-    end
-
     def build_rabbit_properties(options = {})
       OpenStruct.new(options)
     end
 
     def build_message(options = {})
       Message.new(rabbit, options[:delivery_tag], build_rabbit_properties(options), options[:body])
+    end
+
+    def build_response(status, headers, body)
+      Response.new(status, headers, body)
+    end
+
+    def build_app(rack_file)
+      Rack::Builder.parse_file(rack_file)[0]
     end
 
     #--------------------------------------------------------------------------
