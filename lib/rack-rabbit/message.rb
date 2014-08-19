@@ -15,7 +15,7 @@ module RackRabbit
       @correlation_id     = properties.correlation_id
       @body               = body
       @headers            = properties.headers || {}
-      @method             = headers.delete(RackRabbit::HEADER::METHOD) || "GET"
+      @method             = headers.delete(RackRabbit::HEADER::METHOD) || :GET
       @uri                = headers.delete(RackRabbit::HEADER::PATH)   || ""
       @status             = headers.delete(RackRabbit::HEADER::STATUS)
       @path, @query       = uri.split(/\?/)

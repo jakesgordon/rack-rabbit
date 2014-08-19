@@ -1,4 +1,5 @@
 require 'minitest/autorun'
+require 'ostruct'
 
 require 'rack-rabbit'
 
