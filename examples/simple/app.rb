@@ -22,10 +22,11 @@ class SimpleApp
       sleep 1
     end
 
-    env["rabbit.message"].ack if path.include?("ackit")
-    env["rabbit.message"].reject if path.include?("rejectit")
-
-    raise "wtf" if path.include?("error")
+    unless path.nil?
+      env["rabbit.message"].ack    if path.include?("ackit")
+      env["rabbit.message"].reject if path.include?("rejectit")
+      raise "wtf"                  if path.include?("error")
+    end
 
     [ 200, {}, [ response.join("\n") ] ]
 
