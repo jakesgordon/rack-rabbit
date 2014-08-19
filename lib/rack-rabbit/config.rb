@@ -7,15 +7,15 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def initialize(options)
+    def initialize(options = {})
       @values = {}
       options.each{|key, value| send(key, value) if respond_to?(key)}
-      reload
+      reload(options)
     end
 
-    def reload
+    def reload(options = {})
       instance_eval(File.read(config_file), config_file) if config_file && File.exists?(config_file)
-      validate
+      validate(options)
     end
 
     #--------------------------------------------------------------------------
@@ -100,6 +100,14 @@ module RackRabbit
       end
     end
 
+    def daemonize(value = :missing)
+      if value == :missing
+        values[:daemonize]
+      else
+        values[:daemonize] = !!value
+      end
+    end
+
     def log_level(value = :missing)
       if value == :missing
         values[:log_level] ||= :info
@@ -113,14 +121,6 @@ module RackRabbit
         values[:logger] ||= build_default_logger
       else
         values[:logger] = value
-      end
-    end
-
-    def daemonize(value = :missing)
-      if value == :missing
-        values[:daemonize]
-      else
-        values[:daemonize] = !!value
       end
     end
 
@@ -140,7 +140,7 @@ module RackRabbit
       end
     end
 
-    def before_fork(server, &block)
+    def before_fork(server=nil, &block)
       if block
         values[:before_fork] = block
       elsif values[:before_fork].respond_to?(:call)
@@ -148,7 +148,7 @@ module RackRabbit
       end
     end
 
-    def after_fork(server, worker, &block)
+    def after_fork(server=nil, worker=nil, &block)
       if block
         values[:after_fork] = block
       elsif values[:after_fork].respond_to?(:call)
@@ -170,9 +170,9 @@ module RackRabbit
       s.to_s.downcase.to_sym
     end
 
-    def validate
+    def validate(options = {})
+
       raise ArgumentError, "missing app_id" if app_id.to_s.empty?
-      raise ArgumentError, "missing rack config file #{rack_file}" unless File.readable?(rack_file)
       raise ArgumentError, "invalid workers" unless workers.is_a?(Fixnum)
       raise ArgumentError, "invalid min_workers" unless min_workers.is_a?(Fixnum)
       raise ArgumentError, "invalid max_workers" unless max_workers.is_a?(Fixnum)
@@ -182,8 +182,13 @@ module RackRabbit
       raise ArgumentError, "invalid logger" unless [:fatal, :error, :warn, :info, :debug].all?{|method| logger.respond_to?(method)}
       raise ArgumentError, "missing pidfile - required for daemon" if daemonize && pidfile.to_s.empty?
       raise ArgumentError, "missing logfile - required for daemon" if daemonize && logfile.to_s.empty?
-      raise ArgumentError, "pidfile not writable" if pidfile && !File.writable?(File.dirname(pidfile))
-      raise ArgumentError, "logfile not writable" if logfile && !File.writable?(File.dirname(logfile))
+
+      unless options[:skip_filesystem_checks]
+        raise ArgumentError, "missing rack config file #{rack_file}" unless File.readable?(rack_file)
+        raise ArgumentError, "pidfile not writable" if pidfile && !File.writable?(File.dirname(pidfile))
+        raise ArgumentError, "logfile not writable" if logfile && !File.writable?(File.dirname(logfile))
+      end
+
     end
 
     def build_default_logger
