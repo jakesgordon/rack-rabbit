@@ -15,9 +15,9 @@ QUEUE      = "foo"
 
 Benchmark.bm do |x|
   x.report do
-    client = RackRabbit::Client.new(RABBIT)
+    client = RackRabbit::Client.new(:rabbit => RABBIT, :queue => QUEUE)
     ITERATIONS.times do |i|
-      result = client.get(QUEUE, "/noop/#{i}").body
+      result = client.get("/noop/#{i}").body
       abort "unexpected result #{result}" unless result == "noop"
     end
     client.disconnect

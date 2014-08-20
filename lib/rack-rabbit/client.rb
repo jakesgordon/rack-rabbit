@@ -1,6 +1,9 @@
 require 'securerandom'
+
 require 'rack-rabbit'
 require 'rack-rabbit/adapter'
+require 'rack-rabbit/message'
+require 'rack-rabbit/response'
 
 module RackRabbit
   class Client

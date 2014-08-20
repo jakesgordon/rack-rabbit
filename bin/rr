@@ -67,7 +67,6 @@ options[:body] ||= ARGV.shift
 # EXECUTE script (within an EM reactor if necessary)
 #==============================================================================
 
-require 'rack-rabbit'
 require 'rack-rabbit/client'
 
 case action

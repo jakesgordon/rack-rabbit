@@ -1,5 +1,3 @@
-require 'rack-rabbit/server'
-
 module RackRabbit
 
   #============================================================================
@@ -41,6 +39,7 @@ module RackRabbit
   #============================================================================
 
   def self.run!(options)
+    require 'rack-rabbit/server'
     Server.new(options).run
   end
 

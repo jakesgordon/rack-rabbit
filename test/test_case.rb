@@ -6,10 +6,6 @@ require 'timecop'
 require 'pp'
 
 require 'rack-rabbit'
-require 'rack-rabbit/config'
-require 'rack-rabbit/message'
-require 'rack-rabbit/response'
-require 'rack-rabbit/server'
 
 module RackRabbit
   class TestCase < Minitest::Unit::TestCase
