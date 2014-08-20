@@ -7,10 +7,6 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    include MocksRabbit
-
-    #--------------------------------------------------------------------------
-
     def test_handle_message
 
       config   = build_config(:rack_file => DEFAULT_RACK_APP)
@@ -29,7 +25,7 @@ module RackRabbit
 
     def test_handle_message_that_causes_rack_app_to_raise_an_exception
 
-      config   = build_config(:rack_file => ERROR_RACK_APP, :logger => NullLogger)
+      config   = build_config(:rack_file => ERROR_RACK_APP)
       app      = build_app(config.rack_file)
       worker   = Worker.new(config, app)
       message  = build_message
@@ -61,9 +57,9 @@ module RackRabbit
 
       assert_equal(200,            response.status)
       assert_equal("Hello World",  response.body)
-      assert_equal([DELIVERY_TAG], rabbit.acked_messages)
-      assert_equal([],             rabbit.rejected_messages)
-      assert_equal([],             rabbit.requeued_messages)
+      assert_equal([DELIVERY_TAG], worker.rabbit.acked_messages)
+      assert_equal([],             worker.rabbit.rejected_messages)
+      assert_equal([],             worker.rabbit.requeued_messages)
 
     end
 
@@ -71,7 +67,7 @@ module RackRabbit
 
     def test_failed_message_is_rejected
 
-      config   = build_config(:rack_file => ERROR_RACK_APP, :acknowledge => true, :logger => NullLogger)
+      config   = build_config(:rack_file => ERROR_RACK_APP, :acknowledge => true)
       app      = build_app(config.rack_file)
       worker   = Worker.new(config, app)
       message  = build_message(:delivery_tag => DELIVERY_TAG)
@@ -79,9 +75,9 @@ module RackRabbit
 
       assert_equal(500,                     response.status)
       assert_equal("Internal Server Error", response.body)
-      assert_equal([],                      rabbit.acked_messages)
-      assert_equal([DELIVERY_TAG],          rabbit.rejected_messages)
-      assert_equal([],                      rabbit.requeued_messages)
+      assert_equal([],                      worker.rabbit.acked_messages)
+      assert_equal([DELIVERY_TAG],          worker.rabbit.rejected_messages)
+      assert_equal([],                      worker.rabbit.requeued_messages)
 
     end
 

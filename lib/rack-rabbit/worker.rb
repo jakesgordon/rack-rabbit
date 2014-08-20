@@ -1,5 +1,6 @@
 require 'json'
 require 'rack'
+require 'stringio'
 
 require 'rack-rabbit/signals'
 require 'rack-rabbit/adapter'
@@ -117,11 +118,7 @@ module RackRabbit
       end
 
       if !message.confirmed? && config.acknowledge
-        if response.succeeded?
-          message.ack
-        else
-          message.reject   # we can configure rejected messages to show up in a dead-letter queue for debugging
-        end
+        rabbit.confirm(message, response.succeeded?)
       end
 
       response

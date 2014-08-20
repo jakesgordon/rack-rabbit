@@ -9,7 +9,7 @@ module RackRabbit
 
     def test_construct_with_defaults
 
-      config = build_config
+      config = default_config
 
       assert_equal("127.0.0.1",         config.rabbit[:host])
       assert_equal("5672",              config.rabbit[:port])
@@ -104,7 +104,7 @@ module RackRabbit
 
     def test_rabbit
 
-      config = build_config
+      config = default_config
 
       assert_equal("127.0.0.1", config.rabbit[:host])
       assert_equal("5672",      config.rabbit[:port])
@@ -254,13 +254,13 @@ module RackRabbit
 
     def test_logger
 
-      config = build_config(:log_level => :fatal)
+      config = default_config
 
-      assert_equal(Logger,        config.logger.class)
-      assert_equal(true,          config.logger.respond_to?(:master_pid))
-      assert_equal($$,            config.logger.master_pid)
-      assert_equal(Proc,          config.logger.formatter.class)
-      assert_equal(Logger::FATAL, config.logger.level)
+      assert_equal(Logger,       config.logger.class)
+      assert_equal(true,         config.logger.respond_to?(:master_pid))
+      assert_equal($$,           config.logger.master_pid)
+      assert_equal(Proc,         config.logger.formatter.class)
+      assert_equal(Logger::INFO, config.logger.level)
 
       config.logger CustomLogger.new($stderr, Logger::WARN)
 

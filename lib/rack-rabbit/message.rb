@@ -3,13 +3,12 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    attr_reader :rabbit, :delivery_tag, :reply_to, :correlation_id,
+    attr_reader :delivery_tag, :reply_to, :correlation_id,
                 :body, :headers,
                 :method, :uri, :path, :query, :status,
                 :content_type, :content_encoding, :content_length
 
-    def initialize(rabbit, delivery_tag, properties, body)
-      @rabbit             = rabbit
+    def initialize(delivery_tag, properties, body)
       @delivery_tag       = delivery_tag
       @reply_to           = properties.reply_to
       @correlation_id     = properties.correlation_id
@@ -30,39 +29,22 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def ack
-      confirm(:ack) do
-        rabbit.ack(delivery_tag)
-      end
-    end
-
-    def reject(requeue = false)
-      confirm(:reject) do
-        rabbit.reject(delivery_tag, requeue)
-      end
+    def confirm(succeeded)
+      raise RuntimeError, "already acknowledged" if acknowledged?
+      raise RuntimeError, "already rejected"     if rejected?
+      @confirmed = succeeded
     end
 
     def acknowledged?
-      @confirmed == :ack
+      @confirmed == true
     end
 
     def rejected?
-      @confirmed == :reject
+      @confirmed == false
     end
 
     def confirmed?
-      !!@confirmed
-    end
-
-    #--------------------------------------------------------------------------
-
-    private
-
-    def confirm(how)
-      raise RuntimeError, "already acknowledged" if acknowledged?
-      raise RuntimeError, "already rejected"     if rejected?
-      yield
-      @confirmed = how
+      !@confirmed.nil?
     end
 
     #--------------------------------------------------------------------------

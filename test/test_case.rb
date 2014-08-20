@@ -44,31 +44,20 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    module MocksRabbit
-
-      def self.included(base)
-        attr_accessor :rabbit
-      end
-
-      def before_setup
-        super
-        @rabbit = build_rabbit(:adapter => :mock)
-      end
-
-    end
-
-    #--------------------------------------------------------------------------
-
-    def build_rabbit(options = {})
-      Adapter.load(options)
+    def default_config
+      build_config( :rabbit => nil, :logger => nil )   # special case for select tests that want TRUE defaults (not the :mock adapter or NullLogger needed in 80% of other tests)
     end
 
     def build_config(options = {})
-      Config.new({ :rack_file => DEFAULT_RACK_APP }.merge(options))
+      Config.new({
+        :rack_file => DEFAULT_RACK_APP,        # required - so default to sample app
+        :rabbit    => { :adapter => :mock },   # use RackRabbit::Adapter::Mock to mock out rabbit MQ
+        :logger    => NullLogger               # suppress logging during tests
+      }.merge(options))
     end
 
     def build_message(options = {})
-      Message.new(rabbit, options[:delivery_tag], OpenStruct.new(options), options[:body])
+      Message.new(options[:delivery_tag], OpenStruct.new(options), options[:body])
     end
 
     def build_response(status, headers, body)

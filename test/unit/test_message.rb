@@ -7,10 +7,6 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    include MocksRabbit
-
-    #--------------------------------------------------------------------------
-
     def test_default_message
 
       message = build_message
@@ -83,63 +79,34 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def test_ack
+    def test_confirm_successful
 
       message = build_message(:delivery_tag => DELIVERY_TAG)
       assert_equal(false, message.acknowledged?)
       assert_equal(false, message.rejected?)
       assert_equal(false, message.confirmed?)
 
-      message.ack
+      message.confirm(true)
       assert_equal(true,  message.acknowledged?)
       assert_equal(false, message.rejected?)
       assert_equal(true,  message.confirmed?)
 
-      assert_equal([DELIVERY_TAG], rabbit.acked_messages)
-      assert_equal([],             rabbit.rejected_messages)
-      assert_equal([],             rabbit.requeued_messages)
-
     end
 
     #--------------------------------------------------------------------------
 
-    def test_reject
+    def test_confirm_failure
 
       message = build_message(:delivery_tag => DELIVERY_TAG)
       assert_equal(false, message.acknowledged?)
       assert_equal(false, message.rejected?)
       assert_equal(false, message.confirmed?)
 
-      message.reject
+      message.confirm(false)
 
       assert_equal(false, message.acknowledged?)
       assert_equal(true,  message.rejected?)
       assert_equal(true,  message.confirmed?)
-
-      assert_equal([],             rabbit.acked_messages)
-      assert_equal([DELIVERY_TAG], rabbit.rejected_messages)
-      assert_equal([],             rabbit.requeued_messages)
-
-    end
-
-    #--------------------------------------------------------------------------
-
-    def test_reject_with_requeue
-
-      message = build_message(:delivery_tag => DELIVERY_TAG)
-      assert_equal(false, message.acknowledged?)
-      assert_equal(false, message.rejected?)
-      assert_equal(false, message.confirmed?)
-
-      message.reject(true)
-
-      assert_equal(false, message.acknowledged?)
-      assert_equal(true,  message.rejected?)
-      assert_equal(true,  message.confirmed?)
-
-      assert_equal([],             rabbit.acked_messages)
-      assert_equal([],             rabbit.rejected_messages)
-      assert_equal([DELIVERY_TAG], rabbit.requeued_messages)
 
     end
 
