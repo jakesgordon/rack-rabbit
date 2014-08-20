@@ -1,9 +1,9 @@
 require_relative '../test_case'
 
-require 'rack-rabbit/worker'
+require 'rack-rabbit/handler'
 
 module RackRabbit
-  class TestWorker < TestCase
+  class TestHandler < TestCase
 
     #--------------------------------------------------------------------------
 
@@ -11,9 +11,9 @@ module RackRabbit
 
       config   = build_config(:rack_file => DEFAULT_RACK_APP)
       app      = build_app(config.rack_file)
-      worker   = Worker.new(config, app)
+      handler  = Handler.new(app, config)
       message  = build_message
-      response = worker.handle(message)
+      response = handler.handle(message)
 
       assert_equal(200,           response.status)
       assert_equal("Hello World", response.body)
@@ -27,9 +27,9 @@ module RackRabbit
 
       config   = build_config(:rack_file => ERROR_RACK_APP)
       app      = build_app(config.rack_file)
-      worker   = Worker.new(config, app)
+      handler  = Handler.new(app, config)
       message  = build_message
-      response = worker.handle(message)
+      response = handler.handle(message)
 
       assert_equal(500,                     response.status)
       assert_equal("Internal Server Error", response.body)
@@ -51,15 +51,15 @@ module RackRabbit
 
       config   = build_config(:rack_file => DEFAULT_RACK_APP, :acknowledge => true)
       app      = build_app(config.rack_file)
-      worker   = Worker.new(config, app)
+      handler  = Handler.new(app, config)
       message  = build_message(:delivery_tag => DELIVERY_TAG)
-      response = worker.handle(message)
+      response = handler.handle(message)
 
       assert_equal(200,            response.status)
       assert_equal("Hello World",  response.body)
-      assert_equal([DELIVERY_TAG], worker.rabbit.acked_messages)
-      assert_equal([],             worker.rabbit.rejected_messages)
-      assert_equal([],             worker.rabbit.requeued_messages)
+      assert_equal([DELIVERY_TAG], handler.rabbit.acked_messages)
+      assert_equal([],             handler.rabbit.rejected_messages)
+      assert_equal([],             handler.rabbit.requeued_messages)
 
     end
 
@@ -69,17 +69,18 @@ module RackRabbit
 
       config   = build_config(:rack_file => ERROR_RACK_APP, :acknowledge => true)
       app      = build_app(config.rack_file)
-      worker   = Worker.new(config, app)
+      handler  = Handler.new(app, config)
       message  = build_message(:delivery_tag => DELIVERY_TAG)
-      response = worker.handle(message)
+      response = handler.handle(message)
 
       assert_equal(500,                     response.status)
       assert_equal("Internal Server Error", response.body)
-      assert_equal([],                      worker.rabbit.acked_messages)
-      assert_equal([DELIVERY_TAG],          worker.rabbit.rejected_messages)
-      assert_equal([],                      worker.rabbit.requeued_messages)
+      assert_equal([],                      handler.rabbit.acked_messages)
+      assert_equal([DELIVERY_TAG],          handler.rabbit.rejected_messages)
+      assert_equal([],                      handler.rabbit.requeued_messages)
 
     end
+
 
     #--------------------------------------------------------------------------
 
@@ -98,8 +99,8 @@ module RackRabbit
         :body => BODY
       })
 
-      worker = Worker.new(config, app)
-      env    = worker.build_env(message)
+      handler = Handler.new(app, config)
+      env     = handler.build_env(message)
 
       assert_equal(message,       env['rabbit.message'])
       assert_equal(BODY,          env['rack.input'].read)
@@ -147,8 +148,8 @@ module RackRabbit
 
       Timecop.freeze do
 
-        worker     = Worker.new(config, app)
-        properties = worker.response_properties(message, response)
+        handler    = Handler.new(app, config)
+        properties = handler.response_properties(message, response)
 
         assert_equal(APP_ID,                      properties[:app_id])
         assert_equal(REPLY_TO,                    properties[:routing_key])
@@ -164,6 +165,5 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-  end # class TestWorker
+  end # class TestHandler
 end # module RackRabbit
-

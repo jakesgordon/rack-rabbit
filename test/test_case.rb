@@ -1,4 +1,5 @@
 require 'minitest/autorun'
+require 'rack'
 require 'rack/builder'
 require 'ostruct'
 require 'timecop'
