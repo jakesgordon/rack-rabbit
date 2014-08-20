@@ -27,28 +27,12 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def test_handle_message_that_causes_rack_app_to_return_an_error_status_code
-
-      config   = build_config(:rack_file => ERROR_RACK_APP)
-      app      = build_app(config.rack_file)
-      worker   = Worker.new(config, app)
-      message  = build_message(:headers => { "status" => 400, "message" => "Bad Request" })
-      response = worker.handle(message)
-
-      assert_equal(400,           response.status)
-      assert_equal("Bad Request", response.body)
-      assert_equal({},            response.headers)
-
-    end
-
-    #--------------------------------------------------------------------------
-
     def test_handle_message_that_causes_rack_app_to_raise_an_exception
 
       config   = build_config(:rack_file => ERROR_RACK_APP, :logger => NullLogger)
       app      = build_app(config.rack_file)
       worker   = Worker.new(config, app)
-      message  = build_message(:headers => { "exception" => "wtf" })
+      message  = build_message
       response = worker.handle(message)
 
       assert_equal(500,                     response.status)
@@ -60,19 +44,43 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def test_handle_message_that_expects_a_reply
-      # TODO
+
+      # TODO: think I need more advanced mocking (mocha?) to make this work
+
     end
 
     #--------------------------------------------------------------------------
 
     def test_succesful_message_is_acked
-      # TODO
+
+      rabbit.expect(:ack, nil, [ DELIVERY_TAG ])  # SET EXPECTATIONS
+
+      config   = build_config(:rack_file => DEFAULT_RACK_APP, :acknowledge => true)
+      app      = build_app(config.rack_file)
+      worker   = Worker.new(config, app)
+      message  = build_message(:delivery_tag => DELIVERY_TAG)
+      response = worker.handle(message)
+
+      assert_equal(200, response.status)
+      assert_equal("Hello World", response.body)
+
     end
 
     #--------------------------------------------------------------------------
 
     def test_failed_message_is_rejected
-      # TODO
+
+      rabbit.expect(:reject, nil, [ DELIVERY_TAG, false ]) # SET EXPECTATIONS
+
+      config   = build_config(:rack_file => ERROR_RACK_APP, :acknowledge => true, :logger => NullLogger)
+      app      = build_app(config.rack_file)
+      worker   = Worker.new(config, app)
+      message  = build_message(:delivery_tag => DELIVERY_TAG)
+      response = worker.handle(message)
+
+      assert_equal(500, response.status)
+      assert_equal("Internal Server Error", response.body)
+
     end
 
     #--------------------------------------------------------------------------
