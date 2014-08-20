@@ -53,16 +53,17 @@ module RackRabbit
 
     def test_succesful_message_is_acked
 
-      rabbit.expect(:ack, nil, [ DELIVERY_TAG ])  # SET EXPECTATIONS
-
       config   = build_config(:rack_file => DEFAULT_RACK_APP, :acknowledge => true)
       app      = build_app(config.rack_file)
       worker   = Worker.new(config, app)
       message  = build_message(:delivery_tag => DELIVERY_TAG)
       response = worker.handle(message)
 
-      assert_equal(200, response.status)
-      assert_equal("Hello World", response.body)
+      assert_equal(200,            response.status)
+      assert_equal("Hello World",  response.body)
+      assert_equal([DELIVERY_TAG], rabbit.acked_messages)
+      assert_equal([],             rabbit.rejected_messages)
+      assert_equal([],             rabbit.requeued_messages)
 
     end
 
@@ -70,16 +71,17 @@ module RackRabbit
 
     def test_failed_message_is_rejected
 
-      rabbit.expect(:reject, nil, [ DELIVERY_TAG, false ]) # SET EXPECTATIONS
-
       config   = build_config(:rack_file => ERROR_RACK_APP, :acknowledge => true, :logger => NullLogger)
       app      = build_app(config.rack_file)
       worker   = Worker.new(config, app)
       message  = build_message(:delivery_tag => DELIVERY_TAG)
       response = worker.handle(message)
 
-      assert_equal(500, response.status)
+      assert_equal(500,                     response.status)
       assert_equal("Internal Server Error", response.body)
+      assert_equal([],                      rabbit.acked_messages)
+      assert_equal([DELIVERY_TAG],          rabbit.rejected_messages)
+      assert_equal([],                      rabbit.requeued_messages)
 
     end
 

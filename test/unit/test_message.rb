@@ -85,8 +85,6 @@ module RackRabbit
 
     def test_ack
 
-      rabbit.expect(:ack, nil, [ DELIVERY_TAG ])
-
       message = build_message(:delivery_tag => DELIVERY_TAG)
       assert_equal(false, message.acknowledged?)
       assert_equal(false, message.rejected?)
@@ -97,13 +95,15 @@ module RackRabbit
       assert_equal(false, message.rejected?)
       assert_equal(true,  message.confirmed?)
 
+      assert_equal([DELIVERY_TAG], rabbit.acked_messages)
+      assert_equal([],             rabbit.rejected_messages)
+      assert_equal([],             rabbit.requeued_messages)
+
     end
 
     #--------------------------------------------------------------------------
 
     def test_reject
-
-      rabbit.expect(:reject, nil, [ DELIVERY_TAG, false ])
 
       message = build_message(:delivery_tag => DELIVERY_TAG)
       assert_equal(false, message.acknowledged?)
@@ -116,13 +116,15 @@ module RackRabbit
       assert_equal(true,  message.rejected?)
       assert_equal(true,  message.confirmed?)
 
+      assert_equal([],             rabbit.acked_messages)
+      assert_equal([DELIVERY_TAG], rabbit.rejected_messages)
+      assert_equal([],             rabbit.requeued_messages)
+
     end
 
     #--------------------------------------------------------------------------
 
     def test_reject_with_requeue
-
-      rabbit.expect(:reject, nil, [ DELIVERY_TAG, true ])
 
       message = build_message(:delivery_tag => DELIVERY_TAG)
       assert_equal(false, message.acknowledged?)
@@ -134,6 +136,10 @@ module RackRabbit
       assert_equal(false, message.acknowledged?)
       assert_equal(true,  message.rejected?)
       assert_equal(true,  message.confirmed?)
+
+      assert_equal([],             rabbit.acked_messages)
+      assert_equal([],             rabbit.rejected_messages)
+      assert_equal([DELIVERY_TAG], rabbit.requeued_messages)
 
     end
 

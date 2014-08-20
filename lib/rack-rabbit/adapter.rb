@@ -15,6 +15,9 @@ module RackRabbit
                   when :amqp
                     require 'rack-rabbit/adapter/amqp'
                     RackRabbit::Adapter::AMQP
+                  when :mock
+                    require 'rack-rabbit/adapter/mock'
+                    RackRabbit::Adapter::Mock
                   else
                     raise ArgumentError, "unknown rabbitMQ adapter #{adapter}"
                   end

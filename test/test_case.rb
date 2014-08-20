@@ -52,28 +52,23 @@ module RackRabbit
 
       def before_setup
         super
-        @rabbit = Minitest::Mock.new
-      end
-
-      def after_teardown
-        super
-        @rabbit.verify
+        @rabbit = build_rabbit(:adapter => :mock)
       end
 
     end
 
     #--------------------------------------------------------------------------
 
+    def build_rabbit(options = {})
+      Adapter.load(options)
+    end
+
     def build_config(options = {})
       Config.new({ :rack_file => DEFAULT_RACK_APP }.merge(options))
     end
 
-    def build_rabbit_properties(options = {})
-      OpenStruct.new(options)
-    end
-
     def build_message(options = {})
-      Message.new(rabbit, options[:delivery_tag], build_rabbit_properties(options), options[:body])
+      Message.new(rabbit, options[:delivery_tag], OpenStruct.new(options), options[:body])
     end
 
     def build_response(status, headers, body)
