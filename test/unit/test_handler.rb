@@ -13,11 +13,39 @@ module RackRabbit
       app      = build_app(config.rack_file)
       handler  = Handler.new(app, config)
       message  = build_message
+
       response = handler.handle(message)
 
       assert_equal(200,           response.status)
       assert_equal("Hello World", response.body)
       assert_equal({},            response.headers)
+
+      assert_equal(false, message.should_reply?)
+      assert_equal(0,     handler.rabbit.published_messages.length)
+
+    end
+
+    #--------------------------------------------------------------------------
+
+    def test_handle_message_that_expects_a_reply
+
+      config   = build_config(:rack_file => DEFAULT_RACK_APP, :app_id => APP_ID)
+      app      = build_app(config.rack_file)
+      handler  = Handler.new(app, config)
+      message  = build_message(:delivery_tag => DELIVERY_TAG, :reply_to => REPLY_TO, :correlation_id => CORRELATION_ID)
+
+      handler.handle(message)
+
+      assert_equal(true, message.should_reply?)
+      assert_equal(1,    handler.rabbit.published_messages.length)
+
+      reply = handler.rabbit.published_messages[0]
+
+      assert_equal(APP_ID,         reply[:app_id])
+      assert_equal(REPLY_TO,       reply[:routing_key])
+      assert_equal(CORRELATION_ID, reply[:correlation_id])
+      assert_equal(200,            reply[:headers][RackRabbit::HEADER::STATUS])
+      assert_equal("Hello World",  reply[:body])
 
     end
 
@@ -70,14 +98,6 @@ module RackRabbit
       assert_equal([],                      handler.rabbit.acked_messages)
       assert_equal([DELIVERY_TAG],          handler.rabbit.rejected_messages)
       assert_equal([],                      handler.rabbit.requeued_messages)
-
-    end
-
-    #--------------------------------------------------------------------------
-
-    def test_handle_message_that_expects_a_reply
-
-      # TODO: think I need more advanced mocking (mocha?) to make this work
 
     end
 

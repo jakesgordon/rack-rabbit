@@ -22,8 +22,8 @@ module RackRabbit
         # TODO
       end
 
-      def publish(payload, properties)
-        # TODO
+      def publish(body, properties)
+        published_messages << properties.merge(:body => body)
       end
 
       def with_reply_queue(&block)
@@ -52,6 +52,10 @@ module RackRabbit
 
       def requeued_messages
         @requeued_messages ||= []
+      end
+
+      def published_messages
+        @published_messages ||= []
       end
 
     end
