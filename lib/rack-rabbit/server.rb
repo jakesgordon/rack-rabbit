@@ -5,7 +5,7 @@ require 'rack-rabbit'
 require 'rack-rabbit/config'
 require 'rack-rabbit/signals'
 require 'rack-rabbit/worker'
-require 'rack-rabbit/middleware/process_name'
+require 'rack-rabbit/middleware/program_name'
 
 module RackRabbit
   class Server
@@ -248,7 +248,7 @@ module RackRabbit
     def load_app
       inner_app, options = Rack::Builder.parse_file(config.rack_file)
       @app = Rack::Builder.new do
-        use RackRabbit::Middleware::ProcessName
+        use RackRabbit::Middleware::ProgramName
         run inner_app
       end.to_app
       logger.info "LOADED #{inner_app.name} FROM #{config.rack_file}"

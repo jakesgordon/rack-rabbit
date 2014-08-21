@@ -1,6 +1,6 @@
 module RackRabbit
   module Middleware
-    class ProcessName
+    class ProgramName
 
       def initialize(app, default = "waiting for request")
         @app = app
@@ -28,7 +28,7 @@ module RackRabbit
         end
       end
 
-    end # class ProcessName
+    end # class ProgramName
   end # module Middleware
 end # module RackRabbit
 

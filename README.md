@@ -244,7 +244,6 @@ TODO
    - client
    - adapter/bunny
    - adapter/amqp
-   - middleware/procname
 
  * better documentation
    - :ack and :reject support

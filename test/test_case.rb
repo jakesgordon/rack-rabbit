@@ -82,5 +82,15 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
+    def with_program_name(name)
+      original = $PROGRAM_NAME
+      $PROGRAM_NAME = name
+      yield
+    ensure
+      $PROGRAM_NAME = original
+    end
+
+    #--------------------------------------------------------------------------
+
   end
 end
