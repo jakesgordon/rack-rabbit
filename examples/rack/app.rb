@@ -1,4 +1,4 @@
-class SimpleApp
+class MyApp
 
   def self.call(env)
 
@@ -6,23 +6,19 @@ class SimpleApp
     logger  = request.logger
     path    = request.path_info
 
-    duration = path.to_s.split("/").last.to_i
-    duration.times do |n|
-      logger.info "sleeper #{n}"
-      sleep 1
-    end
-
-    unless path.nil?
-      env["rabbit.message"].ack    if path.include?("ackit")
-      env["rabbit.message"].reject if path.include?("rejectit")
-      raise "wtf"                  if path.include?("error")
+    if path && path.include?("sleep")
+      duration = path.to_s.split("/").last.to_i
+      duration.times do |n|
+        logger.info "sleep #{n}"
+        sleep(1)
+      end
     end
 
     response = Rack::Response.new
     response.write "Method: #{request.request_method}\n"
     response.write "Path: #{path}\n"
     response.write "Query: #{request.query_string}\n" unless request.query_string.empty?
-    response.write "Duration: #{duration}\n"
+    response.write "Slept for: #{duration}\n" unless duration.nil?
     response.write request.body.read
     response.status = 200
     response.finish
