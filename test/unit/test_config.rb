@@ -18,7 +18,7 @@ module RackRabbit
       assert_equal(DEFAULT_RACK_APP,    config.rack_file)
       assert_equal("queue",             config.queue)
       assert_equal("rack-rabbit-queue", config.app_id)
-      assert_equal(2,                   config.workers)
+      assert_equal(1,                   config.workers)
       assert_equal(1,                   config.min_workers)
       assert_equal(32,                  config.max_workers)
       assert_equal(nil,                 config.acknowledge)
@@ -185,7 +185,7 @@ module RackRabbit
 
     def test_workers
       config = build_config
-      assert_equal(2, config.workers)
+      assert_equal(1, config.workers)
       config.workers 7
       assert_equal(7, config.workers)
     end

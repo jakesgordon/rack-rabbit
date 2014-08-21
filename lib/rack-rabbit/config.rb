@@ -62,7 +62,7 @@ module RackRabbit
 
     def workers(value = :missing)
       if value == :missing
-        values[:workers] ||= 2
+        values[:workers] ||= 1
       else
         values[:workers] = value.to_i
       end
