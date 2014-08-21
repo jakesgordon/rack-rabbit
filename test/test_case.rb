@@ -12,14 +12,14 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    EMPTY_CONFIG     = File.expand_path("examples/empty.conf",  File.dirname(__FILE__))
-    SIMPLE_CONFIG    = File.expand_path("examples/simple.conf", File.dirname(__FILE__))
+    EMPTY_CONFIG     = File.expand_path("apps/empty.conf",  File.dirname(__FILE__))
+    CUSTOM_CONFIG    = File.expand_path("apps/custom.conf", File.dirname(__FILE__))
 
     #--------------------------------------------------------------------------
 
-    DEFAULT_RACK_APP = File.expand_path("examples/config.ru",   File.dirname(__FILE__))
-    ERROR_RACK_APP   = File.expand_path("examples/error.ru",    File.dirname(__FILE__))
-    SIMPLE_RACK_APP  = File.expand_path("examples/simple.ru",   File.dirname(__FILE__))
+    DEFAULT_RACK_APP = File.expand_path("apps/config.ru",  File.dirname(__FILE__))
+    CUSTOM_RACK_APP  = File.expand_path("apps/custom.ru",  File.dirname(__FILE__))
+    ERROR_RACK_APP   = File.expand_path("apps/error.ru",   File.dirname(__FILE__))
 
     #--------------------------------------------------------------------------
 

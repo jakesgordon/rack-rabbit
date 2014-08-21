@@ -78,13 +78,13 @@ module RackRabbit
 
     def test_construct_from_configuration_file
 
-      config = build_config(:config_file => SIMPLE_CONFIG)
+      config = build_config(:config_file => CUSTOM_CONFIG)
 
       assert_equal("10.10.10.10",                 config.rabbit[:host])
       assert_equal("1234",                        config.rabbit[:port])
       assert_equal("amqp",                        config.rabbit[:adapter])
-      assert_equal(SIMPLE_CONFIG,                 config.config_file)
-      assert_equal(SIMPLE_RACK_APP,               config.rack_file)
+      assert_equal(CUSTOM_CONFIG,                 config.config_file)
+      assert_equal(CUSTOM_RACK_APP,               config.rack_file)
       assert_equal("myqueue",                     config.queue)
       assert_equal("myapp",                       config.app_id)
       assert_equal(7,                             config.workers)
@@ -131,8 +131,8 @@ module RackRabbit
     def test_config_file
       config = build_config
       assert_equal(nil, config.config_file)
-      config.config_file "examples/simple.conf"
-      assert_equal(File.expand_path("examples/simple.conf"), config.config_file)
+      config.config_file "examples/custom.conf"
+      assert_equal(File.expand_path("examples/custom.conf"), config.config_file)
     end
 
     #--------------------------------------------------------------------------
@@ -140,8 +140,8 @@ module RackRabbit
     def test_rack_file
       config = build_config
       assert_equal(DEFAULT_RACK_APP, config.rack_file)
-      config.rack_file SIMPLE_RACK_APP
-      assert_equal(SIMPLE_RACK_APP, config.rack_file)
+      config.rack_file CUSTOM_RACK_APP
+      assert_equal(CUSTOM_RACK_APP, config.rack_file)
     end
 
     def test_rack_file_is_required
