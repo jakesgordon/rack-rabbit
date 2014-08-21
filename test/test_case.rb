@@ -20,7 +20,6 @@ module RackRabbit
     DEFAULT_RACK_APP = File.expand_path("examples/config.ru",   File.dirname(__FILE__))
     ERROR_RACK_APP   = File.expand_path("examples/error.ru",    File.dirname(__FILE__))
     SIMPLE_RACK_APP  = File.expand_path("examples/simple.ru",   File.dirname(__FILE__))
-    EXAMINE_RACK_APP = File.expand_path("examples/examine.ru",  File.dirname(__FILE__))
 
     #--------------------------------------------------------------------------
 

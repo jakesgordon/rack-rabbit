@@ -39,14 +39,6 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def test_handle_message_that_expects_a_reply
-
-      # TODO: think I need more advanced mocking (mocha?) to make this work
-
-    end
-
-    #--------------------------------------------------------------------------
-
     def test_succesful_message_is_acked
 
       config   = build_config(:rack_file => DEFAULT_RACK_APP, :acknowledge => true)
@@ -81,6 +73,13 @@ module RackRabbit
 
     end
 
+    #--------------------------------------------------------------------------
+
+    def test_handle_message_that_expects_a_reply
+
+      # TODO: think I need more advanced mocking (mocha?) to make this work
+
+    end
 
     #--------------------------------------------------------------------------
 
@@ -123,7 +122,7 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def test_rabbit_response_is_generated_correctly
+    def test_rabbit_response_is_generated_correctly_from_rack_response
 
       config = build_config(:rack_file => DEFAULT_RACK_APP, :app_id => APP_ID)
       app    = build_app(config.rack_file)

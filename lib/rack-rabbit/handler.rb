@@ -59,10 +59,11 @@ module RackRabbit
 
       status, headers, body_chunks = app.call(env)
 
-      body = body_chunks.join
-      body_chunks.close if body.respond_to?(:close)
+      body = []
+      body_chunks.each{|c| body << c }
+      body_chunks.close if body_chunks.respond_to?(:close)
 
-      response = Response.new(status, headers, body)
+      response = Response.new(status, headers, body.join)
 
     rescue Exception => e    # don't let exceptions bubble out of worker process
 
