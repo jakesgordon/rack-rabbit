@@ -42,6 +42,10 @@ Eventually, installation will be via rubygems:
     $ build rack-rabbit.gemspec
     $ gem install rack-rabbit.gem
 
+Don't forget to install a rabbitMQ server:
+
+    $ sudo apt-get install rabbitmq-server
+
 Getting Started
 ---------------
 

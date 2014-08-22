@@ -13,30 +13,36 @@ require 'optparse'
 action  = :run
 options = { :rabbit => {} }
 
-summary          = "Make requests to rabbitMQ consumer processes hosted by a RackRabbit server."
-usage            = "Usage:  rr [options] [METHOD] [PATH] [BODY]"
-banner           = "#{summary}\n\n#{usage}"
 routing_key_help = "the routing key used to publish the message (e.g. a queue name)"
 host_help        = "the rabbitMQ broker IP address (default: 127.0.0.1)"
 port_help        = "the rabbitMQ broker port (default: 5672)"
-method_help      = "specify the method used to publish the message (default: GET)"
-path_help        = "specify the path of the message (default '')"
-body_help        = "specify the body of the message (default '')"
 include_help     = "specify an additional $LOAD_PATH (may be used more than once)"
 debug_help       = "set $DEBUG to true"
 warn_help        = "enable warnings"
 
 op = OptionParser.new
-op.banner = banner
-
+op.banner = "Publish messages to a rabbitMQ broker"
 op.separator ""
+op.separator "Usage: rr [options] [TYPE] [METHOD] [PATH] [BODY]"
+op.separator ""
+op.separator "where [TYPE] is the communication style, one of:"
+op.separator "  REQUEST: make a synchronous request/response uaing a queue (DEFAULT)"
+op.separator "  ENQUEUE: make an asynchronous worker request using a queue"
+op.separator "  PUBLISH: publish an asynchronous message to an exchange (TODO)"
+op.separator ""
+op.separator "and [METHOD] is an (optional) request method [ GET (DEFAULT) | POST | PUT | DELETE ]"
+op.separator ""
+op.separator "Examples:"
+op.separator ""
+op.separator " rr -r my.queue         GET  /hello                 # submit GET to queue and wait for response"
+op.separator " rr -r my.queue         POST /submit 'some data'    # submit POST to queue and wait for response"
+op.separator " rr -r my.queue ENQUEUE POST /submit 'some data'    # submit POST to queue and continue"
+op.separator ""
+
 op.separator "RackRabbit options:"
 op.on(      "--host HOST",     host_help)        { |value| options[:rabbit][:host] = value                      }
 op.on(      "--port PORT",     port_help)        { |value| options[:rabbit][:port] = value                      }
 op.on("-r", "--route ROUTE",   routing_key_help) { |value| options[:routing_key]   = value                      }
-op.on("-m", "--method METHOD", method_help)      { |value| options[:method]        = value.to_s.upcase.to_sym   }
-op.on("-p", "--path PATH",     path_help)        { |value| options[:path]          = value                      }
-op.on("-b", "--body BODY",     body_help)        { |value| options[:body]          = value                      }
 
 op.separator ""
 op.separator "Ruby options:"
@@ -52,12 +58,16 @@ op.on("-v", "--version") { action = :version }
 op.separator ""
 op.parse!(ARGV)
 
-if options[:method].nil?
-  if options[:method] = [:GET, :POST, :PUT, :DELETE, :ENQUEUE].find{|m| m == ARGV[0].to_s.upcase.to_sym }
-    ARGV.delete_at(0)
-  else
-    options[:method] = :GET
-  end
+if options[:type] = [ :REQUEST, :ENQUEUE, :PUBLISH ].find{|a| a == ARGV[0].to_s.upcase.to_sym }
+  ARGV.delete_at(0)
+else
+  options[:type] = :REQUEST
+end
+
+if options[:method] = [ :GET, :POST, :PUT, :DELETE ].find{|m| m == ARGV[0].to_s.upcase.to_sym }
+  ARGV.delete_at(0)
+else
+  options[:method] = :GET
 end
 
 options[:path] ||= ARGV.shift
@@ -73,15 +83,12 @@ case action
 when :help    then puts op.to_s
 when :version then puts RackRabbit::VERSION
 else
-  case options[:method]
-  when :GET     then puts RackRabbit::Client.get(options[:path], options)
-  when :POST    then puts RackRabbit::Client.post(options[:path], options[:body], options)
-  when :PUT     then puts RackRabbit::Client.put(options[:path], options[:body], options)
-  when :DELETE  then puts RackRabbit::Client.delete(options[:path], options)
-  when :ENQUEUE then puts RackRabbit::Client.enqueue(options)
-  when :PUBLISH then puts RackRabbit::Client.publish(options)
+  case options[:type]
+  when :REQUEST then puts RackRabbit::Client.request(options)
+  when :ENQUEUE then puts RackRabbit::Client.request(options)
+  when :PUBLISH then puts "PUBLISH NOT IMPLEMENTED YET"
   else
-    raise ArgumentError, "unknown method #{options[:method]}"
+    raise ArgumentError, "unknown type #{options[:type]}"
   end
 end
 
