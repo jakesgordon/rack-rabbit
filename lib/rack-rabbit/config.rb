@@ -15,7 +15,7 @@ module RackRabbit
 
     def reload(options = {})
       instance_eval(File.read(config_file), config_file) if config_file && File.exists?(config_file)
-      validate(options)
+      validate(options) unless options[:validate] == false
     end
 
     #--------------------------------------------------------------------------
@@ -44,9 +44,33 @@ module RackRabbit
       end
     end
 
+    def queue(value = :missing)
+      if value == :missing
+        values[:queue]
+      else
+        values[:queue] = value
+      end
+    end
+
+    def exchange(value = :missing)
+      if value == :missing
+        values[:exchange]
+      else
+        values[:exchange] = value
+      end
+    end
+
+    def exchange_type(value = :missing)
+      if value == :missing
+        values[:exchange_type] ||= :direct
+      else
+        values[:exchange_type] = value.to_s.downcase.to_sym
+      end
+    end
+
     def routing_key(value = :missing)
       if value == :missing
-        values[:routing_key] ||= "queue"
+        values[:routing_key]
       else
         values[:routing_key] = value
       end
@@ -54,7 +78,7 @@ module RackRabbit
 
     def app_id(value = :missing)
       if value == :missing
-        values[:app_id] ||= "rack-rabbit-#{routing_key}"
+        values[:app_id] ||= "rr-#{exchange || 'default'}-#{queue || routing_key || 'null'}"
       else
         values[:app_id] = value
       end
@@ -172,7 +196,7 @@ module RackRabbit
 
     def validate(options = {})
 
-      raise ArgumentError, "missing routing_key" if routing_key.nil?
+      raise ArgumentError, "must provide EITHER a :queue OR an :exchange to subscribe to" if queue.nil? && exchange.nil?
       raise ArgumentError, "missing app_id" if app_id.to_s.empty?
       raise ArgumentError, "invalid workers" unless workers.is_a?(Fixnum)
       raise ArgumentError, "invalid min_workers" unless min_workers.is_a?(Fixnum)

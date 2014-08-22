@@ -60,7 +60,7 @@ module RackRabbit
 
       rabbit.with_reply_queue do |reply_queue|
 
-        rabbit.subscribe(reply_queue) do |message|
+        rabbit.subscribe(:queue => reply_queue) do |message|
           if message.correlation_id == id
             response = Response.new(message.status, message.headers, message.body)
             lock.synchronize { condition.signal }
@@ -71,7 +71,7 @@ module RackRabbit
           :correlation_id   => id,
           :reply_to         => reply_queue.name,
           :priority         => options[:priority],
-          :routing_key      => options[:routing_key],
+          :routing_key      => options[:queue],
           :content_type     => options[:content_type]     || default_content_type,
           :content_encoding => options[:content_encoding] || default_content_encoding,
           :timestamp        => options[:timestamp]        || default_timestamp,
@@ -100,7 +100,7 @@ module RackRabbit
 
       rabbit.publish(body,
         :priority         => options[:priority],
-        :routing_key      => options[:routing_key],
+        :routing_key      => options[:queue],
         :content_type     => options[:content_type]     || default_content_type,
         :content_encoding => options[:content_encoding] || default_content_encoding,
         :timestamp        => options[:timestamp]        || default_timestamp,
@@ -114,6 +114,32 @@ module RackRabbit
 
     end
 
+    #--------------------------------------------------------------------------
+
+    def publish(options = {})
+
+      method  = options[:method]  || :GET
+      path    = options[:path]    || ""
+      headers = options[:headers] || {}
+      body    = options[:body]    || ""
+
+      rabbit.publish(body,
+        :priority         => options[:priority],
+        :exchange         => options[:exchange],
+        :exchange_type    => options[:exchange_type],
+        :routing_key      => options[:routing_key],
+        :content_type     => options[:content_type]     || default_content_type,
+        :content_encoding => options[:content_encoding] || default_content_encoding,
+        :timestamp        => options[:timestamp]        || default_timestamp,
+        :headers          => headers.merge({
+          RackRabbit::HEADER::METHOD => method.to_s.upcase,
+          RackRabbit::HEADER::PATH   => path
+        })
+      )
+
+      true
+
+    end
     #--------------------------------------------------------------------------
 
     def default_content_type
@@ -146,6 +172,7 @@ module RackRabbit
     define_class_method_for :delete
     define_class_method_for :request
     define_class_method_for :enqueue
+    define_class_method_for :publish
 
     #--------------------------------------------------------------------------
 

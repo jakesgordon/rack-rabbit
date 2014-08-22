@@ -5,7 +5,7 @@ Rack Rabbit (v0.0.1)
 
 A preforking server for hosting RabbitMQ consumer processes as load balanced rack applications.
 
-    $ rack-rabbit --route myqueue --workers 4 app/config.ru
+    $ rack-rabbit --queue myqueue --workers 4 app/config.ru
 
 Description
 -----------
@@ -23,8 +23,8 @@ RackRabbit will...
 The goal is to support a RabbitMQ-based SOA with multiple message passing patterns:
 
   * Synchronous Request/Response (e.g. GET/POST/PUT/DELETE)
-  * Asynchronous Worker queue    (e.g. ENQUEUE)
-  * Asynchronous PubSub          (e.g. PUBLISH)
+  * Asynchronous Worker queue
+  * Asynchronous PubSub
 
 Installation
 ------------
@@ -75,12 +75,12 @@ Imagine a simple sinatra application in `app.rb`:
 
 You can now host and load balance this application using `rack-rabbit`:
 
-    $ rack-rabbit --route myqueue --workers 4
+    $ rack-rabbit --queue myqueue --workers 4
 
 Ensure the worker processes are running:
 
     $ ps xawf | grep rack-rabbit
-    15714 pts/4    Sl+    0:00  |   \_ ruby rack-rabbit --route myqueue --workers 4 config.ru
+    15714 pts/4    Sl+    0:00  |   \_ ruby rack-rabbit --queue myqueue --workers 4 config.ru
     15716 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
     15718 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
     15721 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
@@ -90,19 +90,19 @@ You can connect to the worker from your client applications using the `RackRabbi
 
     require 'rack-rabbit/client'
 
-    client = RackRabbit::Client.new(:route => :myqueue)
+    client = RackRabbit::Client.new(:queue => :myqueue)
 
     foo = client.get  "/hello"                 # -> "Hello World"
     bar = client.post "/submit", "some data"   # -> "Submitted some data"
 
     client.disconnect
 
-You can also connect to the worker from the command line using the `rr` client binary:
+You can also connect to the worker from the command line using the `request` client binary:
 
-    $ rr -q myqueue GET /hello
+    $ request -q myqueue GET /hello
     Hello World
 
-    $ rr -q myqueue POST /submit "some data"
+    $ request -q myqueue POST /submit "some data"
     Submitted some data
 
 
@@ -115,41 +115,50 @@ TODO: describe difference between using Unicorn for HTTP-based SOA and RackRabbi
 Server Usage
 ------------
 
-Use the `rack-rabbit` command line script to host your Rack app in a preforking
-server that subscribes to a RabbitMQ queue
+Use the `rack-rabbit` command line script to host your Rack app in a preforking server that
+subscribes either to a named queue or an exchange.
 
     $ rack-rabbit --help
 
-    Usage: rack-rabbit [options] rack-file
+    A load balanced rack server for hosting RabbitMQ consumer processes.
+
+    Usage:   rack-rabbit [options] rack-file
+
+    Examples:
+
+      rack-rabbit -h broker -q my.queue                          # subscribe to a named queue
+      rack-rabbit -h broker -e my.exchange -t fanout             # subscribe to a fanout exchange
+      rack-rabbit -h broker -e my.exchange -t topic -r my.topic  # subscribe to a topic exchange with a routing key
+      rack-rabbit -c rack-rabbit.conf                            # subscribe with advanced options provided by a config file
 
     RackRabbit options:
-        -c, --config CONFIG     provide options using a rack-rabbit configuration file
-            --host HOST         the RabbitMQ broker IP address (default: 127.0.0.1)
-            --port PORT         the RabbitMQ broker port (default: 5672)
-        -a, --app_id ID         an id for this application server (default: rack-rabbit)
-        -r, --route ROUTE       a routing key used to bind to the default exchange (e.g. a queue name)
-        -w, --workers COUNT     the number of worker processes (default: 2)
-        -d, --daemonize         run daemonized in the background
-        -p, --pid PIDFILE       the pid filename
-        -l, --log LOGFILE       the log filename
-            --log-level LEVEL   the log level for rack rabbit output (default: info)
-            --preload           preload the rack app before forking worker processes
+        -c, --config CONFIG              provide options using a rack-rabbit configuration file
+        -q, --queue QUEUE                subscribe to a queue for incoming requests
+        -e, --exchange EXCHANGE          subscribe to an exchange for incoming requests
+        -t, --type TYPE                  subscribe to an exchange for incoming requests - type (e.g. :direct, :fanout, :topic)
+        -r, --route ROUTE                subscribe to an exchange for incoming requests - routing key
+        -a, --app_id ID                  an app_id for this application server
+            --host HOST                  the RabbitMQ broker IP address (default: 127.0.0.1)
+            --port PORT                  the RabbitMQ broker port (default: 5672)
+
+    Process options:
+        -w, --workers COUNT              the number of worker processes (default: 1)
+        -d, --daemonize                  run daemonized in the background (default: false)
+        -p, --pid PIDFILE                the pid filename (default when daemonized: /var/run/<app_id>.pid)
+        -l, --log LOGFILE                the log filename (default when daemonized: /var/log/<app_id>.log)
+            --log-level LEVEL            the log level for rack rabbit output (default: info)
+            --preload                    preload the rack app before forking worker processes (default: false)
 
     Ruby options:
-        -I, --include PATH      an additional $LOAD_PATH (may be used more than once)
-            --debug             set $DEBUG to true
-            --warn              enable warnings
+        -I, --include PATH               an additional $LOAD_PATH (may be used more than once)
+            --debug                      set $DEBUG to true
+            --warn                       enable warnings
 
     Common options:
         -h, --help
         -v, --version
 
 
-Examples:
-
-    $ rack-rabbit app/config.ru
-    $ rack-rabbit app/config.ru --host 10.10.10.10 --route app.queue --workers 4
-    $ rack-rabbit app/config.ru --config app/config/rack-rabbit.conf.rb
 
 Server Configuration
 --------------------
@@ -164,10 +173,15 @@ Detailed RackRabbit configuration can be provided by an external config file usi
            :port    => '1234'        # default '5672'
            :adapter => :amqp         # default :bunny
 
-    # set the routing key to bind to (default 'queue'):
-    routing_key 'app.queue'
+    # subscribe to a queue:
+    queue 'my.queue'
 
-    # set the initial number of worker processes (default 2):
+    # ... or, subscribe to an exchange:
+    exchange      'my.exchange'
+    exchange_type :topic
+    routing_key   'my.topic'
+
+    # set the initial number of worker processes (default: 1):
     workers 8
 
     # set the minimum number of worker processes (default: 1):
@@ -227,11 +241,7 @@ Client Library
 Posting a message to a RackRabbit hosted server can be done using any RabbitMQ client library, but
 is easiest using the built in `RackRabbit::Client`...
 
-TODO: document RackRabbit::Client and extend it to support all patterns
-
-  * Synchronous Request/Response (e.g. GET/POST/PUT/DELETE)
-  * Asynchronous Worker queue (e.g. ENQUEUE)
-  * Asynchronous PubSub (e.g. PUBLISH)
+TODO: document RackRabbit::Client
 
 Supported Platforms
 -------------------
@@ -241,7 +251,6 @@ Nothing formal yet, development is happening on MRI 2.1.2p95
 TODO
 ----
 
- * pub/sub support (PUBLISH)
  * testing
    - worker
    - server
@@ -250,6 +259,7 @@ TODO
    - adapter/amqp
 
  * better documentation
+   - client
    - :ack and :reject support
 
  * platform support

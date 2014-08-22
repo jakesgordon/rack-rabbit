@@ -17,7 +17,7 @@ module RackRabbit
       def disconnect
       end
 
-      def subscribe(queue, options = {}, &block)
+      def subscribe(options = {}, &block)
       end
 
       def publish(body, properties)

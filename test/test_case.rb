@@ -49,6 +49,7 @@ module RackRabbit
 
     def build_config(options = {})
       Config.new({
+        :validate  => false,                   # skip validation for most tests
         :rack_file => DEFAULT_RACK_APP,        # required - so default to sample app
         :rabbit    => { :adapter => :mock },   # use RackRabbit::Adapter::Mock to mock out rabbit MQ
         :logger    => NullLogger               # suppress logging during tests

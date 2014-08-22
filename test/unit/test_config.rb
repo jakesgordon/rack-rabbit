@@ -16,8 +16,11 @@ module RackRabbit
       assert_equal("bunny",             config.rabbit[:adapter])
       assert_equal(nil,                 config.config_file)
       assert_equal(DEFAULT_RACK_APP,    config.rack_file)
-      assert_equal("queue",             config.routing_key)
-      assert_equal("rack-rabbit-queue", config.app_id)
+      assert_equal(nil,                 config.queue)
+      assert_equal(nil,                 config.exchange)
+      assert_equal(:direct,             config.exchange_type)
+      assert_equal(nil,                 config.routing_key)
+      assert_equal("rr-default-null",   config.app_id)
       assert_equal(1,                   config.workers)
       assert_equal(1,                   config.min_workers)
       assert_equal(32,                  config.max_workers)
@@ -38,20 +41,23 @@ module RackRabbit
       logger = Logger.new($stdout)
 
       config = build_config(
-        :rack_file   => DEFAULT_RACK_APP,
-        :rabbit      => { :host => "10.10.10.10", :port => "1234", :adapter => "amqp" },
-        :routing_key => "myqueue",
-        :app_id      => "myapp",
-        :workers     => 7,
-        :min_workers => 3,
-        :max_workers => 42,
-        :acknowledge => true,
-        :preload_app => true,
-        :log_level   => :fatal,
-        :logger      => logger,
-        :daemonize   => true,
-        :logfile     => "myapp.log",
-        :pidfile     => "myapp.pid"
+        :rack_file     => DEFAULT_RACK_APP,
+        :rabbit        => { :host => "10.10.10.10", :port => "1234", :adapter => "amqp" },
+        :queue         => "myqueue",
+        :exchange      => "myexchange",
+        :exchange_type => "fanout",
+        :routing_key   => "myroute",
+        :app_id        => "myapp",
+        :workers       => 7,
+        :min_workers   => 3,
+        :max_workers   => 42,
+        :acknowledge   => true,
+        :preload_app   => true,
+        :log_level     => :fatal,
+        :logger        => logger,
+        :daemonize     => true,
+        :logfile       => "myapp.log",
+        :pidfile       => "myapp.pid"
       )
       
       assert_equal("10.10.10.10",                 config.rabbit[:host])
@@ -59,7 +65,10 @@ module RackRabbit
       assert_equal("amqp",                        config.rabbit[:adapter])
       assert_equal(nil,                           config.config_file)
       assert_equal(DEFAULT_RACK_APP,              config.rack_file)
-      assert_equal("myqueue",                     config.routing_key)
+      assert_equal("myqueue",                     config.queue)
+      assert_equal("myexchange",                  config.exchange)
+      assert_equal(:fanout,                       config.exchange_type)
+      assert_equal("myroute",                     config.routing_key)
       assert_equal("myapp",                       config.app_id)
       assert_equal(7,                             config.workers)
       assert_equal(3,                             config.min_workers)
@@ -85,7 +94,10 @@ module RackRabbit
       assert_equal("amqp",                        config.rabbit[:adapter])
       assert_equal(CUSTOM_CONFIG,                 config.config_file)
       assert_equal(CUSTOM_RACK_APP,               config.rack_file)
-      assert_equal("myqueue",                     config.routing_key)
+      assert_equal("myqueue",                     config.queue)
+      assert_equal("myexchange",                  config.exchange)
+      assert_equal(:topic,                        config.exchange_type)
+      assert_equal("myroute",                     config.routing_key)
       assert_equal("myapp",                       config.app_id)
       assert_equal(7,                             config.workers)
       assert_equal(3,                             config.min_workers)
@@ -146,10 +158,10 @@ module RackRabbit
 
     def test_rack_file_is_required
       assert_raises_argument_error("missing rack config file") do
-        RackRabbit::Config.new
+        RackRabbit::Config.new(:queue => "myqueue")
       end
       assert_raises_argument_error("missing rack config file") do
-        RackRabbit::Config.new(:rack_file => "/no/such/path/config.ru")
+        RackRabbit::Config.new(:queue => "myqueue", :rack_file => "/no/such/path/config.ru")
       end
     end
 
@@ -160,25 +172,65 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
+    def test_queue
+      config = build_config
+      assert_equal(nil, config.queue)
+      config.queue "myqueue"
+      assert_equal("myqueue", config.queue)
+    end
+
+    def test_exchange
+      config = build_config
+      assert_equal(nil, config.exchange)
+      config.exchange "myexchange"
+      assert_equal("myexchange", config.exchange)
+    end
+
+    def test_exchange_type
+      config = build_config
+      assert_equal(:direct, config.exchange_type)
+      config.exchange_type :fanout
+      assert_equal(:fanout, config.exchange_type)
+    end
+
     def test_routing_key
       config = build_config
-      assert_equal("queue", config.routing_key)
-      config.routing_key "myqueue"
-      assert_equal("myqueue", config.routing_key)
+      assert_equal(nil, config.routing_key)
+      config.routing_key "myroute"
+      assert_equal("myroute", config.routing_key)
+    end
+
+    def test_queue_or_exchange_is_required
+      assert_raises_argument_error("must provide EITHER a :queue OR an :exchange") do
+        bad = build_config(:validate => true)
+      end
+      good1 = build_config(:validate => true, :queue    => "myqueue")
+      good2 = build_config(:validate => true, :exchange => "myexchange")
     end
 
     #--------------------------------------------------------------------------
 
     def test_app_id
       config = build_config
-      assert_equal("rack-rabbit-queue", config.app_id)
+      assert_equal("rr-default-null", config.app_id)
       config.app_id "myapp"
       assert_equal("myapp", config.app_id)
     end
 
-    def test_app_id_defaults_to_routing_key
-      config = build_config(:routing_key => "myqueue")
-      assert_equal("rack-rabbit-myqueue", config.app_id) 
+    def test_app_id_defaults_include_exchange_and_queue_or_route
+
+      config = build_config(:exchange => "myexchange", :queue => "myqueue", :routing_key => "myroute")
+      assert_equal("rr-myexchange-myqueue", config.app_id) 
+
+      config = build_config(:exchange => "myexchange", :queue => "myqueue", :routing_key => nil)
+      assert_equal("rr-myexchange-myqueue", config.app_id) 
+
+      config = build_config(:exchange => "myexchange", :queue => nil,       :routing_key => "myroute")
+      assert_equal("rr-myexchange-myroute", config.app_id) 
+
+      config = build_config(:exchange => "myexchange", :queue => nil,       :routing_key => nil)
+      assert_equal("rr-myexchange-null", config.app_id) 
+
     end
 
     #--------------------------------------------------------------------------

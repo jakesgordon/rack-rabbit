@@ -27,15 +27,21 @@ module RackRabbit
         connection.close unless connection.nil?
       end
 
-      def subscribe(queue, options = {}, &block)
-        queue = channel.queue(queue) if queue.is_a?(Symbol) || queue.is_a?(String)
+      def subscribe(options = {}, &block)
+        queue    = get_queue(options.delete(:queue)) || channel.queue("", :exclusive => true)
+        exchange = get_exchange(options.delete(:exchange), options.delete(:exchange_type))
+        if exchange
+          queue.bind(exchange, :routing_key => options.delete(:routing_key))
+        end
         queue.subscribe(options) do |delivery_info, properties, payload|
           yield Message.new(delivery_info.delivery_tag, properties, payload)
         end
       end
 
       def publish(payload, properties)
-        channel.default_exchange.publish(payload || "", properties)
+        exchange = get_exchange(properties.delete(:exchange), properties.delete(:exchange_type))
+        exchange ||= channel.default_exchange
+        exchange.publish(payload || "", properties)
       end
 
       def with_reply_queue(&block)
@@ -49,6 +55,32 @@ module RackRabbit
       def reject(delivery_tag, requeue = false)
         channel.reject(delivery_tag, requeue)
       end
+
+      #========================================================================
+      # PRIVATE IMPLEMENTATION
+      #========================================================================
+
+      private
+
+      def get_exchange(ex = :default, type = :direct)
+        case ex
+        when ::Bunny::Exchange then ex
+        when Symbol, String    then channel.send(type || :direct, ex) unless ex.to_s.downcase.to_sym == :default
+        else
+          nil
+        end
+      end
+
+      def get_queue(q)
+        case q
+        when ::Bunny::Queue then q
+        when Symbol, String then channel.queue(q)
+        else
+          nil
+        end
+      end
+
+      #------------------------------------------------------------------------
 
     end
 

@@ -44,12 +44,14 @@ module RackRabbit
       write_pid
 
       logger.info "RUNNING #{config.app_id} (#{config.rack_file}) #{'DAEMONIZED' if config.daemonize}"
-      logger.info "  rabbit  : #{config.rabbit}"
-      logger.info "  route   : #{config.routing_key}" if config.routing_key
-      logger.info "  workers : #{config.workers}"
-      logger.info "  preload : true"              if config.preload_app
-      logger.info "  logfile : #{config.logfile}" unless config.logfile.nil?
-      logger.info "  pidfile : #{config.pidfile}" unless config.pidfile.nil?
+      logger.info "  rabbit   : #{config.rabbit}"
+      logger.info "  exchange : #{config.exchange} (#{config.exchange_type})" if config.exchange
+      logger.info "  queue    : #{config.queue}"                              if config.queue
+      logger.info "  route    : #{config.routing_key}"                        if config.routing_key
+      logger.info "  workers  : #{config.workers}"
+      logger.info "  preload  : true"              if config.preload_app
+      logger.info "  logfile  : #{config.logfile}" unless config.logfile.nil?
+      logger.info "  pidfile  : #{config.pidfile}" unless config.pidfile.nil?
 
       load_app if config.preload_app
 

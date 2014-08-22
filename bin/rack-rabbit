@@ -13,34 +13,50 @@ require 'optparse'
 action  = :run
 options = { :rabbit => {} }
 
-summary            = "A load balanced rack server for hosting RabbitMQ consumer processes."
-usage              = "Usage:   rack-rabbit [options] rack-file"
-banner             = "#{summary}\n\n#{usage}"
 config_help        = "provide options using a rack-rabbit configuration file"
+queue_help         = "subscribe to a queue for incoming requests"
+exchange_help      = "subscribe to an exchange for incoming requests"
+exchange_type_help = "subscribe to an exchange for incoming requests - type (e.g. :direct, :fanout, :topic)"
+routing_key_help   = "subscribe to an exchange for incoming requests - routing key"
+app_id_help        = "an app_id for this application server"
 host_help          = "the RabbitMQ broker IP address (default: 127.0.0.1)"
 port_help          = "the RabbitMQ broker port (default: 5672)"
-app_id_help        = "an id for this application server (default: rack-rabbit)" 
-routing_key_help   = "a routing key used to bind to the default exchange (e.g. a queue name)"
-workers_help       = "the number of worker processes (default: 2)"
+
+workers_help       = "the number of worker processes (default: 1)"
+daemonize_help     = "run daemonized in the background (default: false)"
+pidfile_help       = "the pid filename (default when daemonized: /var/run/<app_id>.pid)"
+logfile_help       = "the log filename (default when daemonized: /var/log/<app_id>.log)"
 log_level_help     = "the log level for rack rabbit output (default: info)"
-preload_help       = "preload the rack app before forking worker processes"
-daemonize_help     = "run daemonized in the background"
-pidfile_help       = "the pid filename"
-logfile_help       = "the log filename"
+preload_help       = "preload the rack app before forking worker processes (default: false)"
 include_help       = "an additional $LOAD_PATH (may be used more than once)"
 debug_help         = "set $DEBUG to true"
 warn_help          = "enable warnings"
 
 op = OptionParser.new
-op.banner = banner
+op.banner =  "A load balanced rack server for hosting RabbitMQ consumer processes."
+op.separator ""
+op.separator "Usage:   rack-rabbit [options] rack-file"
+op.separator ""
+op.separator "Examples:"
+op.separator ""
+op.separator "  rack-rabbit -h broker -q my.queue                          # subscribe to a named queue"
+op.separator "  rack-rabbit -h broker -e my.exchange -t fanout             # subscribe to a fanout exchange"
+op.separator "  rack-rabbit -h broker -e my.exchange -t topic -r my.topic  # subscribe to a topic exchange with a routing key"
+op.separator "  rack-rabbit -c rack-rabbit.conf                            # subscribe with advanced options provided by a config file"
 
 op.separator ""
 op.separator "RackRabbit options:"
 op.on("-c", "--config CONFIG",     config_help)        { |value| options[:config_file]   = value      }
+op.on("-q", "--queue QUEUE",       queue_help)         { |value| options[:queue]         = value      }
+op.on("-e", "--exchange EXCHANGE", exchange_help)      { |value| options[:exchange]      = value      }
+op.on("-t", "--type TYPE",         exchange_type_help) { |value| options[:exchange_type] = value      }
+op.on("-r", "--route ROUTE",       routing_key_help)   { |value| options[:routing_key]   = value      }
+op.on("-a", "--app_id ID",         app_id_help)        { |value| options[:app_id]        = value      }
 op.on(      "--host HOST",         host_help)          { |value| options[:rabbit][:host] = value      }
 op.on(      "--port PORT",         port_help)          { |value| options[:rabbit][:port] = value      }
-op.on("-a", "--app_id ID",         app_id_help)        { |value| options[:app_id]        = value      }
-op.on("-r", "--route ROUTE",       routing_key_help)   { |value| options[:routing_key]   = value      }
+
+op.separator ""
+op.separator "Process options:"
 op.on("-w", "--workers COUNT",     workers_help)       { |value| options[:workers]       = value.to_i }
 op.on("-d", "--daemonize",         daemonize_help)     {         options[:daemonize]     = true       }
 op.on("-p", "--pid PIDFILE",       pidfile_help)       { |value| options[:pidfile]       = value      }

@@ -53,7 +53,7 @@ module RackRabbit
       raise NotImplementedError, "derived classes must implement this"
     end
 
-    def subscribe(queue, options = {}, &block)
+    def subscribe(options = {}, &block)
       raise NotImplementedError, "derived classes must implement this"
     end
 
