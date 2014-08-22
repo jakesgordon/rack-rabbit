@@ -8,7 +8,7 @@ module RackRabbit
   class Adapter
     class Bunny < RackRabbit::Adapter
 
-      attr_accessor :connection, :channel, :exchange
+      attr_accessor :connection, :channel
 
       def connected?
         !@connection.nil?
@@ -19,7 +19,6 @@ module RackRabbit
         @connection = ::Bunny.new(connection_options)
         connection.start
         @channel = connection.create_channel
-        @exchange = channel.default_exchange
         channel.prefetch(1)
       end
 
@@ -36,7 +35,7 @@ module RackRabbit
       end
 
       def publish(payload, properties)
-        exchange.publish(payload || "", properties)
+        channel.default_exchange.publish(payload || "", properties)
       end
 
       def with_reply_queue(&block)

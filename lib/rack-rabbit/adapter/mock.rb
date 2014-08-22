@@ -2,7 +2,7 @@ module RackRabbit
   class Adapter
     class Mock < RackRabbit::Adapter
 
-      attr_accessor :connection, :channel, :exchange
+      attr_accessor :connection, :channel
 
       def connected?
         !@connection.nil?
@@ -12,14 +12,12 @@ module RackRabbit
         return if connected?
         @connection = OpenStruct.new
         @channel    = OpenStruct.new
-        @exchange   = OpenStruct.new
       end
 
       def disconnect
       end
 
       def subscribe(queue, options = {}, &block)
-        # TODO
       end
 
       def publish(body, properties)
@@ -27,7 +25,6 @@ module RackRabbit
       end
 
       def with_reply_queue(&block)
-        # TODO
       end
 
       def ack(delivery_tag)

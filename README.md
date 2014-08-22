@@ -5,7 +5,7 @@ Rack Rabbit (v0.0.1)
 
 A preforking server for hosting RabbitMQ consumer processes as load balanced rack applications.
 
-    $ rack-rabbit --queue myqueue --workers 4 app/config.ru
+    $ rack-rabbit --route myqueue --workers 4 app/config.ru
 
 Description
 -----------
@@ -71,12 +71,12 @@ Imagine a simple sinatra application in `app.rb`:
 
 You can now host and load balance this application using `rack-rabbit`:
 
-    $ rack-rabbit --queue myqueue --workers 4
+    $ rack-rabbit --route myqueue --workers 4
 
 Ensure the worker processes are running:
 
     $ ps xawf | grep rack-rabbit
-    15714 pts/4    Sl+    0:00  |   \_ ruby rack-rabbit --queue myqueue --workers 4 config.ru
+    15714 pts/4    Sl+    0:00  |   \_ ruby rack-rabbit --route myqueue --workers 4 config.ru
     15716 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
     15718 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
     15721 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
@@ -86,7 +86,7 @@ You can connect to the worker from your client applications using the `RackRabbi
 
     require 'rack-rabbit/client'
 
-    client = RackRabbit::Client.new(:queue => :myqueue)
+    client = RackRabbit::Client.new(:route => :myqueue)
 
     foo = client.get  "/hello"                 # -> "Hello World"
     bar = client.post "/submit", "some data"   # -> "Submitted some data"
@@ -122,8 +122,8 @@ server that subscribes to a RabbitMQ queue
         -c, --config CONFIG     provide options using a rack-rabbit configuration file
             --host HOST         the RabbitMQ broker IP address (default: 127.0.0.1)
             --port PORT         the RabbitMQ broker port (default: 5672)
-        -a, --app_id ID         an app_id for this application server (default: rack-rabbit)
-        -q, --queue QUEUE       the queue to subscribe for incoming requests (default: rack-rabbit)
+        -a, --app_id ID         an id for this application server (default: rack-rabbit)
+        -r, --route ROUTE       a routing key used to bind to the default exchange (e.g. a queue name)
         -w, --workers COUNT     the number of worker processes (default: 2)
         -d, --daemonize         run daemonized in the background
         -p, --pid PIDFILE       the pid filename
@@ -144,7 +144,7 @@ server that subscribes to a RabbitMQ queue
 Examples:
 
     $ rack-rabbit app/config.ru
-    $ rack-rabbit app/config.ru --host 10.10.10.10 --queue app.queue --workers 4
+    $ rack-rabbit app/config.ru --host 10.10.10.10 --route app.queue --workers 4
     $ rack-rabbit app/config.ru --config app/config/rack-rabbit.conf.rb
 
 Server Configuration
@@ -160,8 +160,8 @@ Detailed RackRabbit configuration can be provided by an external config file usi
            :port    => '1234'        # default '5672'
            :adapter => :amqp         # default :bunny
 
-    # set the queue to subscribe to (default 'rack-rabbit'):
-    queue 'app.queue'
+    # set the routing key to bind to (default 'queue'):
+    routing_key 'app.queue'
 
     # set the initial number of worker processes (default 2):
     workers 8

@@ -45,7 +45,7 @@ module RackRabbit
 
       logger.info "RUNNING #{config.app_id} (#{config.rack_file}) #{'DAEMONIZED' if config.daemonize}"
       logger.info "  rabbit  : #{config.rabbit}"
-      logger.info "  queue   : #{config.queue}"
+      logger.info "  route   : #{config.routing_key}" if config.routing_key
       logger.info "  workers : #{config.workers}"
       logger.info "  preload : true"              if config.preload_app
       logger.info "  logfile : #{config.logfile}" unless config.logfile.nil?

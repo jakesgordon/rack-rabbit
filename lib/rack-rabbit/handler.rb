@@ -30,7 +30,7 @@ module RackRabbit
     def subscribe
       rabbit.startup
       rabbit.connect
-      rabbit.subscribe(config.queue, :ack => config.acknowledge) do |message|
+      rabbit.subscribe(config.routing_key, :ack => config.acknowledge) do |message|
         lock.synchronize do
           start = Time.now
           response = handle(message)

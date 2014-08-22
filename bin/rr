@@ -13,30 +13,30 @@ require 'optparse'
 action  = :run
 options = { :rabbit => {} }
 
-summary      = "Make requests to rabbitMQ consumer processes hosted by a RackRabbit server."
-usage        = "Usage:  rr [options] [METHOD] [PATH] [BODY]"
-banner       = "#{summary}\n\n#{usage}"
-queue_help   = "specify the queue to publish the message (default: rack-rabbit)"
-host_help    = "the rabbitMQ broker IP address (default: 127.0.0.1)"
-port_help    = "the rabbitMQ broker port (default: 5672)"
-method_help  = "specify the method used to publish the message (default: GET)"
-path_help    = "specify the path of the message (default '')"
-body_help    = "specify the body of the message (default '')"
-include_help = "specify an additional $LOAD_PATH (may be used more than once)"
-debug_help   = "set $DEBUG to true"
-warn_help    = "enable warnings"
+summary          = "Make requests to rabbitMQ consumer processes hosted by a RackRabbit server."
+usage            = "Usage:  rr [options] [METHOD] [PATH] [BODY]"
+banner           = "#{summary}\n\n#{usage}"
+routing_key_help = "the routing key used to publish the message (e.g. a queue name)"
+host_help        = "the rabbitMQ broker IP address (default: 127.0.0.1)"
+port_help        = "the rabbitMQ broker port (default: 5672)"
+method_help      = "specify the method used to publish the message (default: GET)"
+path_help        = "specify the path of the message (default '')"
+body_help        = "specify the body of the message (default '')"
+include_help     = "specify an additional $LOAD_PATH (may be used more than once)"
+debug_help       = "set $DEBUG to true"
+warn_help        = "enable warnings"
 
 op = OptionParser.new
 op.banner = banner
 
 op.separator ""
 op.separator "RackRabbit options:"
-op.on(      "--host HOST",       host_help)    { |value| options[:rabbit][:host] = value                      }
-op.on(      "--port PORT",       port_help)    { |value| options[:rabbit][:port] = value                      }
-op.on("-q", "--queue QUEUE",     queue_help)   { |value| options[:queue]         = value                      }
-op.on("-m", "--method METHOD",   method_help)  { |value| options[:method]        = value.to_s.upcase.to_sym   }
-op.on("-p", "--path PATH",       path_help)    { |value| options[:path]          = value                      }
-op.on("-b", "--body BODY",       body_help)    { |value| options[:body]          = value                      }
+op.on(      "--host HOST",     host_help)        { |value| options[:rabbit][:host] = value                      }
+op.on(      "--port PORT",     port_help)        { |value| options[:rabbit][:port] = value                      }
+op.on("-r", "--route ROUTE",   routing_key_help) { |value| options[:routing_key]   = value                      }
+op.on("-m", "--method METHOD", method_help)      { |value| options[:method]        = value.to_s.upcase.to_sym   }
+op.on("-p", "--path PATH",     path_help)        { |value| options[:path]          = value                      }
+op.on("-b", "--body BODY",     body_help)        { |value| options[:body]          = value                      }
 
 op.separator ""
 op.separator "Ruby options:"

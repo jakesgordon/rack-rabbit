@@ -13,40 +13,40 @@ require 'optparse'
 action  = :run
 options = { :rabbit => {} }
 
-summary        = "A load balanced rack server for hosting RabbitMQ consumer processes."
-usage          = "Usage:   rack-rabbit [options] rack-file"
-banner         = "#{summary}\n\n#{usage}"
-config_help    = "provide options using a rack-rabbit configuration file"
-host_help      = "the RabbitMQ broker IP address (default: 127.0.0.1)"
-port_help      = "the RabbitMQ broker port (default: 5672)"
-app_id_help    = "an app_id for this application server (default: rack-rabbit)" 
-queue_help     = "the queue to subscribe for incoming requests (default: rack-rabbit)"
-workers_help   = "the number of worker processes (default: 2)"
-log_level_help = "the log level for rack rabbit output (default: info)"
-preload_help   = "preload the rack app before forking worker processes"
-daemonize_help = "run daemonized in the background"
-pidfile_help   = "the pid filename"
-logfile_help   = "the log filename"
-include_help   = "an additional $LOAD_PATH (may be used more than once)"
-debug_help     = "set $DEBUG to true"
-warn_help      = "enable warnings"
+summary            = "A load balanced rack server for hosting RabbitMQ consumer processes."
+usage              = "Usage:   rack-rabbit [options] rack-file"
+banner             = "#{summary}\n\n#{usage}"
+config_help        = "provide options using a rack-rabbit configuration file"
+host_help          = "the RabbitMQ broker IP address (default: 127.0.0.1)"
+port_help          = "the RabbitMQ broker port (default: 5672)"
+app_id_help        = "an id for this application server (default: rack-rabbit)" 
+routing_key_help   = "a routing key used to bind to the default exchange (e.g. a queue name)"
+workers_help       = "the number of worker processes (default: 2)"
+log_level_help     = "the log level for rack rabbit output (default: info)"
+preload_help       = "preload the rack app before forking worker processes"
+daemonize_help     = "run daemonized in the background"
+pidfile_help       = "the pid filename"
+logfile_help       = "the log filename"
+include_help       = "an additional $LOAD_PATH (may be used more than once)"
+debug_help         = "set $DEBUG to true"
+warn_help          = "enable warnings"
 
 op = OptionParser.new
 op.banner = banner
 
 op.separator ""
 op.separator "RackRabbit options:"
-op.on("-c", "--config CONFIG",   config_help)    { |value| options[:config_file]   = value      }
-op.on(      "--host HOST",       host_help)      { |value| options[:rabbit][:host] = value      }
-op.on(      "--port PORT",       port_help)      { |value| options[:rabbit][:port] = value      }
-op.on("-a", "--app_id ID",       app_id_help)    { |value| options[:app_id]        = value      }
-op.on("-q", "--queue QUEUE",     queue_help)     { |value| options[:queue]         = value      }
-op.on("-w", "--workers COUNT",   workers_help)   { |value| options[:workers]       = value.to_i }
-op.on("-d", "--daemonize",       daemonize_help) {         options[:daemonize]     = true       }
-op.on("-p", "--pid PIDFILE",     pidfile_help)   { |value| options[:pidfile]       = value      }
-op.on("-l", "--log LOGFILE",     logfile_help)   { |value| options[:logfile]       = value      }
-op.on(      "--log-level LEVEL", log_level_help) { |value| options[:log_level]     = value      }
-op.on(      "--preload",         preload_help)   {         options[:preload_app]   = true       }
+op.on("-c", "--config CONFIG",     config_help)        { |value| options[:config_file]   = value      }
+op.on(      "--host HOST",         host_help)          { |value| options[:rabbit][:host] = value      }
+op.on(      "--port PORT",         port_help)          { |value| options[:rabbit][:port] = value      }
+op.on("-a", "--app_id ID",         app_id_help)        { |value| options[:app_id]        = value      }
+op.on("-r", "--route ROUTE",       routing_key_help)   { |value| options[:routing_key]   = value      }
+op.on("-w", "--workers COUNT",     workers_help)       { |value| options[:workers]       = value.to_i }
+op.on("-d", "--daemonize",         daemonize_help)     {         options[:daemonize]     = true       }
+op.on("-p", "--pid PIDFILE",       pidfile_help)       { |value| options[:pidfile]       = value      }
+op.on("-l", "--log LOGFILE",       logfile_help)       { |value| options[:logfile]       = value      }
+op.on(      "--log-level LEVEL",   log_level_help)     { |value| options[:log_level]     = value      }
+op.on(      "--preload",           preload_help)       {         options[:preload_app]   = true       }
 
 op.separator ""
 op.separator "Ruby options:"

@@ -44,17 +44,17 @@ module RackRabbit
       end
     end
 
-    def queue(value = :missing)
+    def routing_key(value = :missing)
       if value == :missing
-        values[:queue] ||= "queue"
+        values[:routing_key] ||= "queue"
       else
-        values[:queue] = value
+        values[:routing_key] = value
       end
     end
 
     def app_id(value = :missing)
       if value == :missing
-        values[:app_id] ||= "rack-rabbit-#{queue}"
+        values[:app_id] ||= "rack-rabbit-#{routing_key}"
       else
         values[:app_id] = value
       end
@@ -172,6 +172,7 @@ module RackRabbit
 
     def validate(options = {})
 
+      raise ArgumentError, "missing routing_key" if routing_key.nil?
       raise ArgumentError, "missing app_id" if app_id.to_s.empty?
       raise ArgumentError, "invalid workers" unless workers.is_a?(Fixnum)
       raise ArgumentError, "invalid min_workers" unless min_workers.is_a?(Fixnum)

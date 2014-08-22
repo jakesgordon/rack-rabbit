@@ -16,7 +16,7 @@ module RackRabbit
       assert_equal("bunny",             config.rabbit[:adapter])
       assert_equal(nil,                 config.config_file)
       assert_equal(DEFAULT_RACK_APP,    config.rack_file)
-      assert_equal("queue",             config.queue)
+      assert_equal("queue",             config.routing_key)
       assert_equal("rack-rabbit-queue", config.app_id)
       assert_equal(1,                   config.workers)
       assert_equal(1,                   config.min_workers)
@@ -40,7 +40,7 @@ module RackRabbit
       config = build_config(
         :rack_file   => DEFAULT_RACK_APP,
         :rabbit      => { :host => "10.10.10.10", :port => "1234", :adapter => "amqp" },
-        :queue       => "myqueue",
+        :routing_key => "myqueue",
         :app_id      => "myapp",
         :workers     => 7,
         :min_workers => 3,
@@ -53,13 +53,13 @@ module RackRabbit
         :logfile     => "myapp.log",
         :pidfile     => "myapp.pid"
       )
-        
+      
       assert_equal("10.10.10.10",                 config.rabbit[:host])
       assert_equal("1234",                        config.rabbit[:port])
       assert_equal("amqp",                        config.rabbit[:adapter])
       assert_equal(nil,                           config.config_file)
       assert_equal(DEFAULT_RACK_APP,              config.rack_file)
-      assert_equal("myqueue",                     config.queue)
+      assert_equal("myqueue",                     config.routing_key)
       assert_equal("myapp",                       config.app_id)
       assert_equal(7,                             config.workers)
       assert_equal(3,                             config.min_workers)
@@ -85,7 +85,7 @@ module RackRabbit
       assert_equal("amqp",                        config.rabbit[:adapter])
       assert_equal(CUSTOM_CONFIG,                 config.config_file)
       assert_equal(CUSTOM_RACK_APP,               config.rack_file)
-      assert_equal("myqueue",                     config.queue)
+      assert_equal("myqueue",                     config.routing_key)
       assert_equal("myapp",                       config.app_id)
       assert_equal(7,                             config.workers)
       assert_equal(3,                             config.min_workers)
@@ -160,11 +160,11 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def test_queue
+    def test_routing_key
       config = build_config
-      assert_equal("queue", config.queue)
-      config.queue "myqueue"
-      assert_equal("myqueue", config.queue)
+      assert_equal("queue", config.routing_key)
+      config.routing_key "myqueue"
+      assert_equal("myqueue", config.routing_key)
     end
 
     #--------------------------------------------------------------------------
@@ -176,9 +176,9 @@ module RackRabbit
       assert_equal("myapp", config.app_id)
     end
 
-    def test_app_id_defaults_to_queue_name
-      config = build_config(:queue => "magic-queue")
-      assert_equal("rack-rabbit-magic-queue", config.app_id) 
+    def test_app_id_defaults_to_routing_key
+      config = build_config(:routing_key => "myqueue")
+      assert_equal("rack-rabbit-myqueue", config.app_id) 
     end
 
     #--------------------------------------------------------------------------
@@ -190,16 +190,12 @@ module RackRabbit
       assert_equal(7, config.workers)
     end
 
-    #--------------------------------------------------------------------------
-
     def test_min_workers
       config = build_config
       assert_equal(1, config.min_workers)
       config.min_workers 8
       assert_equal(8, config.min_workers)
     end
-
-    #--------------------------------------------------------------------------
 
     def test_max_workers
       config = build_config

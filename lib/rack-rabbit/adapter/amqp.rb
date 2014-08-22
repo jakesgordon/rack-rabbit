@@ -8,7 +8,7 @@ module RackRabbit
   class Adapter
     class AMQP < RackRabbit::Adapter
 
-      attr_accessor :connection, :channel, :exchange
+      attr_accessor :connection, :channel
 
       def startup
         startup_eventmachine
@@ -26,7 +26,6 @@ module RackRabbit
         return if connected?
         @connection = ::AMQP.connect(connection_options)
         @channel = ::AMQP::Channel.new(connection)
-        @exchange = channel.default_exchange
         channel.prefetch(1)
       end
 
@@ -43,7 +42,7 @@ module RackRabbit
       end
 
       def publish(payload, properties)
-        exchange.publish(payload || "", properties)
+        channel.default_exchange.publish(payload || "", properties)
       end
 
       def with_reply_queue

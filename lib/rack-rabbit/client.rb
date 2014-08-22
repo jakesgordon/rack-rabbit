@@ -10,11 +10,10 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    attr_reader :rabbit, :default_queue
+    attr_reader :rabbit
 
     def initialize(options = {})
-      @rabbit        = Adapter.load(DEFAULT_RABBIT.merge(options))
-      @default_queue = options[:queue]
+      @rabbit = Adapter.load(DEFAULT_RABBIT.merge(options))
       connect
     end
 
@@ -72,7 +71,7 @@ module RackRabbit
           :correlation_id   => id,
           :reply_to         => reply_queue.name,
           :priority         => options[:priority],
-          :routing_key      => options[:queue]            || default_queue,
+          :routing_key      => options[:routing_key],
           :content_type     => options[:content_type]     || default_content_type,
           :content_encoding => options[:content_encoding] || default_content_encoding,
           :timestamp        => options[:timestamp]        || default_timestamp,
@@ -101,7 +100,7 @@ module RackRabbit
 
       rabbit.publish(body,
         :priority         => options[:priority],
-        :routing_key      => options[:queue]            || default_queue,
+        :routing_key      => options[:routing_key],
         :content_type     => options[:content_type]     || default_content_type,
         :content_encoding => options[:content_encoding] || default_content_encoding,
         :timestamp        => options[:timestamp]        || default_timestamp,
