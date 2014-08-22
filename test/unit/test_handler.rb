@@ -20,8 +20,10 @@ module RackRabbit
       assert_equal("Hello World", response.body)
       assert_equal({},            response.headers)
 
-      assert_equal(false, message.should_reply?)
-      assert_equal(0,     handler.rabbit.published_messages.length)
+      assert_equal([], handler.rabbit.acked_messages)
+      assert_equal([], handler.rabbit.rejected_messages)
+      assert_equal([], handler.rabbit.requeued_messages)
+      assert_equal([], handler.rabbit.published_messages)
 
     end
 
@@ -36,8 +38,10 @@ module RackRabbit
 
       handler.handle(message)
 
-      assert_equal(true, message.should_reply?)
-      assert_equal(1,    handler.rabbit.published_messages.length)
+      assert_equal([], handler.rabbit.acked_messages)
+      assert_equal([], handler.rabbit.rejected_messages)
+      assert_equal([], handler.rabbit.requeued_messages)
+      assert_equal(1,  handler.rabbit.published_messages.length)
 
       reply = handler.rabbit.published_messages[0]
 
@@ -63,6 +67,11 @@ module RackRabbit
       assert_equal("Internal Server Error", response.body)
       assert_equal({},                      response.headers)
 
+      assert_equal([], handler.rabbit.acked_messages)
+      assert_equal([], handler.rabbit.rejected_messages)
+      assert_equal([], handler.rabbit.requeued_messages)
+      assert_equal([], handler.rabbit.published_messages)
+
     end
 
     #--------------------------------------------------------------------------
@@ -80,6 +89,7 @@ module RackRabbit
       assert_equal([DELIVERY_TAG], handler.rabbit.acked_messages)
       assert_equal([],             handler.rabbit.rejected_messages)
       assert_equal([],             handler.rabbit.requeued_messages)
+      assert_equal([],             handler.rabbit.published_messages)
 
     end
 
@@ -98,6 +108,7 @@ module RackRabbit
       assert_equal([],                      handler.rabbit.acked_messages)
       assert_equal([DELIVERY_TAG],          handler.rabbit.rejected_messages)
       assert_equal([],                      handler.rabbit.requeued_messages)
+      assert_equal([],                      handler.rabbit.published_messages)
 
     end
 

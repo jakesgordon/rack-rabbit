@@ -68,6 +68,19 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
+    def test_to_s
+      r1 = build_response(200, {}, BODY)
+      r2 = build_response(400, {}, BODY)
+      r3 = build_response(404, {}, BODY)
+      r4 = build_response(500, {}, BODY)
+      assert_equal(BODY,                        r1.to_s)
+      assert_equal("400 Bad Request",           r2.to_s)
+      assert_equal("404 Not Found",             r3.to_s)
+      assert_equal("500 Internal Server Error", r4.to_s)
+    end
+
+    #--------------------------------------------------------------------------
+
   end # class TestResponse
 end # module RackRabbit
 
