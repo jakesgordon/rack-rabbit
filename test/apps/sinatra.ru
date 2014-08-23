@@ -21,9 +21,16 @@ class MyApp < Sinatra::Base
   end
 
   get "/sleep/:seconds" do
-    seconds = params[:seconds].to_i
+    slumber params[:seconds].to_i
+  end
+
+  post "/sleep/:seconds" do
+    slumber params[:seconds].to_i
+  end
+
+  def slumber(seconds)
     seconds.times do |i|
-      logger.info "sleeping #{i}"
+      logger.info "#{request.path_info} - #{i}"
       sleep(1)
     end
     "Slept for #{seconds}"
