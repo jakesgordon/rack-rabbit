@@ -24,7 +24,7 @@ module RackRabbit
       assert_equal(1,                   config.workers)
       assert_equal(1,                   config.min_workers)
       assert_equal(32,                  config.max_workers)
-      assert_equal(nil,                 config.acknowledge)
+      assert_equal(nil,                 config.ack)
       assert_equal(nil,                 config.preload_app)
       assert_equal(:info,               config.log_level)
       assert_equal(Logger,              config.logger.class)
@@ -51,7 +51,7 @@ module RackRabbit
         :workers       => 7,
         :min_workers   => 3,
         :max_workers   => 42,
-        :acknowledge   => true,
+        :ack           => true,
         :preload_app   => true,
         :log_level     => :fatal,
         :logger        => logger,
@@ -73,7 +73,7 @@ module RackRabbit
       assert_equal(7,                             config.workers)
       assert_equal(3,                             config.min_workers)
       assert_equal(42,                            config.max_workers)
-      assert_equal(true,                          config.acknowledge)
+      assert_equal(true,                          config.ack)
       assert_equal(true,                          config.preload_app)
       assert_equal(:fatal,                        config.log_level)
       assert_equal(logger,                        config.logger)
@@ -102,7 +102,7 @@ module RackRabbit
       assert_equal(7,                             config.workers)
       assert_equal(3,                             config.min_workers)
       assert_equal(42,                            config.max_workers)
-      assert_equal(true,                          config.acknowledge)
+      assert_equal(true,                          config.ack)
       assert_equal(true,                          config.preload_app)
       assert_equal(:fatal,                        config.log_level)
       assert_equal("MyLogger",                    config.logger.class.name)
@@ -258,13 +258,13 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def test_acknowledge
+    def test_ack
       config = build_config
-      assert_equal(nil, config.acknowledge)
-      config.acknowledge true
-      assert_equal(true, config.acknowledge)
-      config.acknowledge false
-      assert_equal(false, config.acknowledge)
+      assert_equal(nil, config.ack)
+      config.ack true
+      assert_equal(true, config.ack)
+      config.ack false
+      assert_equal(false, config.ack)
     end
 
     #--------------------------------------------------------------------------

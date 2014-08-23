@@ -108,11 +108,11 @@ module RackRabbit
       end
     end
 
-    def acknowledge(value = :missing)
+    def ack(value = :missing)
       if value == :missing
-        values[:acknowledge]
+        values[:ack]
       else
-        values[:acknowledge] = !!value
+        values[:ack] = !!value
       end
     end
 

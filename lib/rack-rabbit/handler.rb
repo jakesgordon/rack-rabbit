@@ -34,7 +34,7 @@ module RackRabbit
                        :exchange      => config.exchange,
                        :exchange_type => config.exchange_type,
                        :routing_key   => config.routing_key,
-                       :ack           => config.acknowledge) do |message|
+                       :ack           => config.ack) do |message|
         lock.synchronize do
           start = Time.now
           response = handle(message)
@@ -82,7 +82,7 @@ module RackRabbit
         rabbit.publish(response.body, response_properties(message, response))
       end
 
-      if !message.confirmed? && config.acknowledge
+      if !message.confirmed? && config.ack
         rabbit.confirm(message, response.succeeded?)
       end
 

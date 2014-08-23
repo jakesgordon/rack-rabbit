@@ -172,7 +172,7 @@ Detailed RackRabbit configuration can be provided by an external config file usi
     app_id 'my-application'
 
     # enable rabbitMQ acknowledgements
-    acknowledge true
+    ack true
 
     # set the initial number of worker processes (default: 1):
     workers 8

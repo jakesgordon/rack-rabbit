@@ -121,7 +121,7 @@ module RackRabbit
 
     def test_succesful_message_is_acked
 
-      handler  = build_handler(:rack_file => DEFAULT_RACK_APP, :acknowledge => true)
+      handler  = build_handler(:rack_file => DEFAULT_RACK_APP, :ack => true)
       message  = build_message(:delivery_tag => DELIVERY_TAG)
       response = handler.handle(message)
 
@@ -138,7 +138,7 @@ module RackRabbit
 
     def test_failed_message_is_rejected
 
-      handler  = build_handler(:rack_file => ERROR_RACK_APP, :acknowledge => true)
+      handler  = build_handler(:rack_file => ERROR_RACK_APP, :ack => true)
       message  = build_message(:delivery_tag => DELIVERY_TAG)
       response = handler.handle(message)
 
@@ -229,7 +229,7 @@ module RackRabbit
 
     def test_subscribe
 
-      handler = build_handler(:queue => QUEUE, :exchange => EXCHANGE, :exchange_type => :fanout, :routing_key => ROUTE, :acknowledge => true)
+      handler = build_handler(:queue => QUEUE, :exchange => EXCHANGE, :exchange_type => :fanout, :routing_key => ROUTE, :ack => true)
       rabbit  = handler.rabbit
 
       m1 = build_message(:delivery_tag => "m1")
