@@ -15,6 +15,7 @@ module RackRabbit
       assert_equal(nil,   message.reply_to)
       assert_equal(nil,   message.correlation_id)
       assert_equal(nil,   message.body)
+      assert_equal({},    message.headers)
       assert_equal(:GET,  message.method)
       assert_equal("",    message.uri)
       assert_equal(nil,   message.status)
@@ -34,6 +35,8 @@ module RackRabbit
 
     def test_populated_message
 
+      headers = { "additional" => "header" }
+
       message = build_message({
         :delivery_tag     => DELIVERY_TAG,
         :reply_to         => REPLY_TO,
@@ -43,7 +46,7 @@ module RackRabbit
         :method           => :POST,
         :path             => URI,
         :status           => 200,
-        :headers          => { :foo => "bar", },
+        :headers          => headers,
         :body             => BODY
       })
 
@@ -51,6 +54,7 @@ module RackRabbit
       assert_equal(REPLY_TO,            message.reply_to)
       assert_equal(CORRELATION_ID,      message.correlation_id)
       assert_equal(BODY,                message.body)
+      assert_equal(headers,             message.headers)
       assert_equal(:POST,               message.method)
       assert_equal(URI,                 message.uri)
       assert_equal(200,                 message.status)
@@ -77,7 +81,8 @@ module RackRabbit
         :path             => URI,
         :body             => BODY,
         :content_type     => CONTENT::PLAIN_TEXT,
-        :content_encoding => CONTENT::UTF8
+        :content_encoding => CONTENT::UTF8,
+        :headers          => { "additional" => "header" }
       })
 
       env = message.get_rack_env(config.rack_env)
@@ -98,6 +103,7 @@ module RackRabbit
       assert_equal(false,                    env['rack.run_once'])
       assert_equal('http',                   env['rack.url_scheme'])
       assert_equal(APP_ID,                   env['SERVER_NAME'])
+      assert_equal("header",                 env["additional"])
 
     end
 
@@ -145,7 +151,7 @@ module RackRabbit
       response = build_response(200, "response.body", {
         :content_type     => "response.content.type",
         :content_encoding => "response.content.encoding",
-        :additional       => :header
+        "additional"      => "header"
       })
 
       Timecop.freeze do
@@ -158,7 +164,7 @@ module RackRabbit
         assert_equal(Time.now.to_i,               properties[:timestamp])
         assert_equal("response.content.type",     properties[:content_type])
         assert_equal("response.content.encoding", properties[:content_encoding])
-        assert_equal(:header,                     properties[:headers][:additional])
+        assert_equal("header",                    properties[:headers]["additional"])
 
       end
 

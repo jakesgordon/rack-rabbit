@@ -44,6 +44,10 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
+    def should_reply?
+      !reply_to.nil?
+    end
+
     def get_reply_properties(response, config)
       return {
         :app_id           => config.app_id,
@@ -54,12 +58,6 @@ module RackRabbit
         :content_type     => response.headers[RackRabbit::HEADER::CONTENT_TYPE],
         :content_encoding => response.headers[RackRabbit::HEADER::CONTENT_ENCODING]
       }
-    end
-
-    #--------------------------------------------------------------------------
-
-    def should_reply?
-      !reply_to.nil?
     end
 
     #--------------------------------------------------------------------------
