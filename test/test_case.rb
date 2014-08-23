@@ -70,7 +70,10 @@ module RackRabbit
       Message.new(options[:delivery_tag], OpenStruct.new(options), options[:body])
     end
 
-    def build_response(status, headers, body)
+    def build_response(status, body, headers = {})
+      headers ||= {}
+      headers[RackRabbit::HEADER::CONTENT_TYPE]     ||= headers.delete(:content_type)     # convenience to make calling code a little more compact
+      headers[RackRabbit::HEADER::CONTENT_ENCODING] ||= headers.delete(:content_encoding) # (ditto)
       Response.new(status, headers, body)
     end
 

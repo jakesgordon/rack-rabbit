@@ -68,7 +68,7 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def test_convert_message_to_rack_environment
+    def test_get_rack_env
 
       config = build_config(:app_id => APP_ID)
 
@@ -80,7 +80,7 @@ module RackRabbit
         :body             => BODY
       })
 
-      env = message.to_rack_env(config.rack_env)
+      env = message.get_rack_env(config.rack_env)
 
       assert_equal(message,       env['rabbit.message'])
       assert_equal(BODY,          env['rack.input'].read)
@@ -108,6 +108,44 @@ module RackRabbit
       m2 = build_message(:reply_to => REPLY_TO)
       assert_equal(false, m1.should_reply?)
       assert_equal(true,  m2.should_reply?)
+    end
+
+    #--------------------------------------------------------------------------
+
+    def test_get_reply_properties
+
+      config = build_config(:app_id => APP_ID)
+
+      message = build_message({
+        :reply_to         => REPLY_TO,
+        :correlation_id   => CORRELATION_ID,
+        :content_type     => "request.content.type",
+        :content_encoding => "request.content.encoding",
+        :method           => "request.method",
+        :path             => "request.path",
+        :body             => "request.body"
+      })
+
+      response = build_response(200, "response.body", {
+        :content_type     => "response.content.type",
+        :content_encoding => "response.content.encoding",
+        :additional       => :header
+      })
+
+      Timecop.freeze do
+
+        properties = message.get_reply_properties(response, config)
+
+        assert_equal(APP_ID,                      properties[:app_id])
+        assert_equal(REPLY_TO,                    properties[:routing_key])
+        assert_equal(CORRELATION_ID,              properties[:correlation_id])
+        assert_equal(Time.now.to_i,               properties[:timestamp])
+        assert_equal("response.content.type",     properties[:content_type])
+        assert_equal("response.content.encoding", properties[:content_encoding])
+        assert_equal(:header,                     properties[:headers][:additional])
+
+      end
+
     end
 
     #--------------------------------------------------------------------------

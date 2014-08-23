@@ -11,13 +11,7 @@ module RackRabbit
       @body    = body
     end
 
-    def content_type
-      headers[RackRabbit::HEADER::CONTENT_TYPE]
-    end
-
-    def content_encoding
-      headers[RackRabbit::HEADER::CONTENT_ENCODING]
-    end
+    #--------------------------------------------------------------------------
 
     def succeeded?
       (200..299).include?(status)

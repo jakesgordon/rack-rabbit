@@ -27,7 +27,7 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def to_rack_env(defaults = {})
+    def get_rack_env(defaults = {})
 
       defaults.merge({
         'rabbit.message' => self,
@@ -40,6 +40,20 @@ module RackRabbit
         'CONTENT_LENGTH' => content_length
       }).merge(headers)
     
+    end
+
+    #--------------------------------------------------------------------------
+
+    def get_reply_properties(response, config)
+      return {
+        :app_id           => config.app_id,
+        :routing_key      => reply_to,
+        :correlation_id   => correlation_id,
+        :timestamp        => Time.now.to_i,
+        :headers          => response.headers.merge(RackRabbit::HEADER::STATUS => response.status),
+        :content_type     => response.headers[RackRabbit::HEADER::CONTENT_TYPE],
+        :content_encoding => response.headers[RackRabbit::HEADER::CONTENT_ENCODING]
+      }
     end
 
     #--------------------------------------------------------------------------

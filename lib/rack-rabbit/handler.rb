@@ -56,7 +56,7 @@ module RackRabbit
 
     def handle(message)
 
-      env = message.to_rack_env(config.rack_env)
+      env = message.get_rack_env(config.rack_env)
 
       status, headers, body_chunks = app.call(env)
 
@@ -76,7 +76,7 @@ module RackRabbit
     ensure
 
       if message.should_reply?
-        rabbit.publish(response.body, response_properties(message, response))
+        rabbit.publish(response.body, message.get_reply_properties(response, config))
       end
 
       if !message.confirmed? && config.ack
@@ -85,20 +85,6 @@ module RackRabbit
 
       response
 
-    end
-
-    #--------------------------------------------------------------------------
-
-    def response_properties(message, response)
-      return {
-        :app_id           => config.app_id,
-        :routing_key      => message.reply_to,
-        :correlation_id   => message.correlation_id,
-        :timestamp        => Time.now.to_i,
-        :headers          => response.headers.merge(RackRabbit::HEADER::STATUS => response.status),
-        :content_type     => response.content_type,
-        :content_encoding => response.content_encoding
-      }
     end
 
     #--------------------------------------------------------------------------

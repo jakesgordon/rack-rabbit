@@ -153,44 +153,6 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def test_rabbit_response_is_generated_correctly_from_rack_response
-
-      handler = build_handler(:rack_file => DEFAULT_RACK_APP, :app_id => APP_ID)
-
-      message = build_message({
-        :reply_to         => REPLY_TO,
-        :correlation_id   => CORRELATION_ID,
-        :content_type     => "request.content.type",
-        :content_encoding => "request.content.encoding",
-        :method           => "request.method",
-        :path             => "request.path",
-        :body             => "request.body"
-      })
-
-      response = build_response(200, {
-        RackRabbit::HEADER::CONTENT_TYPE     => "response.content.type",
-        RackRabbit::HEADER::CONTENT_ENCODING => "response.content.encoding",
-        :additional => :header
-      }, "response.body")
-
-      Timecop.freeze do
-
-        properties = handler.response_properties(message, response)
-
-        assert_equal(APP_ID,                      properties[:app_id])
-        assert_equal(REPLY_TO,                    properties[:routing_key])
-        assert_equal(CORRELATION_ID,              properties[:correlation_id])
-        assert_equal(Time.now.to_i,               properties[:timestamp])
-        assert_equal("response.content.type",     properties[:content_type])
-        assert_equal("response.content.encoding", properties[:content_encoding])
-        assert_equal(:header,                     properties[:headers][:additional])
-
-      end
-
-    end
-
-    #--------------------------------------------------------------------------
-
     def test_subscribe
 
       handler = build_handler(:queue => QUEUE, :exchange => EXCHANGE, :exchange_type => :fanout, :routing_key => ROUTE, :ack => true)
@@ -199,8 +161,8 @@ module RackRabbit
       m1 = build_message(:delivery_tag => "m1")
       m2 = build_message(:delivery_tag => "m2")
 
-      r1 = build_response(200, {}, "r1")
-      r2 = build_response(200, {}, "r2")
+      r1 = build_response(200, "r1")
+      r2 = build_response(200, "r2")
 
       rabbit.prime(m1)
       rabbit.prime(m2)
