@@ -266,7 +266,6 @@ TODO
  * automatically deserialize body into hash if content type is json ?
 
  * more testing
-   - client
    - worker
    - server
    - adapter/bunny

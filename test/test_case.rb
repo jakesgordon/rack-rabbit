@@ -42,19 +42,25 @@ module RackRabbit
     REPLY_TO         = "reply.queue"
     CORRELATION_ID   = "correlation.id"
     QUEUE            = "my.queue"
+    REPLY_QUEUE      = "reply.queue"
     EXCHANGE         = "my.exchange"
     ROUTE            = "my.route"
     BODY             = "body"
     PATH             = "/foo/bar"
     QUERY            = "a=b&c=d"
     URI              = "#{PATH}?#{QUERY}"
+    PRIORITY         = 7
 
     module CONTENT
+      ASCII                = "iso-8859-1"
       UTF8                 = "utf-8"
       PLAIN_TEXT           = "text/plain"
       PLAIN_TEXT_UTF8      = "text/plain; charset=\"utf-8\""
       FORM_URLENCODED      = "application/x-www-form-urlencoded"
       FORM_URLENCODED_UTF8 = "application/x-www-form-urlencoded; charset=\"utf-8\""
+      JSON                 = "application/json"
+      JSON_UTF8            = "application/json; charset=\"utf-8\""
+      JSON_ASCII           = "application/json; charset=\"iso-8859-1\""
     end
 
     #--------------------------------------------------------------------------
@@ -74,6 +80,10 @@ module RackRabbit
         :rabbit    => { :adapter => :mock },   # use RackRabbit::Adapter::Mock to mock out rabbit MQ
         :logger    => NullLogger               # suppress logging during tests
       }.merge(options))
+    end
+
+    def build_client(options = {})
+      Client.new({ :adapter => :mock }.merge(options))
     end
 
     def build_message(options = {})

@@ -49,7 +49,7 @@ module RackRabbit
 
     def request(queue, options = {})
 
-      id        = SecureRandom.uuid
+      id        = options[:id] || SecureRandom.uuid    # allow dependency injection for test purposes
       lock      = Mutex.new
       condition = ConditionVariable.new
       method    = options[:method]  || :GET
@@ -62,8 +62,10 @@ module RackRabbit
 
         rabbit.subscribe(:queue => reply_queue) do |message|
           if message.correlation_id == id
-            response = Response.new(message.status, message.headers, message.body)
-            lock.synchronize { condition.signal }
+            lock.synchronize do
+              response = Response.new(message.status, message.headers, message.body)
+              condition.signal
+            end
           end
         end
 
@@ -83,7 +85,9 @@ module RackRabbit
 
       end
 
-      lock.synchronize { condition.wait(lock) }
+      lock.synchronize do
+        condition.wait(lock) unless response
+      end
 
       response
 

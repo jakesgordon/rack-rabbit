@@ -42,6 +42,7 @@ module RackRabbit
       end
 
       def with_reply_queue(&block)
+        yield OpenStruct.new :name => "reply.queue"
       end
 
       def ack(delivery_tag)
