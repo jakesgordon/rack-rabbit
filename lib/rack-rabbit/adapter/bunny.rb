@@ -10,10 +10,6 @@ module RackRabbit
 
       attr_accessor :connection, :channel
 
-      def connected?
-        !@connection.nil?
-      end
-
       def connect
         return if connected?
         @connection = ::Bunny.new(connection_options)
@@ -25,6 +21,10 @@ module RackRabbit
       def disconnect
         channel.close unless channel.nil?
         connection.close unless connection.nil?
+      end
+
+      def connected?
+        !@connection.nil?
       end
 
       def subscribe(options = {}, &block)

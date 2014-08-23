@@ -8,6 +8,9 @@ GEM
     bunny (1.4.0)
       amq-protocol (>= 1.9.2)
     eventmachine (1.0.3)
+    metaclass (0.0.4)
+    mocha (1.1.0)
+      metaclass (~> 0.0.1)
     rack (1.5.2)
     rack-protection (1.5.3)
       rack
@@ -24,5 +27,6 @@ PLATFORMS
 DEPENDENCIES
   amqp
   bunny
+  mocha
   sinatra
   timecop

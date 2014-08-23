@@ -1,4 +1,5 @@
 require 'minitest/autorun'
+require 'mocha/mini_test'
 require 'rack'
 require 'rack/builder'
 require 'ostruct'
@@ -23,6 +24,7 @@ module RackRabbit
     DEFAULT_RACK_APP = File.expand_path("apps/config.ru",  File.dirname(__FILE__))
     CUSTOM_RACK_APP  = File.expand_path("apps/custom.ru",  File.dirname(__FILE__))
     ERROR_RACK_APP   = File.expand_path("apps/error.ru",   File.dirname(__FILE__))
+    MIRROR_RACK_APP  = File.expand_path("apps/mirror.ru",  File.dirname(__FILE__))
 
     #--------------------------------------------------------------------------
 
@@ -30,6 +32,9 @@ module RackRabbit
     DELIVERY_TAG     = "delivery.tag"
     REPLY_TO         = "reply.queue"
     CORRELATION_ID   = "correlation.id"
+    QUEUE            = "my.queue"
+    EXCHANGE         = "my.exchange"
+    ROUTE            = "my.route"
     CONTENT_TYPE     = "text/plain; charset = \"utf-8\""
     CONTENT_ENCODING = "utf-8"
     BODY             = "body"
@@ -57,6 +62,10 @@ module RackRabbit
     end
 
     def build_message(options = {})
+      options[:headers] ||= {}
+      options[:headers][RackRabbit::HEADER::METHOD] ||= options.delete(:method)  # convenience to make calling code a little more compact
+      options[:headers][RackRabbit::HEADER::PATH]   ||= options.delete(:path)    # (ditto)
+      options[:headers][RackRabbit::HEADER::STATUS] ||= options.delete(:status)  # (ditto)
       Message.new(options[:delivery_tag], OpenStruct.new(options), options[:body])
     end
 

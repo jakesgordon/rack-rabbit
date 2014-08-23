@@ -18,8 +18,8 @@ module RackRabbit
         shutdown_eventmachine
       end
 
-      def connected?
-        !@connection.nil?
+      def started?
+        !@thread.nil?
       end
 
       def connect
@@ -32,6 +32,10 @@ module RackRabbit
       def disconnect
         channel.close unless channel.nil?
         connection.close unless connection.nil?
+      end
+
+      def connected?
+        !@connection.nil?
       end
 
       def subscribe(options = {}, &block)
@@ -72,7 +76,7 @@ module RackRabbit
       private
 
       def startup_eventmachine
-        raise RuntimeError, "already started" unless @thread.nil?
+        raise RuntimeError, "already started" if started?
         ready = false
         @thread = Thread.new { EventMachine.run { ready = true } }
         sleep(1) until ready
@@ -82,6 +86,7 @@ module RackRabbit
       def shutdown_eventmachine
         sleep(1) # warmdown
         EventMachine.stop
+        @thread = nil
       end
 
       def get_exchange(ex = :default, type = :direct)

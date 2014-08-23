@@ -41,8 +41,8 @@ module RackRabbit
       # derived classes optionally override this (e.g. to shutdown EventMachine)
     end
 
-    def connected?
-      raise NotImplementedError, "derived classes must implement this"
+    def started?
+      true  # derived classes optionally override this (e.g. if running inside EventMachine)
     end
 
     def connect
@@ -50,6 +50,10 @@ module RackRabbit
     end
 
     def disconnect
+      raise NotImplementedError, "derived classes must implement this"
+    end
+
+    def connected?
       raise NotImplementedError, "derived classes must implement this"
     end
 

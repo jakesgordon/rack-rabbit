@@ -2,22 +2,39 @@ module RackRabbit
   class Adapter
     class Mock < RackRabbit::Adapter
 
-      attr_accessor :connection, :channel
+      attr_accessor :connection
 
-      def connected?
-        !@connection.nil?
+      def startup
+        @started = true
+      end
+
+      def shutdown
+        @started = false
+      end
+
+      def started?
+        !!@started
       end
 
       def connect
-        return if connected?
-        @connection = OpenStruct.new
-        @channel    = OpenStruct.new
+        @connected = true
       end
 
       def disconnect
+        @connected = false
+      end
+
+      def connected?
+        !!@connected
       end
 
       def subscribe(options = {}, &block)
+        @subscribe_options = options
+        while !queue.empty?
+          message = queue.shift
+          yield message
+          subscribed_messages << message
+        end
       end
 
       def publish(body, properties)
@@ -39,6 +56,10 @@ module RackRabbit
         end
       end
 
+      #========================================================================
+      # TEST HELPER METHODS
+      #========================================================================
+
       def acked_messages
         @acked_messages ||= []
       end
@@ -53,6 +74,22 @@ module RackRabbit
 
       def published_messages
         @published_messages ||= []
+      end
+
+      def subscribed_messages
+        @subscribed_messages ||= []
+      end
+
+      def queue
+        @queue ||= []
+      end
+
+      def prime(message)
+        queue << message
+      end
+
+      def subscribe_options
+        @subscribe_options
       end
 
     end

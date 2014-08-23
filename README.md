@@ -252,6 +252,7 @@ TODO
 ----
 
  * testing
+   - replace DEFAULT rack app with MIRROR rack app ?
    - worker
    - server
    - client

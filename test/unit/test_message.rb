@@ -40,13 +40,11 @@ module RackRabbit
         :correlation_id   => CORRELATION_ID,
         :content_type     => CONTENT_TYPE,
         :content_encoding => CONTENT_ENCODING,
-        :headers          => {
-          RackRabbit::HEADER::METHOD => :POST,
-          RackRabbit::HEADER::PATH   => URI,
-          RackRabbit::HEADER::STATUS => 200,
-          :foo                       => "bar",
-        },
-        :body => BODY
+        :method           => :POST,
+        :path             => URI,
+        :status           => 200,
+        :headers          => { :foo => "bar", },
+        :body             => BODY
       })
 
       assert_equal(DELIVERY_TAG,     message.delivery_tag)

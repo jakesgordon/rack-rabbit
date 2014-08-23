@@ -7,6 +7,47 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
+    def test_subscribe
+
+      config  = build_config(:queue => QUEUE, :exchange => EXCHANGE, :exchange_type => :fanout, :routing_key => ROUTE, :acknowledge => true)
+      app     = build_app(config.rack_file)
+      handler = Handler.new(app, config, Mutex.new)
+      rabbit  = handler.rabbit
+
+      m1 = build_message(:delivery_tag => "m1")
+      m2 = build_message(:delivery_tag => "m2")
+
+      r1 = build_response(200, {}, "r1")
+      r2 = build_response(200, {}, "r2")
+
+      rabbit.prime(m1)
+      rabbit.prime(m2)
+
+      assert_equal(false, rabbit.started?)  
+      assert_equal(false, rabbit.connected?)
+      assert_equal(nil,   rabbit.subscribe_options)
+      assert_equal([],    rabbit.subscribed_messages)
+
+      handler.expects(:handle).with(m1).returns(r1)  # mock out #handle method and unit test it in more depth below
+      handler.expects(:handle).with(m2).returns(r2)  # (ditto)
+
+      handler.subscribe
+
+      assert_equal(true, rabbit.started?)
+      assert_equal(true, rabbit.connected?)
+      assert_equal({:queue => QUEUE, :exchange => EXCHANGE, :exchange_type => :fanout, :routing_key => ROUTE, :ack => true}, rabbit.subscribe_options)
+      assert_equal([m1, m2], rabbit.subscribed_messages)
+
+      handler.unsubscribe
+
+      assert_equal(false, rabbit.started?)
+      assert_equal(false, rabbit.connected?)
+
+
+    end
+
+    #--------------------------------------------------------------------------
+
     def test_handle_message
 
       config   = build_config(:rack_file => DEFAULT_RACK_APP)
@@ -122,11 +163,9 @@ module RackRabbit
       message = build_message({
         :content_type     => CONTENT_TYPE,
         :content_encoding => CONTENT_ENCODING,
-        :headers          => {
-          RackRabbit::HEADER::METHOD => :GET,
-          RackRabbit::HEADER::PATH   => URI,
-        },
-        :body => BODY
+        :method           => :GET,
+        :path             => URI,
+        :body             => BODY
       })
 
       handler = Handler.new(app, config)
@@ -163,11 +202,9 @@ module RackRabbit
         :correlation_id   => CORRELATION_ID,
         :content_type     => "request.content.type",
         :content_encoding => "request.content.encoding",
-        :headers => {
-          RackRabbit::HEADER::METHOD => "request.method",
-          RackRabbit::HEADER::PATH   => "request.path",
-        },
-        :body => "request.body"
+        :method           => "request.method",
+        :path             => "request.path",
+        :body             => "request.body"
       })
 
       response = build_response(200, {
