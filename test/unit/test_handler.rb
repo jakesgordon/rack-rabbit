@@ -7,64 +7,70 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def test_subscribe
+    def test_handle_message
 
-      config  = build_config(:queue => QUEUE, :exchange => EXCHANGE, :exchange_type => :fanout, :routing_key => ROUTE, :acknowledge => true)
-      app     = build_app(config.rack_file)
-      handler = Handler.new(app, config, Mutex.new)
-      rabbit  = handler.rabbit
+      handler = build_handler
+      message = build_message
 
-      m1 = build_message(:delivery_tag => "m1")
-      m2 = build_message(:delivery_tag => "m2")
+      response = handler.handle(message)
 
-      r1 = build_response(200, {}, "r1")
-      r2 = build_response(200, {}, "r2")
+      assert_equal(200,           response.status)
+      assert_equal({},            response.headers)
+      assert_equal("Hello World", response.body)
+      
+    end
 
-      rabbit.prime(m1)
-      rabbit.prime(m2)
+    #--------------------------------------------------------------------------
 
-      assert_equal(false, rabbit.started?)  
-      assert_equal(false, rabbit.connected?)
-      assert_equal(nil,   rabbit.subscribe_options)
-      assert_equal([],    rabbit.subscribed_messages)
+    def test_handle_GET
 
-      handler.expects(:handle).with(m1).returns(r1)  # mock out #handle method and unit test it in more depth below
-      handler.expects(:handle).with(m2).returns(r2)  # (ditto)
+      handler = build_handler(:rack_file => MIRROR_RACK_APP)
+      message = build_message(:method => :GET, :path => "/my/path?foo=bar", :body => "hello")
 
-      handler.subscribe
+      response = handler.handle(message)
+      mirror   = JSON.parse(response.body)
 
-      assert_equal(true, rabbit.started?)
-      assert_equal(true, rabbit.connected?)
-      assert_equal({:queue => QUEUE, :exchange => EXCHANGE, :exchange_type => :fanout, :routing_key => ROUTE, :ack => true}, rabbit.subscribe_options)
-      assert_equal([m1, m2], rabbit.subscribed_messages)
-
-      handler.unsubscribe
-
-      assert_equal(false, rabbit.started?)
-      assert_equal(false, rabbit.connected?)
-
+      assert_equal(200,        response.status)
+      assert_equal("GET",      mirror["method"])
+      assert_equal("/my/path", mirror["path"])
+      assert_equal("bar",      mirror["params"]["foo"])
+      assert_equal("hello",    mirror["body"])
 
     end
 
     #--------------------------------------------------------------------------
 
-    def test_handle_message
+    def test_handle_POST
 
-      config   = build_config(:rack_file => DEFAULT_RACK_APP)
-      app      = build_app(config.rack_file)
-      handler  = Handler.new(app, config)
-      message  = build_message
+      handler  = build_handler(:rack_file => MIRROR_RACK_APP)
+      message  = build_message(:method => :POST, :path => "/my/path?foo=bar", :body => "hello")
 
       response = handler.handle(message)
+      mirror   = JSON.parse(response.body)
 
-      assert_equal(200,           response.status)
-      assert_equal("Hello World", response.body)
-      assert_equal({},            response.headers)
+      assert_equal(200,        response.status)
+      assert_equal("POST",     mirror["method"])
+      assert_equal("/my/path", mirror["path"])
+      assert_equal("bar",      mirror["params"]["foo"])
+      assert_equal("hello",    mirror["body"])
 
-      assert_equal([], handler.rabbit.acked_messages)
-      assert_equal([], handler.rabbit.rejected_messages)
-      assert_equal([], handler.rabbit.requeued_messages)
-      assert_equal([], handler.rabbit.published_messages)
+    end
+
+    #--------------------------------------------------------------------------
+
+    def test_handle_POST_form_data
+
+      handler  = build_handler(:rack_file => MIRROR_RACK_APP)
+      message  = build_message(:method => :POST, :path => "/my/path", :body => "foo=bar", :content_type => FORM_CONTENT)
+
+      response = handler.handle(message)
+      mirror   = JSON.parse(response.body)
+
+      assert_equal(200,        response.status)
+      assert_equal("POST",     mirror["method"])
+      assert_equal("/my/path", mirror["path"])
+      assert_equal("bar",      mirror["params"]["foo"])
+      assert_equal("foo=bar",  mirror["body"])
 
     end
 
@@ -72,10 +78,8 @@ module RackRabbit
 
     def test_handle_message_that_expects_a_reply
 
-      config   = build_config(:rack_file => DEFAULT_RACK_APP, :app_id => APP_ID)
-      app      = build_app(config.rack_file)
-      handler  = Handler.new(app, config)
-      message  = build_message(:delivery_tag => DELIVERY_TAG, :reply_to => REPLY_TO, :correlation_id => CORRELATION_ID)
+      handler = build_handler(:rack_file => DEFAULT_RACK_APP, :app_id => APP_ID)
+      message = build_message(:delivery_tag => DELIVERY_TAG, :reply_to => REPLY_TO, :correlation_id => CORRELATION_ID)
 
       handler.handle(message)
 
@@ -98,9 +102,7 @@ module RackRabbit
 
     def test_handle_message_that_causes_rack_app_to_raise_an_exception
 
-      config   = build_config(:rack_file => ERROR_RACK_APP)
-      app      = build_app(config.rack_file)
-      handler  = Handler.new(app, config)
+      handler  = build_handler(:rack_file => ERROR_RACK_APP)
       message  = build_message
       response = handler.handle(message)
 
@@ -119,9 +121,7 @@ module RackRabbit
 
     def test_succesful_message_is_acked
 
-      config   = build_config(:rack_file => DEFAULT_RACK_APP, :acknowledge => true)
-      app      = build_app(config.rack_file)
-      handler  = Handler.new(app, config)
+      handler  = build_handler(:rack_file => DEFAULT_RACK_APP, :acknowledge => true)
       message  = build_message(:delivery_tag => DELIVERY_TAG)
       response = handler.handle(message)
 
@@ -138,9 +138,7 @@ module RackRabbit
 
     def test_failed_message_is_rejected
 
-      config   = build_config(:rack_file => ERROR_RACK_APP, :acknowledge => true)
-      app      = build_app(config.rack_file)
-      handler  = Handler.new(app, config)
+      handler  = build_handler(:rack_file => ERROR_RACK_APP, :acknowledge => true)
       message  = build_message(:delivery_tag => DELIVERY_TAG)
       response = handler.handle(message)
 
@@ -157,8 +155,8 @@ module RackRabbit
 
     def test_rack_environment_is_generated_correctly_from_incoming_message
 
-      config = build_config(:rack_file => DEFAULT_RACK_APP, :app_id => APP_ID)
-      app    = build_app(config.rack_file)
+      handler = build_handler(:rack_file => DEFAULT_RACK_APP, :app_id => APP_ID)
+      config  = handler.config
 
       message = build_message({
         :content_type     => CONTENT_TYPE,
@@ -168,8 +166,7 @@ module RackRabbit
         :body             => BODY
       })
 
-      handler = Handler.new(app, config)
-      env     = handler.build_env(message)
+      env = handler.build_env(message)
 
       assert_equal(message,       env['rabbit.message'])
       assert_equal(BODY,          env['rack.input'].read)
@@ -194,8 +191,7 @@ module RackRabbit
 
     def test_rabbit_response_is_generated_correctly_from_rack_response
 
-      config = build_config(:rack_file => DEFAULT_RACK_APP, :app_id => APP_ID)
-      app    = build_app(config.rack_file)
+      handler = build_handler(:rack_file => DEFAULT_RACK_APP, :app_id => APP_ID)
 
       message = build_message({
         :reply_to         => REPLY_TO,
@@ -215,7 +211,6 @@ module RackRabbit
 
       Timecop.freeze do
 
-        handler    = Handler.new(app, config)
         properties = handler.response_properties(message, response)
 
         assert_equal(APP_ID,                      properties[:app_id])
@@ -227,6 +222,44 @@ module RackRabbit
         assert_equal(:header,                     properties[:headers][:additional])
 
       end
+
+    end
+
+    #--------------------------------------------------------------------------
+
+    def test_subscribe
+
+      handler = build_handler(:queue => QUEUE, :exchange => EXCHANGE, :exchange_type => :fanout, :routing_key => ROUTE, :acknowledge => true)
+      rabbit  = handler.rabbit
+
+      m1 = build_message(:delivery_tag => "m1")
+      m2 = build_message(:delivery_tag => "m2")
+
+      r1 = build_response(200, {}, "r1")
+      r2 = build_response(200, {}, "r2")
+
+      rabbit.prime(m1)
+      rabbit.prime(m2)
+
+      assert_equal(false, rabbit.started?)  
+      assert_equal(false, rabbit.connected?)
+      assert_equal(nil,   rabbit.subscribe_options)
+      assert_equal([],    rabbit.subscribed_messages)
+
+      handler.expects(:handle).with(m1).returns(r1)  # mock out #handle method - it's unit tested separately (above)
+      handler.expects(:handle).with(m2).returns(r2)  # (ditto)
+
+      handler.subscribe
+
+      assert_equal(true, rabbit.started?)
+      assert_equal(true, rabbit.connected?)
+      assert_equal({:queue => QUEUE, :exchange => EXCHANGE, :exchange_type => :fanout, :routing_key => ROUTE, :ack => true}, rabbit.subscribe_options)
+      assert_equal([m1, m2], rabbit.subscribed_messages)
+
+      handler.unsubscribe
+
+      assert_equal(false, rabbit.started?)
+      assert_equal(false, rabbit.connected?)
 
     end
 

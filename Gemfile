@@ -6,6 +6,7 @@ group :test do
 end
 
 group :development do
+  gem "pry"
   gem "bunny"
   gem "amqp"
   gem "sinatra"

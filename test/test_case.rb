@@ -36,6 +36,7 @@ module RackRabbit
     EXCHANGE         = "my.exchange"
     ROUTE            = "my.route"
     CONTENT_TYPE     = "text/plain; charset = \"utf-8\""
+    FORM_CONTENT     = "application/x-www-form-urlencoded; charset = \"utf-8\""
     CONTENT_ENCODING = "utf-8"
     BODY             = "body"
     PATH             = "/foo/bar"
@@ -75,6 +76,12 @@ module RackRabbit
 
     def build_app(rack_file)
       Rack::Builder.parse_file(rack_file)[0]
+    end
+
+    def build_handler(options = {})
+      config = build_config(options)
+      app    = build_app(config.rack_file)
+      Handler.new(app, config, Mutex.new)
     end
 
     #--------------------------------------------------------------------------

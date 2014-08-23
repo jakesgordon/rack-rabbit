@@ -1,12 +1,17 @@
+require 'json'
+
 class MirrorApp
   def self.call(env)
 
     request = Rack::Request.new env
-    method  = request.request_method
-    path    = request.path_info
-    body    = request.body.read
+    result  = {
+      :method => request.request_method,
+      :path   => request.path_info,
+      :params => request.params,
+      :body   => request.body.read
+    }
 
-    [ 200, {}, [ "#{method} #{path} #{body}" ] ]
+    [ 200, {}, [ result.to_json ] ]
 
   end
 end
