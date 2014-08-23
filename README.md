@@ -8,7 +8,7 @@ A forking server for hosting rabbitMQ consumer processes as load balanced rack a
 Description
 -----------
 
-Building an SOA with rabbitMQ? Want an easy way to host and load balance your consumer processes?
+Building an SOA with rabbitMQ? Want to host and load balance your consumer processes?
 
 RackRabbit will...
 
@@ -76,21 +76,21 @@ Ensure the worker processes are running:
 
 You can connect to the worker from the command line using the provided client excutables:
 
-    $ request -q myqueue /hello                             # synchronous GET request/response
+    $ request -q myqueue /hello                    # synchronous GET request/response
     Hello World
 
-    $ request -q myqueue POST /submit "data"                # synchronous POST request/response
+    $ request -q myqueue POST /submit "data"       # synchronous POST request/response
     Submitted some data
 
-    $ enqueue -q myqueue /do/work "data"                    # asynchronous POST to a worker queue
+    $ enqueue -q myqueue /do/work "data"           # asynchronous POST to a worker queue
 
 You can also connect to the worker from your applications using the `RackRabbit::Client` class.
 
     require 'rack-rabbit/client'
 
-    foo = RackRabbit::Client.get     :myqueue, "/hello"              # -> "Hello World"
-    bar = RackRabbit::Client.post    :myqueue, "/sumbit",  "data"    # -> "Submitted data"
-          RackRabbit::Client.enqueue :myqueue, "/do/work", "data"    # async worker queue
+    a = RackRabbit::Client.get     :myqueue, "/hello"              # -> "Hello World"
+    b = RackRabbit::Client.post    :myqueue, "/sumbit",  "data"    # -> "Submitted data"
+        RackRabbit::Client.enqueue :myqueue, "/do/work", "data"    # async worker queue
 
 
 HTTP vs AMQP based SOA
@@ -150,7 +150,7 @@ subscribes either to a named queue or an exchange.
 Server Configuration
 --------------------
 
-Detailed RackRabbit configuration can be provided by an external config file using the `--config` option
+Detailed configuration can be provided by an external config file using the `--config` option
 
     # set the Rack application to be used to handle messages (default 'config.ru'):
     rack_file 'app/config.ru'
