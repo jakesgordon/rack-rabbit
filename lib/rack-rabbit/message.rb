@@ -1,3 +1,5 @@
+require 'stringio'
+
 module RackRabbit
   class Message
 
@@ -22,6 +24,25 @@ module RackRabbit
       @content_encoding   = properties.content_encoding if properties.respond_to?(:content_encoding)
       @content_length     = body.nil? ? 0 : body.length
     end
+
+    #--------------------------------------------------------------------------
+
+    def to_rack_env(defaults = {})
+
+      defaults.merge({
+        'rabbit.message' => self,
+        'rack.input'     => StringIO.new(body || ""),
+        'REQUEST_METHOD' => method,
+        'REQUEST_PATH'   => uri,
+        'PATH_INFO'      => path,
+        'QUERY_STRING'   => query,
+        'CONTENT_TYPE'   => content_type,
+        'CONTENT_LENGTH' => content_length
+      }).merge(headers)
+    
+    end
+
+    #--------------------------------------------------------------------------
 
     def should_reply?
       !reply_to.nil?

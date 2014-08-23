@@ -1,5 +1,3 @@
-require 'stringio'
-
 require 'rack-rabbit/response'
 require 'rack-rabbit/adapter'
 
@@ -58,7 +56,7 @@ module RackRabbit
 
     def handle(message)
 
-      env = build_env(message)
+      env = message.to_rack_env(config.rack_env)
 
       status, headers, body_chunks = app.call(env)
 
@@ -86,23 +84,6 @@ module RackRabbit
       end
 
       response
-
-    end
-
-    #--------------------------------------------------------------------------
-
-    def build_env(message)
-
-      config.rack_env.merge({
-        'rabbit.message' => message,
-        'rack.input'     => StringIO.new(message.body || ""),
-        'REQUEST_METHOD' => message.method,
-        'REQUEST_PATH'   => message.uri,
-        'PATH_INFO'      => message.path,
-        'QUERY_STRING'   => message.query,
-        'CONTENT_TYPE'   => message.content_type,
-        'CONTENT_LENGTH' => message.content_length
-      }).merge(message.headers)
 
     end
 
