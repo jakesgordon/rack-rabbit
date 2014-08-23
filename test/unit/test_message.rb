@@ -38,8 +38,8 @@ module RackRabbit
         :delivery_tag     => DELIVERY_TAG,
         :reply_to         => REPLY_TO,
         :correlation_id   => CORRELATION_ID,
-        :content_type     => CONTENT_TYPE,
-        :content_encoding => CONTENT_ENCODING,
+        :content_type     => CONTENT::PLAIN_TEXT,
+        :content_encoding => CONTENT::UTF8,
         :method           => :POST,
         :path             => URI,
         :status           => 200,
@@ -47,22 +47,22 @@ module RackRabbit
         :body             => BODY
       })
 
-      assert_equal(DELIVERY_TAG,     message.delivery_tag)
-      assert_equal(REPLY_TO,         message.reply_to)
-      assert_equal(CORRELATION_ID,   message.correlation_id)
-      assert_equal(BODY,             message.body)
-      assert_equal(:POST,            message.method)
-      assert_equal(URI,              message.uri)
-      assert_equal(200,              message.status)
-      assert_equal(PATH,             message.path)
-      assert_equal(QUERY,            message.query)
-      assert_equal(CONTENT_TYPE,     message.content_type)
-      assert_equal(CONTENT_ENCODING, message.content_encoding)
-      assert_equal(BODY.length,      message.content_length)
-      assert_equal(true,             message.should_reply?)
-      assert_equal(false,            message.acknowledged?)
-      assert_equal(false,            message.rejected?)
-      assert_equal(false,            message.confirmed?)
+      assert_equal(DELIVERY_TAG,        message.delivery_tag)
+      assert_equal(REPLY_TO,            message.reply_to)
+      assert_equal(CORRELATION_ID,      message.correlation_id)
+      assert_equal(BODY,                message.body)
+      assert_equal(:POST,               message.method)
+      assert_equal(URI,                 message.uri)
+      assert_equal(200,                 message.status)
+      assert_equal(PATH,                message.path)
+      assert_equal(QUERY,               message.query)
+      assert_equal(CONTENT::PLAIN_TEXT, message.content_type)
+      assert_equal(CONTENT::UTF8,       message.content_encoding)
+      assert_equal(BODY.length,         message.content_length)
+      assert_equal(true,                message.should_reply?)
+      assert_equal(false,               message.acknowledged?)
+      assert_equal(false,               message.rejected?)
+      assert_equal(false,               message.confirmed?)
 
     end
 
@@ -73,31 +73,47 @@ module RackRabbit
       config = build_config(:app_id => APP_ID)
 
       message = build_message({
-        :content_type     => CONTENT_TYPE,
-        :content_encoding => CONTENT_ENCODING,
         :method           => :GET,
         :path             => URI,
-        :body             => BODY
+        :body             => BODY,
+        :content_type     => CONTENT::PLAIN_TEXT,
+        :content_encoding => CONTENT::UTF8
       })
 
       env = message.get_rack_env(config.rack_env)
 
-      assert_equal(message,       env['rabbit.message'])
-      assert_equal(BODY,          env['rack.input'].read)
-      assert_equal(:GET,          env['REQUEST_METHOD'])
-      assert_equal(URI,           env['REQUEST_PATH'])
-      assert_equal(PATH,          env['PATH_INFO'])
-      assert_equal(QUERY,         env['QUERY_STRING'])
-      assert_equal(CONTENT_TYPE,  env['CONTENT_TYPE'])
-      assert_equal(BODY.length,   env['CONTENT_LENGTH'])
-      assert_equal(Rack::VERSION, env['rack.version'])
-      assert_equal(config.logger, env['rack.logger'])
-      assert_equal($stderr,       env['rack.errors'])
-      assert_equal(false,         env['rack.multithread'])
-      assert_equal(true,          env['rack.multiprocess'])
-      assert_equal(false,         env['rack.run_once'])
-      assert_equal('http',        env['rack.url_scheme'])
-      assert_equal(APP_ID,        env['SERVER_NAME'])
+      assert_equal(message,                  env['rabbit.message'])
+      assert_equal(BODY,                     env['rack.input'].read)
+      assert_equal(:GET,                     env['REQUEST_METHOD'])
+      assert_equal(URI,                      env['REQUEST_PATH'])
+      assert_equal(PATH,                     env['PATH_INFO'])
+      assert_equal(QUERY,                    env['QUERY_STRING'])
+      assert_equal(CONTENT::PLAIN_TEXT_UTF8, env['CONTENT_TYPE'])
+      assert_equal(BODY.length,              env['CONTENT_LENGTH'])
+      assert_equal(Rack::VERSION,            env['rack.version'])
+      assert_equal(config.logger,            env['rack.logger'])
+      assert_equal($stderr,                  env['rack.errors'])
+      assert_equal(false,                    env['rack.multithread'])
+      assert_equal(true,                     env['rack.multiprocess'])
+      assert_equal(false,                    env['rack.run_once'])
+      assert_equal('http',                   env['rack.url_scheme'])
+      assert_equal(APP_ID,                   env['SERVER_NAME'])
+
+    end
+
+    #--------------------------------------------------------------------------
+
+    def test_get_rack_env_content_type_and_encoding_sensible_defaults
+
+      m1 = build_message({ :content_type => nil,    :content_encoding => nil })
+      m2 = build_message({ :content_type => "TYPE", :content_encoding => nil })
+      m3 = build_message({ :content_type => nil,    :content_encoding => "ENCODING" })
+      m4 = build_message({ :content_type => "TYPE", :content_encoding => "ENCODING" })
+
+      assert_equal("text/plain; charset=\"utf-8\"",     m1.get_rack_env['CONTENT_TYPE'])
+      assert_equal(      "TYPE; charset=\"utf-8\"",     m2.get_rack_env['CONTENT_TYPE'])
+      assert_equal("text/plain; charset=\"ENCODING\"",  m3.get_rack_env['CONTENT_TYPE'])
+      assert_equal(      "TYPE; charset=\"ENCODING\"",  m4.get_rack_env['CONTENT_TYPE'])
 
     end
 

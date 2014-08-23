@@ -61,7 +61,7 @@ module RackRabbit
     def test_handle_POST_form_data
 
       handler  = build_handler(:rack_file => MIRROR_RACK_APP)
-      message  = build_message(:method => :POST, :path => "/my/path", :body => "foo=bar", :content_type => FORM_CONTENT)
+      message  = build_message(:method => :POST, :path => "/my/path", :body => "foo=bar", :content_type => CONTENT::FORM_URLENCODED)
 
       response = handler.handle(message)
       mirror   = JSON.parse(response.body)

@@ -143,7 +143,7 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def default_content_type
-      'text/plain; charset = "utf-8"'
+      'text/plain'
     end
 
     def default_content_encoding

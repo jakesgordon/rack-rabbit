@@ -35,13 +35,18 @@ module RackRabbit
     QUEUE            = "my.queue"
     EXCHANGE         = "my.exchange"
     ROUTE            = "my.route"
-    CONTENT_TYPE     = "text/plain; charset = \"utf-8\""
-    FORM_CONTENT     = "application/x-www-form-urlencoded; charset = \"utf-8\""
-    CONTENT_ENCODING = "utf-8"
     BODY             = "body"
     PATH             = "/foo/bar"
     QUERY            = "a=b&c=d"
     URI              = "#{PATH}?#{QUERY}"
+
+    module CONTENT
+      UTF8                 = "utf-8"
+      PLAIN_TEXT           = "text/plain"
+      PLAIN_TEXT_UTF8      = "text/plain; charset=\"utf-8\""
+      FORM_URLENCODED      = "application/x-www-form-urlencoded"
+      FORM_URLENCODED_UTF8 = "application/x-www-form-urlencoded; charset=\"utf-8\""
+    end
 
     #--------------------------------------------------------------------------
 

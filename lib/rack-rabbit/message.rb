@@ -21,7 +21,7 @@ module RackRabbit
       @status             = headers.delete(RackRabbit::HEADER::STATUS)
       @path, @query       = uri.split(/\?/)
       @content_type       = properties.content_type
-      @content_encoding   = properties.content_encoding if properties.respond_to?(:content_encoding)
+      @content_encoding   = properties.content_encoding
       @content_length     = body.nil? ? 0 : body.length
     end
 
@@ -36,7 +36,7 @@ module RackRabbit
         'REQUEST_PATH'   => uri,
         'PATH_INFO'      => path,
         'QUERY_STRING'   => query,
-        'CONTENT_TYPE'   => content_type,
+        'CONTENT_TYPE'   => "#{content_type || 'text/plain'}; charset=\"#{content_encoding || 'utf-8'}\"",
         'CONTENT_LENGTH' => content_length
       }).merge(headers)
     

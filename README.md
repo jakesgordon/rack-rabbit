@@ -1,5 +1,5 @@
-Rack Rabbit (v0.1.0) - ALPHA
-============================
+Rack Rabbit (v0.1.0)
+====================
 
 A forking server for hosting rabbitMQ consumer processes as load balanced rack applications.
 
