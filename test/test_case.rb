@@ -87,9 +87,20 @@ module RackRabbit
     end
 
     def build_handler(options = {})
-      config = build_config(options)
-      app    = build_app(config.rack_file)
-      Handler.new(app, config, Mutex.new)
+      config = options[:config] || build_config(options)
+      app    = options[:app]    || build_app(config.rack_file)
+      Handler.new(app, config)
+    end
+
+    def build_subscriber(options = {})
+      rabbit  = options[:rabbit]  || build_rabbit(options)
+      config  = options[:config]  || build_config(options)
+      handler = options[:handler] || build_handler(options.merge(:config => config))
+      Subscriber.new(rabbit, handler, Mutex.new, handler.config)
+    end
+
+    def build_rabbit(options = {})
+      Adapter.load({ :adapter => :mock }.merge(options))
     end
 
     #--------------------------------------------------------------------------

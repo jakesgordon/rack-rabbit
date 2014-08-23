@@ -76,30 +76,6 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def test_handle_message_that_expects_a_reply
-
-      handler = build_handler(:rack_file => DEFAULT_RACK_APP, :app_id => APP_ID)
-      message = build_message(:delivery_tag => DELIVERY_TAG, :reply_to => REPLY_TO, :correlation_id => CORRELATION_ID)
-
-      handler.handle(message)
-
-      assert_equal([], handler.rabbit.acked_messages)
-      assert_equal([], handler.rabbit.rejected_messages)
-      assert_equal([], handler.rabbit.requeued_messages)
-      assert_equal(1,  handler.rabbit.published_messages.length)
-
-      reply = handler.rabbit.published_messages[0]
-
-      assert_equal(APP_ID,         reply[:app_id])
-      assert_equal(REPLY_TO,       reply[:routing_key])
-      assert_equal(CORRELATION_ID, reply[:correlation_id])
-      assert_equal(200,            reply[:headers][RackRabbit::HEADER::STATUS])
-      assert_equal("Hello World",  reply[:body])
-
-    end
-
-    #--------------------------------------------------------------------------
-
     def test_handle_message_that_causes_rack_app_to_raise_an_exception
 
       handler  = build_handler(:rack_file => ERROR_RACK_APP)
@@ -109,83 +85,6 @@ module RackRabbit
       assert_equal(500,                     response.status)
       assert_equal("Internal Server Error", response.body)
       assert_equal({},                      response.headers)
-
-      assert_equal([], handler.rabbit.acked_messages)
-      assert_equal([], handler.rabbit.rejected_messages)
-      assert_equal([], handler.rabbit.requeued_messages)
-      assert_equal([], handler.rabbit.published_messages)
-
-    end
-
-    #--------------------------------------------------------------------------
-
-    def test_succesful_message_is_acked
-
-      handler  = build_handler(:rack_file => DEFAULT_RACK_APP, :ack => true)
-      message  = build_message(:delivery_tag => DELIVERY_TAG)
-      response = handler.handle(message)
-
-      assert_equal(200,            response.status)
-      assert_equal("Hello World",  response.body)
-      assert_equal([DELIVERY_TAG], handler.rabbit.acked_messages)
-      assert_equal([],             handler.rabbit.rejected_messages)
-      assert_equal([],             handler.rabbit.requeued_messages)
-      assert_equal([],             handler.rabbit.published_messages)
-
-    end
-
-    #--------------------------------------------------------------------------
-
-    def test_failed_message_is_rejected
-
-      handler  = build_handler(:rack_file => ERROR_RACK_APP, :ack => true)
-      message  = build_message(:delivery_tag => DELIVERY_TAG)
-      response = handler.handle(message)
-
-      assert_equal(500,                     response.status)
-      assert_equal("Internal Server Error", response.body)
-      assert_equal([],                      handler.rabbit.acked_messages)
-      assert_equal([DELIVERY_TAG],          handler.rabbit.rejected_messages)
-      assert_equal([],                      handler.rabbit.requeued_messages)
-      assert_equal([],                      handler.rabbit.published_messages)
-
-    end
-
-    #--------------------------------------------------------------------------
-
-    def test_subscribe
-
-      handler = build_handler(:queue => QUEUE, :exchange => EXCHANGE, :exchange_type => :fanout, :routing_key => ROUTE, :ack => true)
-      rabbit  = handler.rabbit
-
-      m1 = build_message(:delivery_tag => "m1")
-      m2 = build_message(:delivery_tag => "m2")
-
-      r1 = build_response(200, "r1")
-      r2 = build_response(200, "r2")
-
-      rabbit.prime(m1)
-      rabbit.prime(m2)
-
-      assert_equal(false, rabbit.started?)  
-      assert_equal(false, rabbit.connected?)
-      assert_equal(nil,   rabbit.subscribe_options)
-      assert_equal([],    rabbit.subscribed_messages)
-
-      handler.expects(:handle).with(m1).returns(r1)  # mock out #handle method - it's unit tested separately (above)
-      handler.expects(:handle).with(m2).returns(r2)  # (ditto)
-
-      handler.subscribe
-
-      assert_equal(true, rabbit.started?)
-      assert_equal(true, rabbit.connected?)
-      assert_equal({:queue => QUEUE, :exchange => EXCHANGE, :exchange_type => :fanout, :routing_key => ROUTE, :ack => true}, rabbit.subscribe_options)
-      assert_equal([m1, m2], rabbit.subscribed_messages)
-
-      handler.unsubscribe
-
-      assert_equal(false, rabbit.started?)
-      assert_equal(false, rabbit.connected?)
 
     end
 
