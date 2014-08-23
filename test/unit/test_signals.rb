@@ -1,7 +1,5 @@
 require_relative '../test_case'
 
-require 'rack-rabbit/signals'
-
 module RackRabbit
   class TestSignals < TestCase
 

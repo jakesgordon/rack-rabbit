@@ -6,10 +6,19 @@ require 'ostruct'
 require 'timecop'
 require 'pp'
 
-require 'rack-rabbit'
-require 'rack-rabbit/config'
-require 'rack-rabbit/message'
-require 'rack-rabbit/response'
+require 'rack-rabbit'                 # top level module
+
+require 'rack-rabbit/subscriber'      # subscribes to rabbit queue/exchange and passes messages on to a handler
+require 'rack-rabbit/handler'         # converts rabbit messages to rack environments and calls a rack app to handle the request
+require 'rack-rabbit/adapter'         # abstract interface to rabbitMQ
+require 'rack-rabbit/message'         # a rabbitMQ message
+require 'rack-rabbit/response'        # a rack response
+
+require 'rack-rabbit/client'          # client code for making requests
+require 'rack-rabbit/worker'          # worker process
+require 'rack-rabbit/server'          # server process
+require 'rack-rabbit/config'          # server configuration
+require 'rack-rabbit/signals'         # process signal queue
 
 module RackRabbit
   class TestCase < Minitest::Unit::TestCase

@@ -1,7 +1,5 @@
 require_relative '../test_case'
 
-require 'rack-rabbit/subscriber'
-
 module RackRabbit
   class TestSubscriber < TestCase
 

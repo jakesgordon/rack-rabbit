@@ -1,7 +1,5 @@
 require_relative '../test_case'
 
-require 'rack-rabbit/config'
-
 module RackRabbit
   class TestConfig < TestCase
 
