@@ -18,7 +18,7 @@ debug_help   = "set $DEBUG to true"
 warn_help    = "enable warnings"
 
 op = OptionParser.new
-op.banner = "Make a synchronous request to a RabbitMQ queue and wait for a reply"
+op.banner = "Make a synchronous request to a rabbitMQ queue and wait for a reply"
 op.separator ""
 op.separator "Usage: request [options] [METHOD] [PATH] [BODY]"
 op.separator ""
@@ -66,7 +66,7 @@ case action
 when :help    then puts op.to_s
 when :version then puts RackRabbit::VERSION
 else
-  puts RackRabbit::Client.request(options)
+  puts RackRabbit::Client.request(options[:queue], options)
 end
 
 #==============================================================================

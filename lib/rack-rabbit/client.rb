@@ -29,25 +29,25 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def get(path, options = {})
-      request(options.merge(:method => :GET, :path => path))
+    def get(queue, path, options = {})
+      request(queue, options.merge(:method => :GET, :path => path))
     end
 
-    def post(path, body, options = {})
-      request(options.merge(:method => :POST, :path => path, :body => body))
+    def post(queue, path, body, options = {})
+      request(queue, options.merge(:method => :POST, :path => path, :body => body))
     end
 
-    def put(path, body, options = {})
-      request(options.merge(:method => :PUT, :path => path, :body => body))
+    def put(queue, path, body, options = {})
+      request(queue, options.merge(:method => :PUT, :path => path, :body => body))
     end
 
-    def delete(path, options = {})
-      request(options.merge(:method => :DELETE, :path => path))
+    def delete(queue, path, options = {})
+      request(queue, options.merge(:method => :DELETE, :path => path))
     end
 
     #--------------------------------------------------------------------------
 
-    def request(options = {})
+    def request(queue, options = {})
 
       id        = SecureRandom.uuid
       lock      = Mutex.new
@@ -69,9 +69,9 @@ module RackRabbit
 
         rabbit.publish(body,
           :correlation_id   => id,
+          :routing_key      => queue,
           :reply_to         => reply_queue.name,
           :priority         => options[:priority],
-          :routing_key      => options[:queue],
           :content_type     => options[:content_type]     || default_content_type,
           :content_encoding => options[:content_encoding] || default_content_encoding,
           :timestamp        => options[:timestamp]        || default_timestamp,
@@ -91,16 +91,16 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def enqueue(options = {})
+    def enqueue(queue, options = {})
 
-      method  = options[:method]  || :GET
+      method  = options[:method]  || :POST
       path    = options[:path]    || ""
       headers = options[:headers] || {}
       body    = options[:body]    || ""
 
       rabbit.publish(body,
+        :routing_key      => queue,
         :priority         => options[:priority],
-        :routing_key      => options[:queue],
         :content_type     => options[:content_type]     || default_content_type,
         :content_encoding => options[:content_encoding] || default_content_encoding,
         :timestamp        => options[:timestamp]        || default_timestamp,
@@ -116,18 +116,18 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def publish(options = {})
+    def publish(exchange, options = {})
 
-      method  = options[:method]  || :GET
+      method  = options[:method]  || :POST
       path    = options[:path]    || ""
       headers = options[:headers] || {}
       body    = options[:body]    || ""
 
       rabbit.publish(body,
-        :priority         => options[:priority],
-        :exchange         => options[:exchange],
-        :exchange_type    => options[:exchange_type],
+        :exchange         => exchange,
+        :exchange_type    => options[:exchange_type] || :fanout,
         :routing_key      => options[:routing_key],
+        :priority         => options[:priority],
         :content_type     => options[:content_type]     || default_content_type,
         :content_encoding => options[:content_encoding] || default_content_encoding,
         :timestamp        => options[:timestamp]        || default_timestamp,

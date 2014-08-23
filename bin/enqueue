@@ -18,7 +18,7 @@ debug_help         = "set $DEBUG to true"
 warn_help          = "enable warnings"
 
 op = OptionParser.new
-op.banner = "Enqueue an asynchronous request to a RabbitMQ queue without waiting for a reply"
+op.banner = "Enqueue an asynchronous request to a rabbitMQ queue without waiting for a reply"
 op.separator ""
 op.separator "Usage: enqueue [options] [METHOD] [PATH] [BODY]"
 op.separator ""
@@ -66,7 +66,7 @@ case action
 when :help    then puts op.to_s
 when :version then puts RackRabbit::VERSION
 else
-  puts RackRabbit::Client.enqueue(options)
+  puts RackRabbit::Client.enqueue(options[:queue], options)
 end
 
 #==============================================================================
