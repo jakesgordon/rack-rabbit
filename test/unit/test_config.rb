@@ -372,6 +372,20 @@ module RackRabbit
       assert_equal(:worker, worker, "verify block got called")
     end
 
+    #--------------------------------------------------------------------------
+
+    def test_rack_env
+      config = build_config(:app_id => APP_ID)
+      assert_equal(Rack::VERSION, config.rack_env['rack.version'])
+      assert_equal(config.logger, config.rack_env['rack.logger'])
+      assert_equal($stderr,       config.rack_env['rack.errors'])
+      assert_equal(false,         config.rack_env['rack.multithread'])
+      assert_equal(true,          config.rack_env['rack.multiprocess'])
+      assert_equal(false,         config.rack_env['rack.run_once'])
+      assert_equal('http',        config.rack_env['rack.url_scheme'])
+      assert_equal(APP_ID,        config.rack_env['SERVER_NAME'])
+    end
+
     #==========================================================================
     # private helper methods
     #==========================================================================

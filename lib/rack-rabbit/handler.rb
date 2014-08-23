@@ -1,4 +1,3 @@
-require 'rack'
 require 'stringio'
 
 require 'rack-rabbit/response'
@@ -94,7 +93,7 @@ module RackRabbit
 
     def build_env(message)
 
-      default_env.merge({
+      config.rack_env.merge({
         'rabbit.message' => message,
         'rack.input'     => StringIO.new(message.body || ""),
         'REQUEST_METHOD' => message.method,
@@ -105,21 +104,6 @@ module RackRabbit
         'CONTENT_LENGTH' => message.content_length
       }).merge(message.headers)
 
-    end
-
-    #--------------------------------------------------------------------------
-
-    def default_env
-      @default_env ||= {
-        'rack.version'      => Rack::VERSION,
-        'rack.logger'       => logger,
-        'rack.errors'       => $stderr,
-        'rack.multithread'  => false,
-        'rack.multiprocess' => true,
-        'rack.run_once'     => false,
-        'rack.url_scheme'   => 'http',
-        'SERVER_NAME'       => config.app_id
-      }
     end
 
     #--------------------------------------------------------------------------

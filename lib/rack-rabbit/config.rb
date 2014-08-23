@@ -1,4 +1,5 @@
 require 'logger'
+require 'rack'
 
 require 'rack-rabbit'
 
@@ -14,6 +15,7 @@ module RackRabbit
     end
 
     def reload(options = {})
+      @rack_env = nil
       instance_eval(File.read(config_file), config_file) if config_file && File.exists?(config_file)
       validate(options) unless options[:validate] == false
     end
@@ -178,6 +180,21 @@ module RackRabbit
       elsif values[:after_fork].respond_to?(:call)
         values[:after_fork].call(server, worker)
       end
+    end
+
+    #--------------------------------------------------------------------------
+
+    def rack_env
+      @rack_env ||= {
+        'rack.version'      => Rack::VERSION,
+        'rack.logger'       => logger,
+        'rack.errors'       => $stderr,
+        'rack.multithread'  => false,
+        'rack.multiprocess' => true,
+        'rack.run_once'     => false,
+        'rack.url_scheme'   => 'http',
+        'SERVER_NAME'       => app_id
+      }
     end
 
     #--------------------------------------------------------------------------
