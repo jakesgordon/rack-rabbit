@@ -131,40 +131,46 @@ Enqueue some work from your application using the `RR` class:
 
 ## Asynchronous Publish/Subscribe with a fanout exchange
 
-Consider two potential subscribers, built as simple rack applications:
+Consider two potential subscribers:
 
 First `foo.ru`
 
-    foo = lambda do |env|
-      env['rack.logger'].info "Foo saw the event"   # a real subscriber would do some work here
-      [ 200, {}, [] ]
+    require 'sinatra/base'
+
+    class Foo < Sinatra::Base
+      post "/event do
+        logger.info "Foo saw the event"
+      end
     end
-    run foo
+    run Foo
 
 Then `bar.ru`
 
-    bar = lambda do |env|
-      env['rack.logger'].info "Bar saw the event"   # a real subscriber would do some work here
-      [ 200, {}, [] ]
+    require 'sinatra/base'
+
+    class Bar < Sinatra::Base
+      post "/event do
+        logger.info "Bar saw the event"
+      end
     end
-    run bar
+    run Bar
 
 Host these subscribers using `rack-rabbit`:
 
     $ rack-rabbit --exchange myexchange --type fanout foo.ru  &
     $ rack-rabbit --exchange myexchange --type fanout bar.ru  &
 
-Publish an event from the command line using the `rr` command:
+Publish the event from the command line using the `rr` command:
 
-    $ rr publish -e myexchange -t fanout "event" "data"
+    $ rr publish -e myexchange -t fanout "/event" "data"
 
-Publish an event from your application using the `RR` class:
+Publish the event from your application using the `RR` class:
 
     require 'rack-rabbit/client'
 
-    RR.publish :myexchange, :type => :fanout, :path => "event", :body => "data"
+    RR.publish :myexchange, :type => :fanout, :path => "/event", :body => "data"
 
-**All subscribers should see the event when using a fanout exchange**
+>> **All subscribers should see the event when using a fanout exchange**
 
 
 ## Asynchronous Publish/Subscribe with a topic exchange
@@ -176,16 +182,15 @@ Consider the same two subscribers as in the previous example, but host them by b
 
 Publish a routed event from the command line using the `rr` command:
 
-    $ rr publish -e myexchange -t topic -r A "event"          # only received by foo
-    $ rr publish -e myexchange -t topic -r B "event"          # only received by bar
+    $ rr publish -e myexchange -t topic -r A "/event"          # only received by foo
+    $ rr publish -e myexchange -t topic -r B "/event"          # only received by bar
 
 Publish a routed event from your application using the `RR` class:
 
     require 'rack-rabbit/client'
 
-    RR.publish :myexchange, :type => :topic, :route => "A", :path => "event"   # only received by foo
-    RR.publish :myexchange, :type => :topic, :route => "B", :path => "event"   # only received by bar
+    RR.publish :myexchange, :type => :topic, :route => "A", :path => "/event"   # only received by foo
+    RR.publish :myexchange, :type => :topic, :route => "B", :path => "/event"   # only received by bar
 
-**Subscribers should only see events that match their route when using a topic exchange**
-
+>> **Subscribers should only see events that match their route when using a topic exchange**
 

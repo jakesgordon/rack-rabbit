@@ -9,14 +9,15 @@ A forking server for hosting rabbitMQ consumer processes as load balanced rack a
   - [Summary](#summary)
   - [Installation](#installation)
   - [Getting started by example](#getting-started-by-example)
-  - [Server Usage](#server-usage)
-  - [Server Configuration](#server-configuration)
+  - [More examples](https://github.com/jakesgordon/rack-rabbit/blob/master/EXAMPLES.md)
+  - [Server usage](#server-usage)
+  - [Server configuration](#server-configuration)
   - [Signals](#signals)
-  - [Forking Worker Processes](#forking-worker-processes)
-  - [RabbitMQ Acknowledgements](#rabbitmq-acknowledgements)
-  - [Client Binary](#client-binary)
-  - [Client Library](#client-library)
-  - [Supported Platforms](#supported-platforms)
+  - [Forking worker processes](#forking-worker-processes)
+  - [RabbitMQ acknowledgements](#rabbitmq-acknowledgements)
+  - [Client binary](#client-binary)
+  - [Client library](#client-library)
+  - [Supported platforms](#supported-platforms)
   - [TODO](#todo)
   - [License](#license)
   - [Credits](#credits)
@@ -100,18 +101,27 @@ Connect to the worker from the command line using the `rr` command:
     $ rr -q myqueue POST /submit "data"       # synchronous POST request/response
     POST /submit data
 
+    $ rr -q myqueue PUT /update "data"        # synchronous PUT request/response
+    PUT /update data
+
+    $ rr -q myqueue DELETE /resource          # synchronous DELETE request/response
+    DELETE /resource
 
 Connect to the worker from your applications using the `RR` class.
 
     require 'rack-rabbit/client'
 
-    RR.get  :myqueue, "/hello"             # returns "GET /hello"
-    RR.post :myqueue, "/sumbit", "data"    # returns "POST /submit data"
+    RR.get    :myqueue, "/hello"             # returns "GET /hello"
+    RR.post   :myqueue, "/submit", "data"    # returns "POST /submit data"
+    RR.put    :myqueue, "/update", "data"    # returns "PUT /update data"
+    RR.delete :myqueue, "/resource",         # returns "DELETE /resource"
 
 
-See [EXAMPLES.md](https://github.com/jakesgordon/rack-rabbit/blob/master/EXAMPLES.md) for many more detailed examples.
+See [EXAMPLES.md](https://github.com/jakesgordon/rack-rabbit/blob/master/EXAMPLES.md) for
+more detailed examples, including ENQUEUE and PUBLISH communication patterns, and using Sinatra.
 
-## Server Usage
+
+## Server usage
 
 Use the `rack-rabbit` executable to host your Rack app in a forking server that
 subscribes either to a named queue or an exchange.
@@ -158,7 +168,7 @@ subscribes either to a named queue or an exchange.
 
 
 
-## Server Configuration
+## Server configuration
 
 Detailed configuration can be provided by an external config file using the `--config` option
 
@@ -222,7 +232,7 @@ Signals should be sent to the master process
   * TTIN - increase the number of worker processes by one
   * TTOU - decrease the number of worker processes by one
 
-## Forking Worker Processes
+## Forking worker processes
 
 If you are using the `preload_app` directive, your app will be loaded into the master
 server process before any workers have forked. Therefore, you may need to re-initialize
@@ -242,11 +252,11 @@ This should NOT be needed when the `preload_app` directive is false.
 
 >> _this is an issue with any preforking style server (e.g. Unicorn)_
 
-## RabbitMQ Acknowledgements
+## RabbitMQ acknowledgements
 
 TODO: document :ack and :reject support
 
-## Client Binary
+## Client binary
 
 Communicating with a RackRabbit hosted server can be done using the `rr` binary:
 
@@ -288,7 +298,7 @@ Communicating with a RackRabbit hosted server can be done using the `rr` binary:
         -h, --help
         -v, --version
 
-## Client Library
+## Client library
 
 Posting a message to a RackRabbit hosted server from within your application can be done using
 the `RR` class...
@@ -296,7 +306,7 @@ the `RR` class...
 TODO: document RR
 
 
-## Supported Platforms
+## Supported platforms
 
 Nothing formal yet, development is happening on MRI 2.1.2p95
 
