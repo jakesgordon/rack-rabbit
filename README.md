@@ -24,24 +24,24 @@ A forking server for hosting rabbitMQ consumer processes as load balanced rack a
 
 ## Summary
 
-Building an SOA with rabbitMQ? Use RackRabbit to:
+Building an SOA with rabbitMQ? Use RackRabbit for:
 
-  * Host a cluster of worker processes that...
-  * ... subscribe to a queue (or an exchange)
+  * Hosting a cluster of worker processes that...
+  * ... subscribe to a queue/exchange
   * ... convert incoming messages into a suitable Rack environment
   * ... call your Rack app to handle the message
   * ... publish a reply back to the original caller (if `reply_to` was provided)
 
 RackRabbit supports a variety of messaging patterns:
 
-  * Synchronous Request/Response (e.g. GET/POST/PUT/DELETE)
-  * Asynchronous Worker queue    (e.g. ENQUEUE)
-  * Asynchronous PubSub          (e.g. PUBLISH)
+  * Synchronous Request/Response _(e.g. GET/POST/PUT/DELETE)_
+  * Asynchronous Worker queue    _(e.g. ENQUEUE)_
+  * Asynchronous PubSub          _(e.g. PUBLISH)_
 
 
 What Unicorn does for HTTP services, RackRabbit can do for hosting AMQP services, and more:
 
-|                             SOA over | HTTP            | AMQP                  |
+|                                      | HTTP            | AMQP                  |
 |--------------------------------------|-----------------|-----------------------|
 | Make a synchronous request/response  | Unicorn         | rabbitMQ + RackRabbit |
 | Asynchronous worker queue            | Redis + Resque  | rabbitMQ + RackRabbit |
@@ -50,7 +50,7 @@ What Unicorn does for HTTP services, RackRabbit can do for hosting AMQP services
 
 ## Installation
 
-Install a rabbitMQ server if necessary:
+Install a rabbitMQ server if necessary ([docs](https://www.rabbitmq.com/download.html)):
 
     $ sudo apt-get install rabbitmq-server
 
@@ -62,8 +62,8 @@ Update your Gemfile to include RackRabbit and your preferred rabbitMQ client lib
 
 ## Getting started by example
 
-You can use RackRabbit to easily host an AMQP-based service as a rack application in the same way
-that you might use Unicorn to host an HTTP-based service.
+You can use RackRabbit to host an AMQP service as a rack application in the same way
+that you might use Unicorn to host an HTTP service.
 
 Imagine a simple rack application in `config.ru`:
 
@@ -79,7 +79,7 @@ Imagine a simple rack application in `config.ru`:
     end
     run Service
     
-You can now host and load balance this service using `rack-rabbit`:
+You can host and load balance this service using `rack-rabbit`:
 
     $ rack-rabbit --queue myqueue --workers 4  config.ru
 
@@ -92,7 +92,7 @@ Ensure the worker processes are running:
     15721 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
     15723 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
 
-You can connect to the worker from the command line using the `rr` command:
+Connect to the worker from the command line using the `rr` command:
 
     $ rr -q myqueue /hello                    # synchronous GET request/response
     GET /hello
@@ -101,7 +101,7 @@ You can connect to the worker from the command line using the `rr` command:
     POST /submit data
 
 
-You can also connect to the worker from your applications using the `RackRabbit::Client` class.
+Connect to the worker from your applications using the `RackRabbit::Client` class.
 
     require 'rack-rabbit/client'
 
@@ -113,7 +113,7 @@ See [EXAMPLES.md](https://github.com/jakesgordon/rack-rabbit/blob/master/EXAMPLE
 
 ## Server Usage
 
-Use the `rack-rabbit` command line script to host your Rack app in a forking server that
+Use the `rack-rabbit` executable to host your Rack app in a forking server that
 subscribes either to a named queue or an exchange.
 
     $ rack-rabbit --help
@@ -248,7 +248,7 @@ TODO: document :ack and :reject support
 
 ## Client Binary
 
-Posting a message to a RackRabbit hosted server can be done using the `rr` binary:
+Communicating with a RackRabbit hosted server can be done using the `rr` binary:
 
     Make a request to a RackRabbit service.
 
