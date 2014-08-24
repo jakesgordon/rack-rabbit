@@ -101,12 +101,12 @@ Connect to the worker from the command line using the `rr` command:
     POST /submit data
 
 
-Connect to the worker from your applications using the `RackRabbit::Client` class.
+Connect to the worker from your applications using the `RR` class.
 
     require 'rack-rabbit/client'
 
-    RackRabbit::Client.get  :myqueue, "/hello"             # returns "GET /hello"
-    RackRabbit::Client.post :myqueue, "/sumbit", "data"    # returns "POST /submit data"
+    RR.get  :myqueue, "/hello"             # returns "GET /hello"
+    RR.post :myqueue, "/sumbit", "data"    # returns "POST /submit data"
 
 
 See [EXAMPLES.md](https://github.com/jakesgordon/rack-rabbit/blob/master/EXAMPLES.md) for many more detailed examples.
@@ -291,9 +291,9 @@ Communicating with a RackRabbit hosted server can be done using the `rr` binary:
 ## Client Library
 
 Posting a message to a RackRabbit hosted server from within your application can be done using
-the `RackRabbit::Client` library...
+the `RR` class...
 
-TODO: document RackRabbit::Client
+TODO: document RR
 
 
 ## Supported Platforms

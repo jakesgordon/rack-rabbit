@@ -182,3 +182,6 @@ module RackRabbit
 
   end
 end
+
+RR = RackRabbit::Client   # much less typing for client applications
+

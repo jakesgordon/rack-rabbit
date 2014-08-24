@@ -43,14 +43,14 @@ Connect to the worker from the command line using the `rr` command:
     DELETE /resource
 
 
-Connect to the worker from your application using the `RackRabbit::Client` class.
+Connect to the worker from your application using the `RR` class.
 
     require 'rack-rabbit/client'
 
-    RackRabbit::Client.get    :myqueue, "/hello"             # returns "GET /hello"
-    RackRabbit::Client.post   :myqueue, "/submit", "data"    # returns "POST /submit data"
-    RackRabbit::Client.put    :myqueue, "/update", "data"    # returns "PUT /update data"
-    RackRabbit::Client.delete :myqueue, "/resource",         # returns "DELETE /resource"
+    RR.get    :myqueue, "/hello"             # returns "GET /hello"
+    RR.post   :myqueue, "/submit", "data"    # returns "POST /submit data"
+    RR.put    :myqueue, "/update", "data"    # returns "PUT /update data"
+    RR.delete :myqueue, "/resource",         # returns "DELETE /resource"
 
 
 ## Synchronous Request/Response (using Sinatra)
@@ -85,12 +85,12 @@ Connect to the worker from the command line using the `rr` command:
     $ rr request -q myqueue POST /submit "data"
     Submitted data
 
-Connect to the worker from your application using the `RackRabbit::Client` class:
+Connect to the worker from your application using the `RR` class:
 
     require 'rack-rabbit/client'
 
-    RackRabbit::Client.get  :myqueue, "/hello"            # returns "Hello World"
-    RackRabbit::Client.post :myqueue, "/submit", "data"   # returns "Submitted data"
+    RR.get  :myqueue, "/hello"            # returns "Hello World"
+    RR.post :myqueue, "/submit", "data"   # returns "Submitted data"
 
 
 ## Asynchronous Worker Queue
@@ -122,12 +122,12 @@ Enqueue some work from the command line using the `rr` command:
     $ rr enqueue -q myqueue /work      "data"          # asynchronous ENQUEUE to a worker
     $ rr enqueue -q myqueue /more/work "more data"     # (ditto)
 
-Enqueue some work from your application using the `RackRabbit::Client` class:
+Enqueue some work from your application using the `RR` class:
 
     require 'rack-rabbit/client'
 
-    RackRabbit::Client.enqueue :myqueue, :path => "/work",     :body => "data"
-    RackRabbit::Client.enqueue :myqueue, :path => "/more/work" :body => "more data"
+    RR.enqueue :myqueue, :path => "/work",     :body => "data"
+    RR.enqueue :myqueue, :path => "/more/work" :body => "more data"
 
 ## Asynchronous Publish/Subscribe with a fanout exchange
 
@@ -158,11 +158,11 @@ Publish an event from the command line using the `rr` command:
 
     $ rr publish -e myexchange -t fanout "event" "data"
 
-Publish an event from your application using the `RackRabbit::Client` class:
+Publish an event from your application using the `RR` class:
 
     require 'rack-rabbit/client'
 
-    RackRabbit::Client.publish :myexchange, :type => :fanout, :path => "event", :body => "data"
+    RR.publish :myexchange, :type => :fanout, :path => "event", :body => "data"
 
 **All subscribers should see the event when using a fanout exchange**
 
@@ -179,12 +179,12 @@ Publish a routed event from the command line using the `rr` command:
     $ rr publish -e myexchange -t topic -r A "event"          # only received by foo
     $ rr publish -e myexchange -t topic -r B "event"          # only received by bar
 
-Publish a routed event from your application using the `RackRabbit::Client` class:
+Publish a routed event from your application using the `RR` class:
 
     require 'rack-rabbit/client'
 
-    RackRabbit::Client.publish :myexchange, :type => :topic, :route => "A", :path => "event"   # only received by foo
-    RackRabbit::Client.publish :myexchange, :type => :topic, :route => "B", :path => "event"   # only received by bar
+    RR.publish :myexchange, :type => :topic, :route => "A", :path => "event"   # only received by foo
+    RR.publish :myexchange, :type => :topic, :route => "B", :path => "event"   # only received by bar
 
 **Subscribers should only see events that match their route when using a topic exchange**
 
