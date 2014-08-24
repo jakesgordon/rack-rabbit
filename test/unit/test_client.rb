@@ -29,8 +29,10 @@ module RackRabbit
 
         assert_equal([reply],          rabbit.subscribed_messages)
         assert_equal(1,                rabbit.published_messages.length)
-        assert_equal(CORRELATION_ID,   rabbit.published_messages[0][:correlation_id])
+        assert_equal(nil,              rabbit.published_messages[0][:exchange])
+        assert_equal(nil,              rabbit.published_messages[0][:exchange_type])
         assert_equal(QUEUE,            rabbit.published_messages[0][:routing_key])
+        assert_equal(CORRELATION_ID,   rabbit.published_messages[0][:correlation_id])
         assert_equal(REPLY_QUEUE,      rabbit.published_messages[0][:reply_to])
         assert_equal(PRIORITY,         rabbit.published_messages[0][:priority])
         assert_equal(CONTENT::JSON,    rabbit.published_messages[0][:content_type])
@@ -71,8 +73,10 @@ module RackRabbit
 
         assert_equal([reply],          rabbit.subscribed_messages)
         assert_equal(1,                rabbit.published_messages.length)
-        assert_equal(CORRELATION_ID,   rabbit.published_messages[0][:correlation_id])
+        assert_equal(nil,              rabbit.published_messages[0][:exchange])
+        assert_equal(nil,              rabbit.published_messages[0][:exchange_type])
         assert_equal(QUEUE,            rabbit.published_messages[0][:routing_key])
+        assert_equal(CORRELATION_ID,   rabbit.published_messages[0][:correlation_id])
         assert_equal(REPLY_QUEUE,      rabbit.published_messages[0][:reply_to])
         assert_equal(PRIORITY,         rabbit.published_messages[0][:priority])
         assert_equal(CONTENT::JSON,    rabbit.published_messages[0][:content_type])
@@ -113,8 +117,10 @@ module RackRabbit
 
         assert_equal([reply],          rabbit.subscribed_messages)
         assert_equal(1,                rabbit.published_messages.length)
-        assert_equal(CORRELATION_ID,   rabbit.published_messages[0][:correlation_id])
+        assert_equal(nil,              rabbit.published_messages[0][:exchange])
+        assert_equal(nil,              rabbit.published_messages[0][:exchange_type])
         assert_equal(QUEUE,            rabbit.published_messages[0][:routing_key])
+        assert_equal(CORRELATION_ID,   rabbit.published_messages[0][:correlation_id])
         assert_equal(REPLY_QUEUE,      rabbit.published_messages[0][:reply_to])
         assert_equal(PRIORITY,         rabbit.published_messages[0][:priority])
         assert_equal(CONTENT::JSON,    rabbit.published_messages[0][:content_type])
@@ -155,8 +161,10 @@ module RackRabbit
 
         assert_equal([reply],          rabbit.subscribed_messages)
         assert_equal(1,                rabbit.published_messages.length)
-        assert_equal(CORRELATION_ID,   rabbit.published_messages[0][:correlation_id])
+        assert_equal(nil,              rabbit.published_messages[0][:exchange])
+        assert_equal(nil,              rabbit.published_messages[0][:exchange_type])
         assert_equal(QUEUE,            rabbit.published_messages[0][:routing_key])
+        assert_equal(CORRELATION_ID,   rabbit.published_messages[0][:correlation_id])
         assert_equal(REPLY_QUEUE,      rabbit.published_messages[0][:reply_to])
         assert_equal(PRIORITY,         rabbit.published_messages[0][:priority])
         assert_equal(CONTENT::JSON,    rabbit.published_messages[0][:content_type])
@@ -164,6 +172,90 @@ module RackRabbit
         assert_equal(Time.now.to_i,    rabbit.published_messages[0][:timestamp])
         assert_equal("",               rabbit.published_messages[0][:body])
         assert_equal("DELETE",         rabbit.published_messages[0][:headers][RackRabbit::HEADER::METHOD])
+        assert_equal("/path",          rabbit.published_messages[0][:headers][RackRabbit::HEADER::PATH])
+        assert_equal("request_header", rabbit.published_messages[0][:headers]["additional"])
+
+      end # Timecop.freeze
+
+    end
+
+    #--------------------------------------------------------------------------
+
+    def test_ENQUEUE
+
+      Timecop.freeze do
+
+        client = build_client
+        rabbit = client.rabbit
+
+        response = client.enqueue(QUEUE, {
+          :path             => "/path",
+          :method           => :PUT,
+          :body             => BODY,
+          :priority         => PRIORITY,
+          :content_type     => CONTENT::JSON,
+          :content_encoding => CONTENT::ASCII,
+          :headers          => { "additional" => "request_header" }
+        })
+
+        assert_equal(true, response)
+
+        assert_equal([],               rabbit.subscribed_messages)
+        assert_equal(1,                rabbit.published_messages.length)
+        assert_equal(nil,              rabbit.published_messages[0][:exchange])
+        assert_equal(nil,              rabbit.published_messages[0][:exchange_type])
+        assert_equal(QUEUE,            rabbit.published_messages[0][:routing_key])
+        assert_equal(nil,              rabbit.published_messages[0][:correlation_id])
+        assert_equal(nil,              rabbit.published_messages[0][:reply_to])
+        assert_equal(PRIORITY,         rabbit.published_messages[0][:priority])
+        assert_equal(CONTENT::JSON,    rabbit.published_messages[0][:content_type])
+        assert_equal(CONTENT::ASCII,   rabbit.published_messages[0][:content_encoding])
+        assert_equal(Time.now.to_i,    rabbit.published_messages[0][:timestamp])
+        assert_equal(BODY,             rabbit.published_messages[0][:body])
+        assert_equal("PUT",            rabbit.published_messages[0][:headers][RackRabbit::HEADER::METHOD])
+        assert_equal("/path",          rabbit.published_messages[0][:headers][RackRabbit::HEADER::PATH])
+        assert_equal("request_header", rabbit.published_messages[0][:headers]["additional"])
+
+      end # Timecop.freeze
+
+    end
+
+    #--------------------------------------------------------------------------
+
+    def test_PUBLISH
+
+      Timecop.freeze do
+
+        client = build_client
+        rabbit = client.rabbit
+
+        response = client.publish(EXCHANGE, {
+          :exchange_type    => "topic",
+          :routing_key      => ROUTE,
+          :path             => "/path",
+          :method           => :PUT,
+          :body             => BODY,
+          :priority         => PRIORITY,
+          :content_type     => CONTENT::JSON,
+          :content_encoding => CONTENT::ASCII,
+          :headers          => { "additional" => "request_header" }
+        })
+
+        assert_equal(true, response)
+
+        assert_equal([],               rabbit.subscribed_messages)
+        assert_equal(1,                rabbit.published_messages.length)
+        assert_equal(EXCHANGE,         rabbit.published_messages[0][:exchange])
+        assert_equal("topic",          rabbit.published_messages[0][:exchange_type])
+        assert_equal(ROUTE,            rabbit.published_messages[0][:routing_key])
+        assert_equal(nil,              rabbit.published_messages[0][:correlation_id])
+        assert_equal(nil,              rabbit.published_messages[0][:reply_to])
+        assert_equal(PRIORITY,         rabbit.published_messages[0][:priority])
+        assert_equal(CONTENT::JSON,    rabbit.published_messages[0][:content_type])
+        assert_equal(CONTENT::ASCII,   rabbit.published_messages[0][:content_encoding])
+        assert_equal(Time.now.to_i,    rabbit.published_messages[0][:timestamp])
+        assert_equal(BODY,             rabbit.published_messages[0][:body])
+        assert_equal("PUT",            rabbit.published_messages[0][:headers][RackRabbit::HEADER::METHOD])
         assert_equal("/path",          rabbit.published_messages[0][:headers][RackRabbit::HEADER::PATH])
         assert_equal("request_header", rabbit.published_messages[0][:headers]["additional"])
 
