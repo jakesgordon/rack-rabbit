@@ -12,8 +12,8 @@ module RackRabbit
 
     attr_reader :rabbit
 
-    def initialize(options = {})
-      @rabbit = Adapter.load(DEFAULT_RABBIT.merge(options))
+    def initialize(options = nil)
+      @rabbit = Adapter.load(DEFAULT_RABBIT.merge(options || {}))
       connect
     end
 
@@ -129,8 +129,8 @@ module RackRabbit
 
       rabbit.publish(body,
         :exchange         => exchange,
-        :exchange_type    => options[:exchange_type] || :fanout,
-        :routing_key      => options[:routing_key],
+        :exchange_type    => options[:exchange_type] || options[:type] || :fanout,
+        :routing_key      => options[:routing_key]   || options[:route],
         :priority         => options[:priority],
         :content_type     => options[:content_type]     || default_content_type,
         :content_encoding => options[:content_encoding] || default_content_encoding,

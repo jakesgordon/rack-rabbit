@@ -8,10 +8,6 @@ class MyApp < Sinatra::Base
     "Hello World"
   end
 
-  get "/noop/:label" do
-    "noop"
-  end
-
   post "/submit" do
     "Submitted #{request.body.read}"
   end

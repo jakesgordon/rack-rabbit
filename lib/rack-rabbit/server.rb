@@ -253,7 +253,7 @@ module RackRabbit
         use RackRabbit::Middleware::ProgramName
         run inner_app
       end.to_app
-      logger.info "LOADED #{inner_app.name} FROM #{config.rack_file}"
+      logger.info "LOADED #{inner_app.name if inner_app.respond_to?(:name)} FROM #{config.rack_file}"
       @app
     end
 
