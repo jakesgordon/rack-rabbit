@@ -1,0 +1,99 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+
+#==============================================================================
+# PARSE COMMAND LINE OPTIONS
+#==============================================================================
+
+require 'optparse'
+
+COMMANDS           = [ :request, :enqueue, :publish ]
+METHODS            = [ :get, :post, :put, :delete ]
+HOST_HELP          = "the rabbitMQ broker IP address (default: 127.0.0.1)"
+PORT_HELP          = "the rabbitMQ broker port (default: 5672)"
+QUEUE_HELP         = "a queue for publishing outgoing requests"
+EXCHANGE_HELP      = "publish to a non-default exchange - name"
+EXCHANGE_TYPE_HELP = "publish to a non-default exchange - type (e.g. :direct, :fanout, :topic)"
+ROUTING_KEY_HELP   = "a routing key when publishing to a non-default exchange"
+INCLUDE_HELP       = "specify an additional $LOAD_PATH (may be used more than once)"
+DEBUG_HELP         = "set $DEBUG to true"
+WARN_HELP          = "enable warnings"
+
+options = { :rabbit => {} }
+parser  = OptionParser.new
+
+parser.banner = "Make a request to a RackRabbit service."
+parser.separator ""
+parser.separator "Usage: rr <command> [options] [METHOD] [PATH] [BODY]"
+parser.separator ""
+parser.separator "list of commands:"
+parser.separator ""
+parser.separator " request      make  a synchronous  request to a rabbitMQ queue and wait for a reply"
+parser.separator " enqueue      make an asynchronous request to a rabbitMQ queue and continue"
+parser.separator " publish      make an asynchronous request to a rabbitMQ exchange with a routing key"
+parser.separator " help         show help for a given topic or a help overview"
+parser.separator " version      show version"
+parser.separator ""
+parser.separator "Examples:"
+parser.separator ""
+parser.separator " rr request -q queue              GET    /hello          # submit GET to queue and WAIT for reply" 
+parser.separator " rr request -q queue              POST   /submit 'data'  # submit POST to queue and WAIT for reply"
+parser.separator " rr enqueue -q queue              POST   /submit 'data'  # submit POST to queue and CONTINUE"
+parser.separator " rr enqueue -q queue              DELETE /resource       # submit DELETE to queue and CONTINUE"
+parser.separator " rr publish -e ex -t fanout       POST   /event          # submit POST to a fanout exchange and CONTINUE"
+parser.separator " rr publish -e ex -t topic -r foo POST   /submit 'data'  # submit POST to a topic exchange with routing key and CONTINUE"
+parser.separator ""
+parser.separator "RackRabbit options:"
+parser.on(      "--host HOST",         HOST_HELP)          { |value| options[:rabbit][:host] = value }
+parser.on(      "--port PORT",         PORT_HELP)          { |value| options[:rabbit][:port] = value }
+parser.on("-q", "--queue QUEUE",       QUEUE_HELP)         { |value| options[:queue]         = value }
+parser.on("-e", "--exchange EXCHANGE", EXCHANGE_HELP)      { |value| options[:exchange]      = value }
+parser.on("-t", "--type TYPE",         EXCHANGE_TYPE_HELP) { |value| options[:exchange_type] = value }
+parser.on("-r", "--route ROUTE",       ROUTING_KEY_HELP)   { |value| options[:routing_key]   = value }
+parser.separator ""
+parser.separator "Ruby options:"
+parser.on("-I", "--include PATH", INCLUDE_HELP) { |value| $LOAD_PATH.unshift(*value.split(":")) }
+parser.on(      "--debug",        DEBUG_HELP)   {         $DEBUG = true }
+parser.on(      "--warn",         WARN_HELP)    {         $-w    = true }
+parser.separator ""
+parser.separator "Common options:"
+parser.on("-h", "--help")    { options[:help]    = true }
+parser.on("-v", "--version") { options[:version] = true }
+parser.separator ""
+
+def pluck(args, values, default = nil)
+  if value = values.find{|v| v.to_s.downcase.to_sym == args[0].to_s.downcase.to_sym }
+    args.delete_at(0)
+    value
+  else
+    default
+  end
+end
+
+parser.parse!(ARGV)
+
+options[:command] = pluck(ARGV, COMMANDS, :request)
+options[:method]  = pluck(ARGV, METHODS,  :get)
+options[:path]    = ARGV.shift
+options[:body]    = ARGV.shift
+
+#==============================================================================
+# EXECUTE script
+#==============================================================================
+
+require 'rack-rabbit/client'
+
+case
+when options[:help]    then puts parser.to_s
+when options[:version] then puts RackRabbit::VERSION
+else
+  case options[:command]
+  when :request then puts RackRabbit::Client.request(options[:queue],    options)
+  when :enqueue then puts RackRabbit::Client.enqueue(options[:queue],    options)
+  when :publish then puts RackRabbit::Client.publish(options[:exchange], options)
+  else
+    puts "Invalid command"
+  end
+end
+
+#==============================================================================

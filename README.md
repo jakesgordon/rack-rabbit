@@ -12,7 +12,7 @@ Building an SOA with rabbitMQ? Want to host and load balance your consumer proce
 
 RackRabbit will...
 
-  * Create, and manage, a cluster of worker processes that will each...
+  * Manage a cluster of worker processes that will each...
   * Subscribe to a queue (or an exchange)
   * Convert incoming messages into a suitable Rack environment
   * Call your Rack app to handle the message
@@ -37,8 +37,8 @@ Update your Gemfile to include RackRabbit and your preferred rabbitMQ client lib
     gem rack-rabbit, "~> 0.1"
 
 
-Getting Started
----------------
+Getting started by example
+--------------------------
 
 You can use RackRabbit + Sinatra (or any rack app) to easily host an AMQP-based SOA in the same way
 that you might use Unicorn + Sinatra to host an HTTP-based SOA.
@@ -74,23 +74,27 @@ Ensure the worker processes are running:
     15721 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
     15723 pts/4    Sl+    0:00  |       \_ rack-rabbit -- waiting for request
 
-You can connect to the worker from the command line using the provided client excutables:
+You can connect to the worker from the command line using the `rr` command:
 
-    $ request -q myqueue /hello                    # synchronous GET request/response
+    $ rr request -q myqueue /hello                    # synchronous GET request/response
     Hello World
 
-    $ request -q myqueue POST /submit "data"       # synchronous POST request/response
+    $ rr request -q myqueue POST /submit "data"       # synchronous POST request/response
     Submitted some data
 
-    $ enqueue -q myqueue /do/work "data"           # asynchronous POST to a worker queue
+    $ rr enqueue -q myqueue /do/work "data"           # asynchronous ENQUEUE to a worker queue
+
+    $ rr publish -e myexchange /fire/event            # asynchronous PUBLISH to a pub/sub exchange
+
 
 You can also connect to the worker from your applications using the `RackRabbit::Client` class.
 
     require 'rack-rabbit/client'
 
-    a = RackRabbit::Client.get     :myqueue, "/hello"              # -> "Hello World"
-    b = RackRabbit::Client.post    :myqueue, "/sumbit",  "data"    # -> "Submitted data"
-        RackRabbit::Client.enqueue :myqueue, "/do/work", "data"    # async worker queue
+    a = RackRabbit::Client.get     :myqueue,    "/hello"              # -> "Hello World"
+    b = RackRabbit::Client.post    :myqueue,    "/sumbit",  "data"    # -> "Submitted data"
+        RackRabbit::Client.enqueue :myqueue,    "/do/work", "data"    # async worker queue
+        RackRabbit::Client.publish :myexchange, "/fire/event"         # async pub/sub
 
 
 HTTP vs AMQP based SOA
