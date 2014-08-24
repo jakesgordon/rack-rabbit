@@ -69,6 +69,14 @@ Consider this simple sinatra application in `config.ru`:
         "Submitted #{request.body.read}"
       end
 
+      put "/update" do
+        "Updated #{request.body.read}"
+      end
+
+      delete "/resource" do
+        "Deleted resource"
+      end
+
     end
 
     run Service
@@ -85,12 +93,20 @@ Connect to the worker from the command line using the `rr` command:
     $ rr request -q myqueue POST /submit "data"
     Submitted data
 
+    $ rr request -q myqueue PUT /update "data"
+    Updated data
+
+    $ rr request -q myqueue DELETE /resource
+    Deleted resource
+
 Connect to the worker from your application using the `RR` class:
 
     require 'rack-rabbit/client'
 
-    RR.get  :myqueue, "/hello"            # returns "Hello World"
-    RR.post :myqueue, "/submit", "data"   # returns "Submitted data"
+    RR.get    :myqueue, "/hello"              # returns "Hello World"
+    RR.post   :myqueue, "/submit",   "data"   # returns "Submitted data"
+    RR.put    :myqueue, "/update",   "data"   # returns "Updated data"
+    RR.delete :myqueue, "/resource"           # returns "Deleted resource"
 
 
 ## Asynchronous Worker Queue
@@ -106,7 +122,7 @@ Consider this simple sinatra application in `config.ru`:
       end
 
       post "/more/work" do
-        logger.info "do some more work using #{request.body.read}"
+        logger.info "do more work using #{request.body.read}"
       end
 
     end
