@@ -1,6 +1,7 @@
 source "http://rubygems.org"
 
 group :test do
+  gem "minitest", "~>4.7.0"
   gem "timecop"
   gem "mocha"
 end

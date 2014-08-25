@@ -11,6 +11,7 @@ GEM
     eventmachine (1.0.3)
     metaclass (0.0.4)
     method_source (0.8.2)
+    minitest (4.7.5)
     mocha (1.1.0)
       metaclass (~> 0.0.1)
     pry (0.10.1)
@@ -34,6 +35,7 @@ PLATFORMS
 DEPENDENCIES
   amqp
   bunny
+  minitest (~> 4.7.0)
   mocha
   pry
   sinatra
