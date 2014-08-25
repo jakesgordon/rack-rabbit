@@ -75,17 +75,8 @@ module RackRabbit
       raise NotImplementedError, "derived classes must implement this"
     end
 
-    def reject(delivery_tag, requeue = false)
+    def reject(delivery_tag)
       raise NotImplementedError, "derived classes must implement this"
-    end
-
-    def confirm(message, succeeded = true, requeue = false)
-      message.confirm(succeeded)
-      if succeeded
-        ack(message.delivery_tag)
-      else
-        reject(message.delivery_tag, requeue)
-      end
     end
 
     #--------------------------------------------------------------------------

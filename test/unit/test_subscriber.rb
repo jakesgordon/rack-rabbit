@@ -51,7 +51,6 @@ module RackRabbit
       assert_equal([],        rabbit.published_messages)
       assert_equal([],        rabbit.acked_messages)
       assert_equal([],        rabbit.rejected_messages)
-      assert_equal([],        rabbit.requeued_messages)
 
     end
 
@@ -70,7 +69,6 @@ module RackRabbit
       assert_equal([message],      rabbit.subscribed_messages)
       assert_equal([],             rabbit.acked_messages)
       assert_equal([],             rabbit.rejected_messages)
-      assert_equal([],             rabbit.requeued_messages)
       assert_equal(1,              rabbit.published_messages.length)
       assert_equal(APP_ID,         rabbit.published_messages[0][:app_id])
       assert_equal(REPLY_TO,       rabbit.published_messages[0][:routing_key])
@@ -82,11 +80,11 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def test_succesful_message_is_acked
+    def test_successful_message_is_acked
 
-      subscriber = build_subscriber(:ack => true)
-      message    = build_message(:delivery_tag => DELIVERY_TAG)
-      rabbit     = subscriber.rabbit
+      rabbit     = build_rabbit
+      subscriber = build_subscriber(:ack => true, :rabbit => rabbit)
+      message    = build_message(:delivery_tag => DELIVERY_TAG, :rabbit => rabbit)
 
       prime(subscriber, message)
 
@@ -96,7 +94,6 @@ module RackRabbit
       assert_equal([],             rabbit.published_messages)
       assert_equal([DELIVERY_TAG], rabbit.acked_messages)
       assert_equal([],             rabbit.rejected_messages)
-      assert_equal([],             rabbit.requeued_messages)
 
     end
 
@@ -104,10 +101,10 @@ module RackRabbit
 
     def test_failed_message_is_rejected
 
-      subscriber = build_subscriber(:rack_file => ERROR_RACK_APP, :ack => true)
-      message    = build_message(:delivery_tag => DELIVERY_TAG)
+      rabbit     = build_rabbit
+      subscriber = build_subscriber(:rack_file => ERROR_RACK_APP, :ack => true, :rabbit => rabbit)
+      message    = build_message(:delivery_tag => DELIVERY_TAG, :rabbit => rabbit)
       response   = build_response(500, "uh oh")
-      rabbit     = subscriber.rabbit
 
       prime(subscriber, [message, response])
 
@@ -117,7 +114,6 @@ module RackRabbit
       assert_equal([],                      rabbit.published_messages)
       assert_equal([],                      rabbit.acked_messages)
       assert_equal([DELIVERY_TAG],          rabbit.rejected_messages)
-      assert_equal([],                      rabbit.requeued_messages)
 
     end
 

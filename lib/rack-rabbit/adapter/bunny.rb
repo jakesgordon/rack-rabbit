@@ -34,7 +34,7 @@ module RackRabbit
           queue.bind(exchange, :routing_key => options.delete(:routing_key))
         end
         queue.subscribe(options) do |delivery_info, properties, payload|
-          yield Message.new(delivery_info.delivery_tag, properties, payload)
+          yield Message.new(delivery_info.delivery_tag, properties, payload, self)
         end
       end
 
@@ -52,8 +52,8 @@ module RackRabbit
         channel.acknowledge(delivery_tag, false)
       end
 
-      def reject(delivery_tag, requeue = false)
-        channel.reject(delivery_tag, requeue)
+      def reject(delivery_tag)
+        channel.reject(delivery_tag, false)
       end
 
       #========================================================================
@@ -82,7 +82,6 @@ module RackRabbit
 
       #------------------------------------------------------------------------
 
-    end
-
-  end
-end
+    end # class Bunny
+  end # module Adapter
+end # module RackRabbit

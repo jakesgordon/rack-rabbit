@@ -91,7 +91,7 @@ module RackRabbit
       options[:headers][RackRabbit::HEADER::METHOD] ||= options.delete(:method)  # convenience to make calling code a little more compact
       options[:headers][RackRabbit::HEADER::PATH]   ||= options.delete(:path)    # (ditto)
       options[:headers][RackRabbit::HEADER::STATUS] ||= options.delete(:status)  # (ditto)
-      Message.new(options[:delivery_tag], OpenStruct.new(options), options[:body])
+      Message.new(options[:delivery_tag], OpenStruct.new(options), options[:body], options[:rabbit] || build_rabbit)
     end
 
     def build_response(status, body, headers = {})

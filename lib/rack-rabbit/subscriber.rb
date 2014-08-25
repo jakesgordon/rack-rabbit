@@ -60,8 +60,12 @@ module RackRabbit
         rabbit.publish(response.body, message.get_reply_properties(response, config))
       end
 
-      if !message.confirmed? && config.ack
-        rabbit.confirm(message, response.succeeded?) if !message.confirmed? && config.ack
+      if config.ack && !message.acknowledged? && !message.rejected?
+        if response.succeeded?
+          message.ack
+        else
+          message.reject
+        end
       end
 
       response

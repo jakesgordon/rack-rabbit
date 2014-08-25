@@ -25,7 +25,6 @@ module RackRabbit
       assert_equal(false, message.should_reply?)
       assert_equal(false, message.acknowledged?)
       assert_equal(false, message.rejected?)
-      assert_equal(false, message.confirmed?)
 
     end
 
@@ -64,7 +63,6 @@ module RackRabbit
       assert_equal(true,                message.should_reply?)
       assert_equal(false,               message.acknowledged?)
       assert_equal(false,               message.rejected?)
-      assert_equal(false,               message.confirmed?)
 
     end
 
@@ -170,34 +168,41 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def test_confirm_successful
+    def test_ack
 
       message = build_message(:delivery_tag => DELIVERY_TAG)
+
       assert_equal(false, message.acknowledged?)
       assert_equal(false, message.rejected?)
-      assert_equal(false, message.confirmed?)
+      assert_equal([],    message.rabbit.acked_messages)
+      assert_equal([],    message.rabbit.rejected_messages)
 
-      message.confirm(true)
-      assert_equal(true,  message.acknowledged?)
-      assert_equal(false, message.rejected?)
-      assert_equal(true,  message.confirmed?)
+      message.ack
+
+      assert_equal(true,           message.acknowledged?)
+      assert_equal(false,          message.rejected?)
+      assert_equal([DELIVERY_TAG], message.rabbit.acked_messages)
+      assert_equal([],             message.rabbit.rejected_messages)
 
     end
 
     #--------------------------------------------------------------------------
 
-    def test_confirm_failure
+    def test_reject
 
       message = build_message(:delivery_tag => DELIVERY_TAG)
+
       assert_equal(false, message.acknowledged?)
       assert_equal(false, message.rejected?)
-      assert_equal(false, message.confirmed?)
+      assert_equal([],    message.rabbit.acked_messages)
+      assert_equal([],    message.rabbit.rejected_messages)
 
-      message.confirm(false)
+      message.reject
 
-      assert_equal(false, message.acknowledged?)
-      assert_equal(true,  message.rejected?)
-      assert_equal(true,  message.confirmed?)
+      assert_equal(false,          message.acknowledged?)
+      assert_equal(true,           message.rejected?)
+      assert_equal([],             message.rabbit.acked_messages)
+      assert_equal([DELIVERY_TAG], message.rabbit.rejected_messages)
 
     end
 

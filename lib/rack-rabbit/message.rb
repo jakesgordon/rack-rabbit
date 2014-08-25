@@ -8,9 +8,10 @@ module RackRabbit
     attr_reader :delivery_tag, :reply_to, :correlation_id,
                 :body, :headers,
                 :method, :uri, :path, :query, :status,
-                :content_type, :content_encoding, :content_length
+                :content_type, :content_encoding, :content_length,
+                :rabbit
 
-    def initialize(delivery_tag, properties, body)
+    def initialize(delivery_tag, properties, body, rabbit)
       @delivery_tag       = delivery_tag
       @reply_to           = properties.reply_to
       @correlation_id     = properties.correlation_id
@@ -23,6 +24,7 @@ module RackRabbit
       @content_type       = properties.content_type
       @content_encoding   = properties.content_encoding
       @content_length     = body.nil? ? 0 : body.length
+      @rabbit             = rabbit
     end
 
     #--------------------------------------------------------------------------
@@ -62,22 +64,26 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def confirm(succeeded)
+    def ack
       raise RuntimeError, "already acknowledged" if acknowledged?
       raise RuntimeError, "already rejected"     if rejected?
-      @confirmed = succeeded
+      @acknowledged = true
+      rabbit.ack(delivery_tag)
+    end
+
+    def reject
+      raise RuntimeError, "already acknowledged" if acknowledged?
+      raise RuntimeError, "already rejected"     if rejected?
+      @rejected = true
+      rabbit.reject(delivery_tag)
     end
 
     def acknowledged?
-      @confirmed == true
+      @acknowledged == true
     end
 
     def rejected?
-      @confirmed == false
-    end
-
-    def confirmed?
-      !@confirmed.nil?
+      @rejected == true
     end
 
     #--------------------------------------------------------------------------

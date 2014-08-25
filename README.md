@@ -254,7 +254,45 @@ This should NOT be needed when the `preload_app` directive is false.
 
 ## RabbitMQ acknowledgements
 
-TODO: document :ack and :reject support
+By default, an AMQP broker removes a message from the queue immediately after sending it to
+the consumer. If the consumer dies before processing the message completely then the message
+is lost. Users who need more control can configure the broker to use explicit
+acknowledgements ([learn more](http://rubybunny.info/articles/queues.html#message_acknowledgements))
+by setting the RackRabbit `ack` configuration option to `true`.
+
+With explicit acknowledgements enabled...
+
+ - If your rack handler succeeds (returns a 2xx status code) then RackRabbit will automatically send
+   an acknowledgement to rabbitMQ.
+
+ - If your rack handler fails (throws an exception or returns a non-2xx status code) then RackRabbit
+   will automatically send a rejection to rabbitMQ - you might want to setup a dead-letter queue for
+   these rejections.
+
+ - If your rack handler process crashes then rabbitMQ will hand the message off to the next available
+   worker process.
+
+If your service action is idempotent then nothing more is needed.
+
+However, if you need more fine-grained controls, then RackRabbit exposes the underlying message to your
+application in the rack environment as `env['rabbit.message']`. You can use this object to explicitly
+acknowledge or reject the message at any time during your rack handler, e.g:
+
+      post "/work" do
+
+          message = request.env['rabbit.message']
+
+          # ... do some preliminary work (that is idempotent)
+
+          if everything_looks_good
+            message.ack     # take responsibility
+            ...             # and do some more work (that might not be idempotent)
+          else
+            message.reject  # reject the message
+            ...             # and (maybe) do some more work
+          end
+
+      end
 
 ## Client binary
 

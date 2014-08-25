@@ -49,12 +49,8 @@ module RackRabbit
         acked_messages << delivery_tag
       end
 
-      def reject(delivery_tag, requeue = false)
-        if requeue
-          requeued_messages << delivery_tag
-        else
-          rejected_messages << delivery_tag 
-        end
+      def reject(delivery_tag)
+        rejected_messages << delivery_tag 
       end
 
       #========================================================================
@@ -67,10 +63,6 @@ module RackRabbit
 
       def rejected_messages
         @rejected_messages ||= []
-      end
-
-      def requeued_messages
-        @requeued_messages ||= []
       end
 
       def published_messages
