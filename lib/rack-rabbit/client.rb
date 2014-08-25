@@ -30,32 +30,30 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def get(queue, path, options = {})
-      request(queue, options.merge(:method => :GET, :path => path))
+      request(queue, path, "", options.merge(:method => :GET))
     end
 
     def post(queue, path, body, options = {})
-      request(queue, options.merge(:method => :POST, :path => path, :body => body))
+      request(queue, path, body, options.merge(:method => :POST))
     end
 
     def put(queue, path, body, options = {})
-      request(queue, options.merge(:method => :PUT, :path => path, :body => body))
+      request(queue, path, body, options.merge(:method => :PUT))
     end
 
     def delete(queue, path, options = {})
-      request(queue, options.merge(:method => :DELETE, :path => path))
+      request(queue, path, "", options.merge(:method => :DELETE))
     end
 
     #--------------------------------------------------------------------------
 
-    def request(queue, options = {})
+    def request(queue, path, body, options = {})
 
       id        = options[:id] || SecureRandom.uuid    # allow dependency injection for test purposes
       lock      = Mutex.new
       condition = ConditionVariable.new
       method    = options[:method]  || :GET
-      path      = options[:path]    || ""
       headers   = options[:headers] || {}
-      body      = options[:body]    || ""
       response  = nil
 
       rabbit.with_reply_queue do |reply_queue|
@@ -95,12 +93,10 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def enqueue(queue, options = {})
+    def enqueue(queue, path, body, options = {})
 
       method  = options[:method]  || :POST
-      path    = options[:path]    || ""
       headers = options[:headers] || {}
-      body    = options[:body]    || ""
 
       rabbit.publish(body,
         :routing_key      => queue,
@@ -120,12 +116,10 @@ module RackRabbit
 
     #--------------------------------------------------------------------------
 
-    def publish(exchange, options = {})
+    def publish(exchange, path, body, options = {})
 
       method  = options[:method]  || :POST
-      path    = options[:path]    || ""
       headers = options[:headers] || {}
-      body    = options[:body]    || ""
 
       rabbit.publish(body,
         :exchange         => exchange,

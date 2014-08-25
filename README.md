@@ -339,9 +339,41 @@ Communicating with a RackRabbit hosted server can be done using the `rr` binary:
 ## Client library
 
 Posting a message to a RackRabbit hosted server from within your application can be done using
-the `RR` class...
+the `RR` helper methods...
 
-TODO: document RR
+    RR.get(    "myqueue",    "/path/to/resource")
+    RR.post(   "myqueue",    "/path/to/resource", "content")
+    RR.put(    "myqueue",    "/path/to/resource", "content")
+    RR.delete( "myqueue",    "/path/to/resource")
+    RR.enqueue("myqueue",    "/path/to/resource", "content")
+    RR.publish("myexchange", "/path/to/resource", "content")
+
+These methods are wrappers around a more detailed `RackRabbit::Client`:
+
+    client = RackRabbit::Client.new(:host => "127.0.0.1", :port => 5672, :adapter => :bunny)
+
+    client.get(   "myqueue",     "/path/to/resource")
+    client.post(  "myqueue",     "/path/to/resource", "content")
+    client.put(   "myqueue",     "/path/to/resource", "content")
+    client.delete("myqueue",     "/path/to/resource")
+    client.enqueue("myqueue",    "/path/to/resource", "content")
+    client.publish("myexchange", "/path/to/resource", "content")
+
+    client.disconnect
+
+More advanced options can be passed as the (optional) last parameter, e.g:
+
+    client.post("myqueue", "/path", content.to_json, {
+      :headers          => { "additional" => "header" },   # available in the service's rack env
+      :priority         => 5,                              # specify the rabbitMQ priority
+      :content_type     => "application/json",             # specify the body content_type
+      :content_encoding => "utf-8"                         # specify the body content_enoding
+    })
+
+    client.publish("myexchange", "/path", "content", {
+      :exchange_type    => :topic,                         # specify the exchange type
+      :routing_key      => "my.custom.topic",              # specify a custom routing key
+    })
 
 
 ## Supported platforms

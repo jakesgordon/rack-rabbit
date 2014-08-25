@@ -88,9 +88,9 @@ when options[:help]    then puts parser.to_s
 when options[:version] then puts RackRabbit::VERSION
 else
   case options[:command]
-  when :request then puts RR.request(options[:queue],    options)
-  when :enqueue then puts RR.enqueue(options[:queue],    options)
-  when :publish then puts RR.publish(options[:exchange], options)
+  when :request then puts RR.request(options[:queue],    options[:path], options[:body], options)
+  when :enqueue then puts RR.enqueue(options[:queue],    options[:path], options[:body], options)
+  when :publish then puts RR.publish(options[:exchange], options[:path], options[:body], options)
   else
     puts "Invalid command"
   end

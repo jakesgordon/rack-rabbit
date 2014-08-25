@@ -188,10 +188,8 @@ module RackRabbit
         client = build_client
         rabbit = client.rabbit
 
-        response = client.enqueue(QUEUE, {
-          :path             => "/path",
+        response = client.enqueue(QUEUE, "/path", BODY, {
           :method           => :PUT,
-          :body             => BODY,
           :priority         => PRIORITY,
           :content_type     => CONTENT::JSON,
           :content_encoding => CONTENT::ASCII,
@@ -229,12 +227,10 @@ module RackRabbit
         client = build_client
         rabbit = client.rabbit
 
-        response = client.publish(EXCHANGE, {
+        response = client.publish(EXCHANGE, "/path", BODY, {
           :exchange_type    => "topic",
           :routing_key      => ROUTE,
-          :path             => "/path",
           :method           => :PUT,
-          :body             => BODY,
           :priority         => PRIORITY,
           :content_type     => CONTENT::JSON,
           :content_encoding => CONTENT::ASCII,
