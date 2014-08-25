@@ -25,7 +25,7 @@ A forking server for hosting rabbitMQ consumer processes as load balanced rack a
 
 ## Summary
 
-Building an SOA with rabbitMQ? Use RackRabbit for:
+Building an SOA with rabbitMQ ? Use RackRabbit for:
 
   * Hosting a cluster of worker processes that...
   * ... subscribe to a queue/exchange
@@ -124,7 +124,7 @@ more detailed examples, including ENQUEUE and PUBLISH communication patterns, an
 ## Server usage
 
 Use the `rack-rabbit` executable to host your Rack app in a forking server that
-subscribes either to a named queue or an exchange.
+subscribes to either a named queue or an exchange.
 
     $ rack-rabbit --help
 
@@ -191,7 +191,7 @@ Detailed configuration can be provided by an external config file using the `--c
     # set the app_id used to identify your application in response messages
     app_id 'my-application'
 
-    # enable rabbitMQ acknowledgements
+    # enable rabbitMQ acknowledgements (default: false):
     ack true
 
     # set the initial number of worker processes (default: 1):
@@ -206,7 +206,7 @@ Detailed configuration can be provided by an external config file using the `--c
     # preload the Rack app in the server for faster worker forking (default: false):
     preload_app true
 
-    # daemonize the process
+    # daemonize the process (default: false)
     daemonize true
 
     # set the path to the logfile
@@ -282,21 +282,25 @@ acknowledge or reject the message at any time during your rack handler, e.g:
 
           message = request.env['rabbit.message']
 
-          # ... do some preliminary work (that is idempotent)
+          # ... do some preliminary work (idempotent)
 
           if everything_looks_good
+
             message.ack     # take responsibility
             ...             # and do some more work (that might not be idempotent)
+
           else
+
             message.reject  # reject the message
             ...             # and (maybe) do some more work
+
           end
 
       end
 
 ## Client binary
 
-Communicating with a RackRabbit hosted server can be done using the `rr` binary:
+Communicating with a RackRabbit hosted service from the command line can be done using the `rr` binary:
 
     Make a request to a RackRabbit service.
 
@@ -338,8 +342,7 @@ Communicating with a RackRabbit hosted server can be done using the `rr` binary:
 
 ## Client library
 
-Posting a message to a RackRabbit hosted server from within your application can be done using
-the `RR` helper methods...
+Communicating with a RackRabbit hosted service from your application can be done using the `RR` class:
 
     RR.get(    "myqueue",    "/path/to/resource")
     RR.post(   "myqueue",    "/path/to/resource", "content")
@@ -348,7 +351,7 @@ the `RR` helper methods...
     RR.enqueue("myqueue",    "/path/to/resource", "content")
     RR.publish("myexchange", "/path/to/resource", "content")
 
-These methods are wrappers around a more detailed `RackRabbit::Client`:
+These methods are wrappers around a more detailed `RackRabbit::Client` class:
 
     client = RackRabbit::Client.new(:host => "127.0.0.1", :port => 5672, :adapter => :bunny)
 
@@ -361,18 +364,18 @@ These methods are wrappers around a more detailed `RackRabbit::Client`:
 
     client.disconnect
 
-More advanced options can be passed as the (optional) last parameter, e.g:
+More advanced options can be passed as an (optional) last parameter, e.g:
 
     client.post("myqueue", "/path", content.to_json, {
-      :headers          => { "additional" => "header" },   # available in the service's rack env
-      :priority         => 5,                              # specify the rabbitMQ priority
-      :content_type     => "application/json",             # specify the body content_type
-      :content_encoding => "utf-8"                         # specify the body content_enoding
+      :headers          => { "additional" => "header" },   # made available in the service's rack env
+      :priority         => 5,                              # specify the rabbitMQ message priority
+      :content_type     => "application/json",             # specify the request content_type
+      :content_encoding => "utf-8"                         # specify the request content_enoding
     })
 
     client.publish("myexchange", "/path", "content", {
-      :exchange_type    => :topic,                         # specify the exchange type
-      :routing_key      => "my.custom.topic",              # specify a custom routing key
+      :exchange_type    => :topic,                         # specify the rabbitMQ exchange type
+      :routing_key      => "my.custom.topic",              # specify a custom rabbitMQ routing key
     })
 
 
@@ -385,17 +388,12 @@ TODO: test on other platforms
 
 ## TODO
 
- * avoid infinite spawn worker loop if worker fails during startup (e.g. connection to rabbit fails)
- * allow multiple synchronous req/response in parallel (block until all have replied)
- * allow a single reply queue to be shared across client requests
- * have exception callstacks sent back to client (in development mode only)
- * automatically deserialize body into hash if content type is json ?
-
- * more testing
-   - worker
-   - server
-   - adapter/bunny
-   - adapter/amqp
+ * FEATURE - allow multiple Client#reqeust in parallel (block until all have replied) - a-la-typheous
+ * FEATURE - share a single reply queue across all Client#request
+ * FEATURE - automatically deserialize body for known content type (e.g. json)
+ * FEATURE - have exception stack trace sent back to client in development/test mode
+ * BUG - avoid infinte worker spawn loop if worker fails during startup (e.g. connection to rabbit fails)
+ * TEST - integration tests for worker, server, adapter/bunny, and adapter/amqp
 
 ## License
 

@@ -5,7 +5,7 @@ module RackRabbit
   #============================================================================
 
   VERSION = "0.1.0"
-  SUMMARY = "A Unicorn-style preforking, rack-based server for hosting rabbitMQ consumer processes"
+  SUMMARY = "A Unicorn-style forking, rack-based server for hosting rabbitMQ consumer processes"
 
   DEFAULT_RABBIT = {
     :host    => "127.0.0.1",
