@@ -4,7 +4,7 @@ module RackRabbit
   # CONSTANTS
   #============================================================================
 
-  VERSION = "0.1.0"
+  VERSION = "0.5.0"
   SUMMARY = "A Unicorn-style forking, rack-based server for hosting rabbitMQ consumer processes"
 
   DEFAULT_RABBIT = {
