@@ -1,4 +1,7 @@
 # -*- encoding: utf-8 -*-
+LIB = File.expand_path("lib", File.dirname(__FILE__))
+$LOAD_PATH.unshift LIB unless $LOAD_PATH.include?(LIB)
+
 require 'rack-rabbit'
 
 Gem::Specification.new do |s|
