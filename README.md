@@ -381,8 +381,8 @@ More advanced options can be passed as an (optional) last parameter, e.g:
 
 ## Supported platforms
 
- * MRI 1.9.3
  * MRI 2.1.2
+ * MRI 1.9.3
 
 ## TODO
 
