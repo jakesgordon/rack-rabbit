@@ -377,10 +377,8 @@ More advanced options can be passed as an (optional) last parameter, e.g:
 
 ## Supported platforms
 
-Nothing formal yet, development is happening on MRI 2.1.2p95
-
-TODO: test on other platforms
-
+ * MRI 2.1.2
+ * MRI 1.9.3
 
 ## TODO
 
@@ -388,6 +386,8 @@ TODO: test on other platforms
  * FEATURE - share a single reply queue across all Client#request
  * FEATURE - automatically deserialize body for known content type (e.g. json)
  * FEATURE - have exception stack trace sent back to client in development/test mode
+ * FEATURE - support JRuby
+ * FEATURE - support Rubinius
  * BUG - avoid infinte worker spawn loop if worker fails during startup (e.g. connection to rabbit fails)
  * TEST - integration tests for worker, server, adapter/bunny, and adapter/amqp
 
