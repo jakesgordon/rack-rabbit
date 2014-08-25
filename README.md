@@ -25,21 +25,6 @@ A forking server for hosting rabbitMQ consumer processes as load balanced rack a
 
 ## Summary
 
-Building an SOA with rabbitMQ ? Use RackRabbit for:
-
-  * Hosting a cluster of worker processes that...
-  * ... subscribe to a queue/exchange
-  * ... convert incoming messages into a suitable Rack environment
-  * ... call your Rack app to handle the message
-  * ... publish a reply back to the original caller (if `reply_to` was provided)
-
-RackRabbit supports a variety of messaging patterns:
-
-  * Synchronous Request/Response _(e.g. GET/POST/PUT/DELETE)_
-  * Asynchronous Worker queue    _(e.g. ENQUEUE)_
-  * Asynchronous PubSub          _(e.g. PUBLISH)_
-
-
 What Unicorn does for HTTP services, RackRabbit can do for hosting AMQP services, and more:
 
 |                                      | HTTP            | AMQP                  |
@@ -48,6 +33,17 @@ What Unicorn does for HTTP services, RackRabbit can do for hosting AMQP services
 | Asynchronous worker queue            | Redis + Resque  | rabbitMQ + RackRabbit |
 | Asynchronous publish/subscribe       | Redis           | rabbitMQ + RackRabbit |
 
+RackRabbit hosts a cluster of worker processes that:
+  * Subscribe to a queue/exchange
+  * Convert incoming messages into a suitable Rack environment
+  * Call your Rack app to handle the message
+  * Publish a reply back to the original caller (if `reply_to` was provided)
+
+RackRabbit supports a variety of messaging patterns:
+
+  * Synchronous Request/Response _(e.g. GET/POST/PUT/DELETE)_
+  * Asynchronous Worker queue    _(e.g. ENQUEUE)_
+  * Asynchronous PubSub          _(e.g. PUBLISH)_
 
 ## Installation
 
@@ -58,7 +54,7 @@ Install a rabbitMQ server if necessary ([docs](https://www.rabbitmq.com/download
 Update your Gemfile to include RackRabbit and your preferred rabbitMQ client library
 
     gem bunny,       "~> 1.4"             # or an alternative such as AMQP or march-hare
-    gem rack-rabbit, "~> 0.5"
+    gem rack-rabbit, "~> 0.1"
 
 
 ## Getting started by example
@@ -381,8 +377,10 @@ More advanced options can be passed as an (optional) last parameter, e.g:
 
 ## Supported platforms
 
- * MRI 2.1.2
- * MRI 1.9.3
+Nothing formal yet, development is happening on MRI 2.1.2p95
+
+TODO: test on other platforms
+
 
 ## TODO
 
@@ -390,8 +388,6 @@ More advanced options can be passed as an (optional) last parameter, e.g:
  * FEATURE - share a single reply queue across all Client#request
  * FEATURE - automatically deserialize body for known content type (e.g. json)
  * FEATURE - have exception stack trace sent back to client in development/test mode
- * FEATURE - support JRuby
- * FEATURE - support Rubinius
  * BUG - avoid infinte worker spawn loop if worker fails during startup (e.g. connection to rabbit fails)
  * TEST - integration tests for worker, server, adapter/bunny, and adapter/amqp
 
