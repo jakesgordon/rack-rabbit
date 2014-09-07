@@ -154,7 +154,7 @@ First `foo.ru`
     require 'sinatra/base'
 
     class Foo < Sinatra::Base
-      post "/event do
+      post "/event" do
         logger.info "Foo saw the event"
       end
     end
@@ -165,7 +165,7 @@ Then `bar.ru`
     require 'sinatra/base'
 
     class Bar < Sinatra::Base
-      post "/event do
+      post "/event" do
         logger.info "Bar saw the event"
       end
     end
