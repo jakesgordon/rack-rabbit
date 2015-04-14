@@ -62,6 +62,7 @@ module RackRabbit
           if message.correlation_id == id
             lock.synchronize do
               response = Response.new(message.status, message.headers, message.body)
+              reply_queue.delete(if_empty: true)
               condition.signal
             end
           end
