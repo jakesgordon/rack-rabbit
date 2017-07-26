@@ -42,7 +42,7 @@ module RackRabbit
       end
 
       def with_reply_queue(&block)
-        yield OpenStruct.new :name => "reply.queue"
+        yield MockReplyQueue.new :name => "reply.queue"
       end
 
       def ack(delivery_tag)
@@ -83,6 +83,15 @@ module RackRabbit
 
       def subscribe_options
         @subscribe_options
+      end
+
+      class MockReplyQueue
+        attr_accessor :name
+        def initialize(options)
+          @name = options[:name]
+        end
+        def delete(*params)
+        end
       end
 
     end

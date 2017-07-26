@@ -26,11 +26,22 @@ module RackRabbit
     #--------------------------------------------------------------------------
 
     def test_subscribe_options
-      options    = { :queue => QUEUE, :exchange => EXCHANGE, :exchange_type => :fanout, :routing_key => ROUTE, :ack => true }
-      subscriber = build_subscriber(options)
+      subscriber = build_subscriber({
+        queue: QUEUE,
+        exchange: EXCHANGE,
+        exchange_type: :fanout,
+        routing_key: ROUTE,
+        ack: true
+      })
       rabbit     = subscriber.rabbit
       subscriber.subscribe
-      assert_equal(options, rabbit.subscribe_options, "subscription options should be set as expected")
+      assert_equal({
+        queue: QUEUE,
+        exchange: EXCHANGE,
+        exchange_type: :fanout,
+        routing_key: ROUTE,
+        manual_ack: true
+      }, rabbit.subscribe_options)
     end
 
     #--------------------------------------------------------------------------
