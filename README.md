@@ -53,8 +53,8 @@ Install a rabbitMQ server if necessary ([docs](https://www.rabbitmq.com/download
 
 Update your Gemfile to include RackRabbit and your preferred rabbitMQ client library
 
-    gem bunny,       "~> 1.4"             # or an alternative such as AMQP or march-hare
-    gem rack-rabbit, "~> 0.1"
+    gem bunny,       "~> 2.7"
+    gem rack-rabbit, "~> 0.6"
 
 
 ## Getting started by example
