@@ -31,7 +31,7 @@ module RackRabbit
                        :exchange      => config.exchange,
                        :exchange_type => config.exchange_type,
                        :routing_key   => config.routing_key,
-                       :ack           => config.ack) do |message|
+                       :manual_ack    => config.ack) do |message|
         lock.synchronize do
           start = Time.now
           response = handle(message)
