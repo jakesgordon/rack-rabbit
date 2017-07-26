@@ -55,6 +55,7 @@ module RackRabbit
       method    = options[:method]  || :GET
       headers   = options[:headers] || {}
       response  = nil
+      timeout   = options[:timeout] || 1
 
       rabbit.with_reply_queue do |reply_queue|
 
@@ -85,7 +86,7 @@ module RackRabbit
       end
 
       lock.synchronize do
-        condition.wait(lock) unless response
+        condition.wait(lock, timeout) unless response
       end
 
       response
