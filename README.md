@@ -1,4 +1,4 @@
-# Rack Rabbit (v0.5.0)
+# Rack Rabbit (v0.6.0)
 
 A forking server for hosting rabbitMQ consumer processes as load balanced rack applications.
 

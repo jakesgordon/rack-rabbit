@@ -248,7 +248,7 @@ module RackRabbit
     #==========================================================================
 
     def load_app
-      inner_app, options = Rack::Builder.parse_file(config.rack_file)
+      inner_app, _options = RackRabbit.load_rack_app(config.rack_file)
       @app = Rack::Builder.new do
         use RackRabbit::Middleware::ProgramName
         run inner_app

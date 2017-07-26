@@ -31,6 +31,8 @@ module RackRabbit
 
     def initialize(options)
       @connection_options = options
+      @started   = nil
+      @connected = nil
     end
 
     def startup

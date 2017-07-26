@@ -1,7 +1,13 @@
 source "http://rubygems.org"
 
+ruby "~> 2.4.0"
+
+group :development, :test do
+  gem "rake"
+end
+
 group :test do
-  gem "minitest", "~>4.7.0"
+  gem "minitest", "~>5.10.3"
   gem "timecop"
   gem "mocha"
 end

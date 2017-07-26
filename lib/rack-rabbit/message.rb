@@ -25,6 +25,8 @@ module RackRabbit
       @content_encoding   = properties.content_encoding
       @content_length     = body.nil? ? 0 : body.length
       @rabbit             = rabbit
+      @acknowledged       = nil
+      @rejected           = nil
     end
 
     #--------------------------------------------------------------------------

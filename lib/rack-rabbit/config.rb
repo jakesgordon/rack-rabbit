@@ -16,7 +16,7 @@ module RackRabbit
 
     def reload(options = {})
       @rack_env = nil
-      instance_eval(File.read(config_file), config_file) if config_file && File.exists?(config_file)
+      instance_eval(File.read(config_file), config_file) if config_file && File.exist?(config_file)
       validate(options) unless options[:validate] == false
     end
 
@@ -215,9 +215,9 @@ module RackRabbit
 
       raise ArgumentError, "must provide EITHER a :queue OR an :exchange to subscribe to" if queue.nil? && exchange.nil?
       raise ArgumentError, "missing app_id" if app_id.to_s.empty?
-      raise ArgumentError, "invalid workers" unless workers.is_a?(Fixnum)
-      raise ArgumentError, "invalid min_workers" unless min_workers.is_a?(Fixnum)
-      raise ArgumentError, "invalid max_workers" unless max_workers.is_a?(Fixnum)
+      raise ArgumentError, "invalid workers" unless workers.is_a?(Integer)
+      raise ArgumentError, "invalid min_workers" unless min_workers.is_a?(Integer)
+      raise ArgumentError, "invalid max_workers" unless max_workers.is_a?(Integer)
       raise ArgumentError, "invalid workers < min_workers" if workers < min_workers
       raise ArgumentError, "invalid workers > max_workers" if workers > max_workers
       raise ArgumentError, "invalid min_workers > max_workers" if min_workers > max_workers

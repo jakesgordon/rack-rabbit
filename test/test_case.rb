@@ -21,7 +21,7 @@ require 'rack-rabbit/config'          # server configuration
 require 'rack-rabbit/signals'         # process signal queue
 
 module RackRabbit
-  class TestCase < Minitest::Unit::TestCase
+  class TestCase < Minitest::Test
 
     #--------------------------------------------------------------------------
 
@@ -102,7 +102,7 @@ module RackRabbit
     end
 
     def build_app(rack_file)
-      Rack::Builder.parse_file(rack_file)[0]
+      RackRabbit.load_rack_app(rack_file)[0]
     end
 
     def build_handler(options = {})
@@ -120,6 +120,20 @@ module RackRabbit
 
     def build_rabbit(options = {})
       Adapter.load({ :adapter => :mock }.merge(options))
+    end
+
+    #--------------------------------------------------------------------------
+
+    # FUCK MT6 forcing me to use assert_nil when I want to user assert_equal
+    alias_method :orig_assert_equal, :assert_equal
+    def assert_equal(exp, act, msg = nil)
+      if exp.nil?
+        assert_nil act, msg
+      else
+        orig_assert_equal(exp, act, msg)
+      end
+      # msg = message(msg, E) { diff exp, act }
+      # assert exp == act, msg
     end
 
     #--------------------------------------------------------------------------

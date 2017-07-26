@@ -200,10 +200,10 @@ module RackRabbit
 
     def test_queue_or_exchange_is_required
       assert_raises_argument_error("must provide EITHER a :queue OR an :exchange") do
-        bad = build_config(:validate => true)
+        _bad = build_config(:validate => true)
       end
-      good1 = build_config(:validate => true, :queue    => "myqueue")
-      good2 = build_config(:validate => true, :exchange => "myexchange")
+      _good1 = build_config(:validate => true, :queue    => "myqueue")
+      _good2 = build_config(:validate => true, :exchange => "myexchange")
     end
 
     #--------------------------------------------------------------------------

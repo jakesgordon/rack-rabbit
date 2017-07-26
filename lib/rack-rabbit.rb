@@ -4,7 +4,7 @@ module RackRabbit
   # CONSTANTS
   #============================================================================
 
-  VERSION = "0.5.0"
+  VERSION = "0.6.0"
   SUMMARY = "A Unicorn-style forking, rack-based server for hosting rabbitMQ consumer processes"
 
   DEFAULT_RABBIT = {
@@ -55,6 +55,12 @@ module RackRabbit
     else
       sig
     end
+  end
+
+  #----------------------------------------------------------------------------
+
+  def self.load_rack_app(rack_file)
+    (@rack_app_cache ||= {})[rack_file] ||= Rack::Builder.parse_file(rack_file)
   end
 
   #----------------------------------------------------------------------------
