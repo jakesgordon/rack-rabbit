@@ -16,6 +16,7 @@ EXCHANGE_HELP      = "publish to a non-default exchange - name"
 EXCHANGE_TYPE_HELP = "publish to a non-default exchange - type (e.g. :direct, :fanout, :topic)"
 ROUTING_KEY_HELP   = "a routing key when publishing to a non-default exchange"
 INCLUDE_HELP       = "specify an additional $LOAD_PATH (may be used more than once)"
+TIMEOUT_HELP       = "specify a request timeout in seconds (default: no timeout)"
 DEBUG_HELP         = "set $DEBUG to true"
 WARN_HELP          = "enable warnings"
 
@@ -50,6 +51,7 @@ parser.on("-q", "--queue QUEUE",       QUEUE_HELP)         { |value| options[:qu
 parser.on("-e", "--exchange EXCHANGE", EXCHANGE_HELP)      { |value| options[:exchange]      = value }
 parser.on("-t", "--type TYPE",         EXCHANGE_TYPE_HELP) { |value| options[:exchange_type] = value }
 parser.on("-r", "--route ROUTE",       ROUTING_KEY_HELP)   { |value| options[:routing_key]   = value }
+parser.on(      "--timeout SECONDS",   TIMEOUT_HELP)       { |value| options[:timeout]       = value.to_i }
 parser.separator ""
 parser.separator "Ruby options:"
 parser.on("-I", "--include PATH", INCLUDE_HELP) { |value| $LOAD_PATH.unshift(*value.split(":")) }
