@@ -55,7 +55,7 @@ module RackRabbit
       method    = options[:method]  || :GET
       headers   = options[:headers] || {}
       response  = nil
-      timeout   = options[:timeout] || 1
+      timeout   = options[:timeout]
 
       rabbit.with_reply_queue do |reply_queue|
 
