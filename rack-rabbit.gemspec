@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.version  = RackRabbit::VERSION
   s.platform = Gem::Platform::RUBY
   s.authors  = ["Jake Gordon"]
-  s.email    = ["jake@codeincomplete.com"]
+  s.email    = ["jakesgordon@gmail.com"]
   s.homepage = "https://github.com/jakesgordon/rack-rabbit"
   s.summary  = RackRabbit::SUMMARY
 

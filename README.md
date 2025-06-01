@@ -408,5 +408,5 @@ Thanks to the [Bunny Team](http://rubybunny.info/) for providing an easy rabbitM
 ## Contact
 
 If you have any ideas, feedback, requests or bug reports, you can reach me at
-[jake@codeincomplete.com](mailto:jake@codeincomplete.com), or via
-my website: [Code inComplete](http://codeincomplete.com).
+[jakesgordon.com](mailto:jakesgordon.com), or via
+my website: [jakesgordon.com](https://jakesgordon.com).
